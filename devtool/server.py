@@ -20,7 +20,7 @@ GROK_BIN = os.environ.get(
 )
 ONLINE_PREVIEW = os.environ.get(
     "DEVTOOL_ONLINE_URL",
-    "https://leandrogrochamedia.github.io/RankingPro/",
+    "https://leandrogrochamedia.github.io/RankingProBeta/",
 )
 
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".cursor", "terminals"}

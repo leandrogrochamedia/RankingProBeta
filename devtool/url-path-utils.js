@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const ONLINE_ROOT = 'https://leandrogrochamedia.github.io/RankingPro/';
+  const ONLINE_ROOT = 'https://leandrogrochamedia.github.io/RankingProBeta/';
 
   function stripCacheBust(url) {
     if (!url) return '';
@@ -91,7 +91,7 @@
   }
 
   function extractGithubSitePath(pathname, search, hash) {
-    const path = (pathname || '').replace(/^\/RankingPro/i, '') || '/';
+    const path = (pathname || '').replace(/^\/RankingPro(?:Beta)?/i, '') || '/';
     return normalizeSitePath(path, search || '', hash || '');
   }
 
@@ -138,7 +138,7 @@
         };
       }
 
-      if (/github\.io$/i.test(u.hostname) && /\/RankingPro(\/|$)/i.test(u.pathname)) {
+      if (/github\.io$/i.test(u.hostname) && /\/RankingPro(?:Beta)?(\/|$)/i.test(u.pathname)) {
         const path = extractGithubSitePath(u.pathname, u.search, u.hash);
         return { path, full: u.href };
       }

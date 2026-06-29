@@ -72,7 +72,7 @@
 
   let config = {
     localPreview: '/app/cliente.html',
-    onlinePreview: 'https://leandrogrochamedia.github.io/RankingPro/',
+    onlinePreview: 'https://leandrogrochamedia.github.io/RankingProBeta/',
     rootPath: '/Users/leandrogrocha/Documents/DEV/MVP Hanking PRO',
     localFilePath: '/Users/leandrogrocha/Documents/DEV/MVP Hanking PRO/cliente.html',
     startCommand: 'cd devtool && python3 launcher.py',

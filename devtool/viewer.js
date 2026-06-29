@@ -34,7 +34,7 @@
     btnEmptyTertiary: $('#btnEmptyTertiary')
   };
 
-  const ONLINE_PREVIEW = 'https://leandrogrochamedia.github.io/RankingPro/index.html';
+  const ONLINE_PREVIEW = 'https://leandrogrochamedia.github.io/RankingProBeta/index.html';
   const DEVTOOL_URL = 'http://127.0.0.1:8790/';
   const DEVTOOL_PREVIEW = 'http://127.0.0.1:8790/app/index.html';
   const DEVTOOL_LAUNCHER = 'http://127.0.0.1:8789';

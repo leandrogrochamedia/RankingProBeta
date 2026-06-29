@@ -3,11 +3,21 @@
 (function (global) {
   'use strict';
 
+  function githubPagesBaseDepth() {
+    const host = global.location.hostname || '';
+    if (!/\.github\.io$/i.test(host)) return 0;
+    const parts = global.location.pathname.split('/').filter(Boolean);
+    if (!parts.length) return 0;
+    const first = parts[0];
+    if (/\.html?$/i.test(first)) return 0;
+    return 1;
+  }
+
   function siteDepth() {
     const parts = global.location.pathname.split('/').filter(Boolean);
     const last = parts[parts.length - 1] || '';
     if (/\.html?$/i.test(last)) parts.pop();
-    return parts.length;
+    return Math.max(0, parts.length - githubPagesBaseDepth());
   }
 
   function prefix() {
