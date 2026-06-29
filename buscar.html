@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Ranking Pro — Buscar profissionais</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="shark-buscar-page">
+
+  <main class="shark-buscar-main">
+    <header class="glass-surface" style="padding:24px 20px;border-radius:20px;margin-bottom:16px;">
+      <a href="./dashboard-estabelecimento.html" class="shark-buscar-link">← Voltar ao dashboard</a>
+      <h1 style="margin:12px 0 6px;font-size:22px;">🔍 Buscar profissionais</h1>
+      <p style="margin:0;color:#94a3b8;font-size:14px;">Encontre profissionais por especialidade e cidade — ordenados por reputação verificada.</p>
+    </header>
+
+    <form id="buscarForm" class="shark-buscar-form glass-surface" style="padding:20px;border-radius:20px;">
+      <label class="shark-buscar-label" for="buscarEspecialidade">Especialidade</label>
+      <div class="glass-input-wrap">
+        <input type="text" id="buscarEspecialidade" class="glass-input" placeholder="Ex: barbeiro, manicure" autocomplete="off" />
+      </div>
+      <label class="shark-buscar-label" for="buscarCidade">Cidade</label>
+      <div class="glass-input-wrap">
+        <input type="text" id="buscarCidade" class="glass-input" placeholder="Ex: São Paulo" autocomplete="off" />
+      </div>
+      <button type="submit" class="btn btn-primary" id="btnBuscar" style="width:100%;margin-top:12px;">Buscar</button>
+      <p class="shark-buscar-hint" id="buscarHint">Informe especialidade e/ou cidade.</p>
+    </form>
+
+    <section id="buscarResults" class="shark-buscar-results" hidden>
+      <p class="shark-buscar-count" id="buscarCount"></p>
+      <ul class="shark-buscar-list" id="buscarList"></ul>
+    </section>
+  </main>
+
+  <script src="./loader.js"></script>
+</body>
+</html>

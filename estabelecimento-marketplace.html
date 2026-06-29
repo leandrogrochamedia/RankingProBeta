@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Marketplace de profissionais</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-page">
+
+  <script src="./config.js"></script>
+  <script src="./shark-mode.js"></script>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="loading-logo">🏆</div>
+      <div class="loading-text">Carregando mercado de talentos...</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="loading-percent" id="loadingPercent">0%</div>
+    </div>
+  </div>
+
+  <header class="cliente-hero ios-app-header glass-surface">
+    <div class="cliente-hero-inner">
+      <div class="cliente-hero-text">
+        <span class="cliente-eyebrow">🏢 Estabelecimento · Marketplace</span>
+        <h1>Contrate por reputação verificada</h1>
+        <p>Profissionais ordenados por nota e volume de avaliações via QR — sem match, só dados reais.</p>
+      </div>
+      <div class="cliente-hero-actions">
+        <div id="userGreeting" class="cliente-greeting"></div>
+        <a href="./dashboard-estabelecimento.html" class="btn-ios-pill btn-ios-pill-ghost" style="text-decoration:none;" aria-label="Meu negócio">
+          <span>🏢</span><span>Meu negócio</span>
+        </a>
+        <button type="button" class="btn-ios-pill btn-ios-pill-primary" id="btnGerarRelatorio" disabled>
+          <span>📄</span><span>Relatório</span>
+        </button>
+        <a href="./dev-simulation.html" id="devControlPill" class="btn-ios-pill btn-ios-pill-dev" style="display:none;text-decoration:none;" title="Control Center DEV">⚙️</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="cliente-main">
+
+    <section class="reco-carousel-wrap active" id="recoWrapTalent" aria-label="Top talentos">
+      <div class="reco-carousel-head">
+        <div class="reco-carousel-head-text">
+          <h2 class="reco-carousel-title">🔥 Top talentos para você</h2>
+          <p class="reco-carousel-availability" id="recoCarouselCount">Carregando mercado...</p>
+          <p class="reco-carousel-sub" id="recoCarouselSub">Somente autônomos — melhor match com seu estabelecimento</p>
+        </div>
+        <div class="reco-carousel-arrows">
+          <button type="button" class="reco-arrow" data-target="recoTrackTalent" data-dir="-1" aria-label="Anterior">‹</button>
+          <button type="button" class="reco-arrow" data-target="recoTrackTalent" data-dir="1" aria-label="Próximo">›</button>
+        </div>
+      </div>
+      <div class="reco-carousel-track" id="recoTrackTalent">
+        <div class="reco-carousel-loading">Carregando recomendações...</div>
+      </div>
+    </section>
+
+    <div id="contratarAlerts"></div>
+
+    <div id="contratarDecisionHub" class="contratar-decision-hub glass-surface" aria-live="polite">
+      <div class="contratar-decision-head">
+        <div>
+          <span class="contratar-decision-eyebrow">Central de decisão</span>
+          <h2 class="contratar-decision-title">Sua shortlist de contratação</h2>
+        </div>
+        <div id="contratarDecisionStats" class="contratar-decision-stats">—</div>
+      </div>
+      <p id="relatorioHint" class="contratar-decision-hint">Marque candidatos para comparar e gerar relatório PDF</p>
+      <div id="contratarShortlistChips" class="contratar-shortlist-chips"></div>
+    </div>
+
+    <div class="glass-discovery-shell contratar-discovery-shell">
+
+      <div class="search-input-wrap glass-input-wrap" style="margin-bottom:14px;">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="text" id="contratarSearch" placeholder="Nome, especialidade ou estilo..." autocomplete="off" />
+        <button class="btn btn-search" type="button" id="btnContratarBuscar">Buscar</button>
+      </div>
+
+      <p class="text-glass-muted" style="font-size:13px;margin:0 0 8px;">Filtros inteligentes</p>
+      <div class="contratar-filters" id="contratarFilters">
+        <button type="button" class="contratar-filter-chip" data-filter="disponivelAgora">🟢 Disponível agora</button>
+        <button type="button" class="contratar-filter-chip" data-filter="abertoContratacao">🔓 Aberto a contratação</button>
+        <button type="button" class="contratar-filter-chip" data-filter="minAnos5">⏳ 5+ anos carreira</button>
+        <button type="button" class="contratar-filter-chip" data-filter="minCarteira20">👥 Base sólida de clientes</button>
+        <button type="button" class="contratar-filter-chip" data-filter="minIGV60">💰 Alta geração de valor</button>
+        <button type="button" class="contratar-filter-chip" data-filter="styleHipHop">🎵 Estilo Hip Hop</button>
+        <button type="button" class="contratar-filter-chip" data-filter="styleStreetwear">👕 Streetwear</button>
+      </div>
+
+      <div class="sort-toolbar" style="margin-top:12px;">
+        <span class="filter-row-label">Ordenar por</span>
+        <div class="sort-pills">
+          <button type="button" class="pill sort-pill active" data-sort="match">🎯 Match</button>
+          <button type="button" class="pill sort-pill" data-sort="roi">📈 ROI estimado</button>
+          <button type="button" class="pill sort-pill" data-sort="igv">💰 IGV</button>
+          <button type="button" class="pill sort-pill" data-sort="carteira">👥 Carteira</button>
+          <button type="button" class="pill sort-pill" data-sort="rating">⭐ Nota</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="cliente-panel active contratar-decision-panel" id="panel-talent" role="tabpanel">
+      <div class="contratar-results-head">
+        <div class="contratar-results-head-text">
+          <h2 class="contratar-results-title">Candidatos ranqueados</h2>
+          <p class="contratar-results-sub" id="contratarResultsSub">Ordenados para apoiar sua decisão</p>
+        </div>
+        <div class="contratar-view-toolbar" aria-label="Modo de exibição">
+          <span class="filter-row-label">Exibir como</span>
+          <div class="contratar-view-pills">
+            <button type="button" class="pill contratar-view-pill active" data-view="lista" title="Lista compacta para comparar">📋 Lista</button>
+            <button type="button" class="pill contratar-view-pill" data-view="grade" title="Matriz de mini cards — estilo top talentos">🧩 Grade</button>
+            <button type="button" class="pill contratar-view-pill" data-view="cards" title="Cards visuais estilo descoberta">🃏 Cards</button>
+          </div>
+        </div>
+      </div>
+      <div id="contratarResults" class="result-list contratar-results-shell">
+        <div class="loading" style="padding:32px;text-align:center;">Carregando talentos...</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="drawer-overlay" id="drawerOverlay" onclick="fecharDrawer()"></div>
+  <div class="drawer drawer-tinder" id="drawer">
+    <div class="drawer-drag-handle" aria-hidden="true"></div>
+    <button type="button" class="drawer-close-floating" onclick="fecharDrawer()" aria-label="Fechar">✕</button>
+    <div class="drawer-body" id="drawerBody"><div class="loading">Carregando...</div></div>
+    <div id="drawerActions"></div>
+  </div>
+
+  <script src="./loader.js"></script>
+  <script src="./components/estabelecimento-marketplace-boot.js" data-app="./estabelecimento-marketplace.js"></script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — SQL Log</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="control-center-page sql-log-page">
+
+  <div class="cc-shell sql-log-shell">
+    <header class="cc-hero glass-surface">
+      <span class="cc-eyebrow">Ferramentas DEV</span>
+      <h1>🗄️ SQL Log</h1>
+      <p class="cc-sub">Sequências com botão por passo. Erro → modal. Histórico abaixo.</p>
+      <div class="cc-hero-actions">
+        <button type="button" class="btn btn-outline btn-small" id="sqlLogRefresh">↻ Atualizar</button>
+        <button type="button" class="btn btn-outline btn-small" id="sqlLogClear">🧹 Limpar log</button>
+        <a href="./dev-simulation.html" class="btn btn-small" style="text-decoration:none">⚙️ Control Center</a>
+      </div>
+    </header>
+
+    <section class="cc-section glass-surface sql-urgent-banner" id="sqlUrgentBanner" style="display:none;">
+      <h2>⚠️ Cole este SQL no Supabase agora</h2>
+      <p class="cc-hint">O app não consegue criar a coluna <code>owner_user_id</code> pela API. Copie o script, abra o SQL Editor e cole lá.</p>
+      <div class="cc-btn-row" style="margin-top:12px;">
+        <button type="button" class="btn btn-small" id="sqlUrgentCopy">📋 Copiar SQL</button>
+        <a href="https://supabase.com/dashboard/project/pyywdhjstvhmarvzijji/sql/new" target="_blank" rel="noopener" class="btn btn-outline btn-small" style="text-decoration:none">🔗 Abrir SQL Editor</a>
+        <button type="button" class="btn btn-outline btn-small" id="sqlUrgentVerify">✓ Já rodei — verificar</button>
+      </div>
+      <p class="cc-hint" style="margin-top:10px;font-size:12px;">O botão <strong>não grava no banco</strong> — copia o script para você colar no Supabase e clicar Run.</p>
+      <textarea id="sqlEmbeddedText" class="sql-embedded-textarea" readonly placeholder="SQL aparece aqui após copiar…"></textarea>
+    </section>
+
+    <section class="cc-section glass-surface" id="sqlRpcStatus">
+      <h2>📡 Status</h2>
+      <p class="cc-hint" id="sqlRpcHint">Verificando…</p>
+      <p class="cc-hint" id="sqlColHint" style="margin-top:8px;"></p>
+    </section>
+
+    <div id="sqlSequenceList"></div>
+
+    <section class="cc-section glass-surface">
+      <h2>▶️ Migrations avulsas</h2>
+      <div id="sqlMigrationList" class="sql-migration-list"></div>
+    </section>
+
+    <section class="cc-section glass-surface">
+      <h2>📜 Histórico</h2>
+      <div id="sqlLogList" class="sql-log-list"><p class="cc-hint">Nenhuma execução ainda.</p></div>
+    </section>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./confirm-modal.js"></script>
+  <script src="./sql-embedded.js?v=4"></script>
+  <script src="./sql-runner.js?v=4"></script>
+  <script src="./menu-lateral.js"></script>
+
+  <script>
+    const esc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '');
+
+    async function renderStatus() {
+      const rpcHint = document.getElementById('sqlRpcHint');
+      const colHint = document.getElementById('sqlColHint');
+      const [rpc, col] = await Promise.all([probeSqlRpc(), probeOwnerColumn()]);
+
+      rpcHint.innerHTML = rpc.available
+        ? '<span class="sql-status-ok">● RPC ativa</span> — passo 2 roda pelo botão'
+        : '<span class="sql-status-warn">● RPC ausente</span> — use Copiar SQL (passo 1 ou SQL único) no Supabase';
+
+      const banner = document.getElementById('sqlUrgentBanner');
+      if (col.exists === true) {
+        if (banner) banner.style.display = 'none';
+        const st = await checkMigration027Status();
+        colHint.innerHTML = `<span class="sql-status-ok">● Coluna owner_user_id OK</span> — ${esc(st.label || '')}`;
+      } else if (col.exists === false) {
+        if (banner) banner.style.display = 'block';
+        colHint.innerHTML = '<span class="sql-status-warn">● Coluna owner_user_id ausente</span> — use o banner acima';
+      } else {
+        if (banner) banner.style.display = 'none';
+        colHint.textContent = col.error || '—';
+      }
+    }
+
+    function formatVerifyMessage(st) {
+      if (st.ok) return st.label || 'OK';
+      return st.friendly || (st.error ? friendlySqlError(st.error) : (st.label || 'Pendente'));
+    }
+
+    async function renderSequences() {
+      const box = document.getElementById('sqlSequenceList');
+      const col = await probeOwnerColumn();
+      const needsSql = col.exists !== true;
+      let html = '';
+
+      for (const seq of SQL_SEQUENCES) {
+        const stepsHtml = await Promise.all(seq.steps.map(async (stepId, idx) => {
+          const mig = getMigrationById(stepId);
+          if (!mig) return '';
+          const n = mig.step || (idx + 1);
+          const rode = mig.rodeFile || mig.sqlFile;
+          const mode = await getMigrationRunMode(mig);
+          const runLabel = mig.manualOnly || mode === 'copy'
+            ? `📋 Passo ${n} — copiar SQL`
+            : `▶️ Passo ${n} — executar`;
+          return `
+            <div class="sql-seq-step">
+              <div class="sql-seq-step-head">
+                <span class="sql-seq-num">${n}</span>
+                <div>
+                  <strong>${esc(mig.title)}</strong>
+                  <p class="sql-mig-desc">${esc(mig.description)}</p>
+                </div>
+                <span class="sql-seq-step-status" data-verify="${esc(stepId)}">…</span>
+              </div>
+              <div class="sql-mig-actions">
+                ${mig.manualOnly
+                  ? `<button type="button" class="btn btn-small sql-copy-btn" data-file="${esc(rode)}">📋 Copiar SQL</button>
+                     <button type="button" class="btn btn-outline btn-small sql-verify-btn" data-mid="${esc(stepId)}">✓ Verificar</button>`
+                  : `<button type="button" class="btn btn-small sql-run-btn" data-mid="${esc(stepId)}">${runLabel}</button>
+                     <button type="button" class="btn btn-outline btn-small sql-verify-btn" data-mid="${esc(stepId)}">✓ Verificar</button>`
+                }
+              </div>
+            </div>
+          `;
+        }));
+
+        const seqRunLabel = needsSql ? '📋 Copiar SQL único' : '▶️ Rodar sequência';
+
+        html += `
+          <section class="cc-section glass-surface sql-sequence-card" data-seq="${esc(seq.id)}">
+            <div class="sql-mig-head">
+              <strong>${esc(seq.title)}</strong>
+            </div>
+            <p class="sql-mig-desc">${esc(seq.description)}</p>
+            <div class="sql-seq-steps">${stepsHtml.join('')}</div>
+            <div class="sql-seq-footer">
+              <button type="button" class="btn btn-small sql-seq-run-btn" data-seq="${esc(seq.id)}">${seqRunLabel}</button>
+              ${seq.oneShotRode
+                ? `<button type="button" class="btn btn-outline btn-small sql-oneshot-btn" data-seq="${esc(seq.id)}">📋 ${esc(seq.oneShotLabel || 'SQL único')}</button>`
+                : ''}
+            </div>
+          </section>
+        `;
+      }
+      box.innerHTML = html;
+
+      box.querySelectorAll('.sql-copy-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          try {
+            await copySqlForPage(btn.dataset.file, btn.dataset.file);
+          } catch (e) {
+            await showSqlError('❌ Erro', e.message);
+          }
+          btn.disabled = false;
+        });
+      });
+
+      box.querySelectorAll('.sql-verify-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const st = await verifyMigrationStep(btn.dataset.mid);
+          const label = st.ok ? '✅ ' + (st.label || 'OK') : '⏳ ' + (st.label || 'Pendente');
+          const el = box.querySelector(`[data-verify="${btn.dataset.mid}"]`);
+          if (el) {
+            el.textContent = label;
+            el.className = 'sql-seq-step-status ' + (st.ok ? 'sql-mig-ok' : 'sql-mig-pending');
+          }
+          if (st.ok) await showSqlSuccess('Verificação', st.label || 'OK');
+          else await showSqlError('Verificação', formatVerifyMessage(st));
+          refreshAll();
+        });
+      });
+
+      box.querySelectorAll('.sql-run-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          await runSqlMigration(btn.dataset.mid);
+          btn.disabled = false;
+        });
+      });
+
+      box.querySelectorAll('.sql-seq-run-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          await runSqlSequence(btn.dataset.seq);
+          btn.disabled = false;
+          refreshAll();
+        });
+      });
+
+      box.querySelectorAll('.sql-oneshot-btn').forEach((btn) => {
+        btn.addEventListener('click', () => runOneShotSql(btn.dataset.seq));
+      });
+
+      for (const stepId of SQL_SEQUENCES.flatMap((s) => s.steps)) {
+        const st = await verifyMigrationStep(stepId);
+        const el = box.querySelector(`[data-verify="${stepId}"]`);
+        if (el) {
+          el.textContent = st.ok ? '✅ ' + (st.label || 'OK') : '⏳ ' + (st.label || '…');
+          el.className = 'sql-seq-step-status ' + (st.ok ? 'sql-mig-ok' : 'sql-mig-pending');
+        }
+      }
+    }
+
+    async function renderMigrations() {
+      const list = document.getElementById('sqlMigrationList');
+      const items = SQL_MIGRATIONS.filter((m) => !m.setup);
+      let html = '';
+
+      for (const mig of items) {
+        const mode = await getMigrationRunMode(mig);
+        const runLabel = mode === 'copy' ? '📋 Copiar SQL' : '▶️ Executar';
+        let statusHtml = '';
+        if (mig.checkStatus) {
+          try {
+            const st = await mig.checkStatus();
+            const cls = st.ok ? 'sql-mig-ok' : (st.pending ? 'sql-mig-pending' : 'sql-mig-warn');
+            statusHtml = `<span class="sql-mig-status ${cls}">${esc(st.label || '—')}</span>`;
+          } catch (e) {
+            statusHtml = `<span class="sql-mig-status sql-mig-warn">${esc(e.message)}</span>`;
+          }
+        }
+
+        html += `
+          <article class="sql-mig-card">
+            <div class="sql-mig-head">
+              <strong>${esc(mig.title)}</strong>
+              ${statusHtml}
+            </div>
+            <p class="sql-mig-desc">${esc(mig.description)}</p>
+            <div class="sql-mig-actions">
+              <button type="button" class="btn btn-small sql-run-btn-loose" data-mid="${esc(mig.id)}">${runLabel}</button>
+              <button type="button" class="btn btn-outline btn-small sql-verify-loose" data-mid="${esc(mig.id)}">✓ Verificar</button>
+              ${mig.page ? `<a href="${esc(mig.page)}" class="btn btn-outline btn-small" style="text-decoration:none">📋 Página</a>` : ''}
+            </div>
+          </article>
+        `;
+      }
+      list.innerHTML = html || '<p class="cc-hint">Use a sequência acima.</p>';
+
+      list.querySelectorAll('.sql-run-btn-loose').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          await runSqlMigration(btn.dataset.mid);
+          btn.disabled = false;
+          refreshAll();
+        });
+      });
+      list.querySelectorAll('.sql-verify-loose').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const st = await verifyMigrationStep(btn.dataset.mid);
+          if (st.ok) await showSqlSuccess('OK', st.label);
+          else await showSqlError('Pendente', formatVerifyMessage(st));
+          refreshAll();
+        });
+      });
+    }
+
+    function renderLog() {
+      const box = document.getElementById('sqlLogList');
+      const log = getSqlLog();
+      if (!log.length) {
+        box.innerHTML = '<p class="cc-hint">Nenhuma execução ainda.</p>';
+        return;
+      }
+      box.innerHTML = log.map((entry) => {
+        const when = new Date(entry.at).toLocaleString('pt-BR');
+        const cls = entry.status === 'ok' ? 'sql-log-ok' : (entry.status === 'error' ? 'sql-log-err' : 'sql-log-run');
+        const body = entry.error || entry.result || entry.status || '—';
+        return `
+          <div class="sql-log-entry ${cls}">
+            <div class="sql-log-meta">
+              <span>${esc(when)}</span>
+              <span>${esc(entry.title || entry.migrationId || '')}</span>
+              <span class="sql-log-badge">${esc(entry.status || '')}${entry.mode ? ' · ' + esc(entry.mode) : ''}</span>
+            </div>
+            <pre class="sql-log-body">${esc(body)}</pre>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function refreshAll() {
+      await renderStatus();
+      await renderSequences();
+      await renderMigrations();
+      renderLog();
+    }
+
+    document.getElementById('sqlLogRefresh').addEventListener('click', refreshAll);
+    document.getElementById('sqlLogClear').addEventListener('click', async () => {
+      if (typeof showConfirm === 'function') {
+        const ok = await showConfirm({ title: 'Limpar histórico?', message: 'Remove todas as entradas do SQL Log local.', danger: true, confirmText: 'Limpar' });
+        if (!ok) return;
+      }
+      clearSqlLog();
+      renderLog();
+    });
+
+    document.getElementById('sqlUrgentCopy')?.addEventListener('click', () => {
+      runOneShotSql('owners_pipeline');
+    });
+    document.getElementById('sqlUrgentVerify')?.addEventListener('click', async () => {
+      invalidateOwnerColumnCache();
+      const st = await verifyMigrationStep('027_establishment_owners');
+      if (st.ok) await showSqlSuccess('✅ Pronto', st.label);
+      else await showSqlError('Ainda pendente', formatVerifyMessage(st));
+      refreshAll();
+    });
+
+    window.addEventListener('proofly-sql-log-updated', renderLog);
+    (async function initSqlLog() {
+      const ta = document.getElementById('sqlEmbeddedText');
+      const sql = getSqlText('migrations/027_RODE_NO_SUPABASE.sql');
+      if (ta && sql) ta.value = sql;
+      const col = await probeOwnerColumn(true);
+      if (col.exists === false) {
+        document.getElementById('sqlUrgentBanner').style.display = 'block';
+      }
+      await refreshAll();
+    })();
+  </script>
+</body>
+</html>

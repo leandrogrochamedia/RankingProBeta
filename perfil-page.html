@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Perfil</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+  <style>
+    .perfil-page-shell { max-width: 820px; margin: 0 auto; padding: 0 20px 120px; }
+    .perfil-page-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 0 12px; gap: 12px;
+    }
+    .perfil-back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 16px; border-radius: 999px; border: none;
+      background: rgba(255,255,255,0.08); color: #eaeaea;
+      font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: none;
+      backdrop-filter: blur(20px);
+    }
+    .perfil-back-btn:hover { background: rgba(255,255,255,0.12); }
+    .perfil-page-content {
+      border-radius: 28px; overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    .perfil-page-actions {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      max-width: 820px; margin: 0 auto; padding: 12px 20px 24px;
+      background: rgba(12,12,22,0.92);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .perfil-avaliar-form {
+      margin-top: 20px; padding: 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.15);
+    }
+    .perfil-avaliar-form h4 { text-align: center; color: #f1f5f9; margin-bottom: 12px; }
+    .perfil-avaliar-form .stars-input {
+      display: flex; gap: 8px; justify-content: center; margin: 8px 0 12px;
+      font-size: 28px; cursor: pointer;
+    }
+    .perfil-avaliar-form textarea {
+      width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06); color: #f1f5f9; font-family: inherit; min-height: 72px;
+    }
+  </style>
+</head>
+<body class="cliente-page">
+
+  <div class="perfil-page-shell">
+    <div class="perfil-page-topbar">
+      <a href="./cliente.html" class="perfil-back-btn" id="perfilBackBtn">← Voltar à busca</a>
+    </div>
+    <div id="perfilContent" class="perfil-page-content drawer-body drawer-tinder">
+      <div class="loading" style="padding:48px 24px;text-align:center;">Carregando perfil...</div>
+    </div>
+  </div>
+
+  <div id="perfilActions" class="perfil-page-actions"></div>
+
+  <script src="./loader.js"></script>
+  <script src="./components/perfil-page-boot.js"></script>
+</body>
+</html>

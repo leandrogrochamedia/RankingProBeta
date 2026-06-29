@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Widget</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./widget.css" />
+  <style>
+    body { background: linear-gradient(160deg, #eef2ff 0%, #f8fafc 45%, #fff 100%); min-height: 100vh; }
+    .wg-page { max-width: 920px; margin: 0 auto; padding: 36px 20px 80px; }
+    .wg-hero { text-align: center; margin-bottom: 28px; }
+    .wg-hero h1 { font-size: clamp(26px, 4vw, 34px); color: #0f172a; letter-spacing: -0.03em; }
+    .wg-hero p { color: #64748b; margin-top: 8px; font-size: 15px; max-width: 560px; margin-left: auto; margin-right: auto; }
+    .wg-badge { display: inline-block; background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px; }
+    .wg-card { background: #fff; border-radius: 18px; padding: 22px 24px; margin-bottom: 18px; border: 1px solid #e2e8f0; box-shadow: 0 8px 30px rgba(15,23,42,0.06); }
+    .wg-card h2 { font-size: 16px; color: #0f172a; margin-bottom: 4px; }
+    .wg-card .desc { font-size: 13px; color: #94a3b8; margin-bottom: 16px; }
+    .wg-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .wg-controls label { font-size: 13px; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 8px; }
+    .wg-controls select { padding: 8px 12px; border-radius: 10px; border: 1.5px solid #e2e8f0; font: inherit; font-size: 13px; background: #f8fafc; min-width: 180px; }
+    .wg-preview-wrap {
+      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+      border-radius: 16px; padding: 24px; min-height: 140px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .wg-preview-inner { width: 100%; max-width: 480px; }
+    .wg-code {
+      background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 14px 16px;
+      font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.55;
+      overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+    }
+    .wg-code .kw { color: #818cf8; }
+    .wg-code .val { color: #6ee7b7; }
+    .wg-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .wg-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .wg-step { background: #f8fafc; border-radius: 12px; padding: 14px; border: 1px solid #e2e8f0; font-size: 13px; color: #475569; }
+    .wg-step strong { display: block; color: #0f172a; margin-bottom: 4px; }
+    .wg-embed-only .wg-dev-only { display: none !important; }
+    .wg-embed-only body { background: #f8fafc; }
+    .wg-embed-only .wg-page { padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="wg-page">
+    <header class="wg-hero wg-dev-only">
+      <span class="wg-badge">Prova social para seu site</span>
+      <h1>📣 Widget Ranking Pro</h1>
+      <p>Exiba nota, selo de verificação e avaliações reais do seu estabelecimento em qualquer site ou landing page.</p>
+    </header>
+
+    <section class="wg-card wg-dev-only">
+      <h2>⚙️ Configuração</h2>
+      <p class="desc">Escolha o modo e o estabelecimento. Se você estiver logado como estabelecimento, o seu já vem selecionado.</p>
+      <div class="wg-controls">
+        <label>Modo
+          <select id="modeSelect">
+            <option value="compact">Compacto (badge)</option>
+            <option value="medium" selected>Médio (3 avaliações)</option>
+            <option value="full">Completo (5 avaliações)</option>
+          </select>
+        </label>
+        <label>Estabelecimento
+          <select id="estSelect"><option value="">Carregando...</option></select>
+        </label>
+        <button type="button" class="btn btn-small" id="refreshBtn">🔄 Atualizar</button>
+      </div>
+    </section>
+
+    <section class="wg-card">
+      <h2>📱 Preview ao vivo</h2>
+      <p class="desc wg-dev-only">Assim o widget aparece no site do seu cliente.</p>
+      <div class="wg-preview-wrap">
+        <div class="wg-preview-inner">
+          <div id="widgetContainer"><div class="pw-loading">Carregando widget...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wg-card wg-dev-only">
+      <h2>📋 Código para colar no site</h2>
+      <p class="desc">Copie o snippet HTML e cole antes do <code>&lt;/body&gt;</code> da sua página.</p>
+      <div id="embedCode" class="wg-code">Carregando...</div>
+      <div class="wg-actions">
+        <button type="button" class="btn btn-small" id="copyEmbedBtn">📋 Copiar HTML</button>
+        <button type="button" class="btn btn-outline btn-small" id="copyIframeBtn">📋 Copiar iframe</button>
+        <a href="#" id="openPreviewLink" class="btn btn-outline btn-small" style="text-decoration:none;" target="_blank" rel="noopener">🔗 Abrir preview</a>
+      </div>
+    </section>
+
+    <section class="wg-card wg-dev-only">
+      <h2>📖 Como usar</h2>
+      <div class="wg-steps">
+        <div class="wg-step"><strong>1. Copie o código</strong>Use o botão acima no painel do estabelecimento ou aqui no modo dev.</div>
+        <div class="wg-step"><strong>2. Cole no site</strong>WordPress, Wix, HTML estático — qualquer página que aceite HTML.</div>
+        <div class="wg-step"><strong>3. Atualiza sozinho</strong>As avaliações vêm direto do Supabase em tempo real.</div>
+      </div>
+      <p class="desc" style="margin-top:14px;margin-bottom:0;">
+        <code>data-proofly-id</code> = ID do estabelecimento ·
+        <code>data-mode</code> = <code>compact</code> | <code>medium</code> | <code>full</code>
+      </p>
+    </section>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./session.js"></script>
+  <script src="./user-service.js"></script>
+  <script src="./widget-utils.js"></script>
+  <script src="./widget-embed.js"></script>
+  <script>
+    (function() {
+      const params = new URLSearchParams(location.search);
+      const embedMode = params.get('embed') === '1';
+      if (embedMode) document.documentElement.classList.add('wg-embed-only');
+
+      const estSelect = document.getElementById('estSelect');
+      const modeSelect = document.getElementById('modeSelect');
+      const container = document.getElementById('widgetContainer');
+      const embedCode = document.getElementById('embedCode');
+
+      if (typeof ProoflyWidgetUtils !== 'undefined') ProoflyWidgetUtils.configureWidgetRuntime();
+
+      const presetId = params.get('id');
+      const presetMode = params.get('mode');
+      if (presetMode && modeSelect) modeSelect.value = presetMode;
+
+      function highlightCode(snippet) {
+        if (!embedCode) return;
+        embedCode.textContent = snippet || '';
+      }
+
+      function refreshWidget() {
+        const id = embedMode ? presetId : estSelect?.value;
+        const mode = modeSelect?.value || presetMode || 'medium';
+        if (!id) {
+          container.innerHTML = '<div class="pw-loading">Selecione um estabelecimento.</div>';
+          highlightCode('');
+          return;
+        }
+        container.innerHTML = `<div data-proofly-id="${id}" data-mode="${mode}"></div>`;
+        if (window.ProoflyWidget) window.ProoflyWidget.processWidgets();
+
+        const snippet = ProoflyWidgetUtils?.buildEmbedSnippet(id, mode) || '';
+        highlightCode(snippet);
+
+        const preview = document.getElementById('openPreviewLink');
+        if (preview) preview.href = `./widget.html?embed=1&id=${encodeURIComponent(id)}&mode=${encodeURIComponent(mode)}`;
+      }
+
+      async function loadEstablishments() {
+        if (embedMode) {
+          if (presetId) refreshWidget();
+          return;
+        }
+        try {
+          const data = await fetchAPI('/rest/v1/establishments?select=id,name,city&order=name&limit=80');
+          const sess = typeof getSession === 'function' ? getSession() : null;
+          estSelect.innerHTML = '<option value="">Selecione...</option>';
+          (data || []).forEach(est => {
+            const opt = document.createElement('option');
+            opt.value = est.id;
+            opt.textContent = `${est.name}${est.city ? ' · ' + est.city : ''}`;
+            estSelect.appendChild(opt);
+          });
+          if (presetId && data?.some(e => e.id === presetId)) {
+            estSelect.value = presetId;
+          } else if (sess?.establishmentId && data?.some(e => e.id === sess.establishmentId)) {
+            estSelect.value = sess.establishmentId;
+          } else if (data?.length) {
+            estSelect.value = data[0].id;
+          }
+          refreshWidget();
+        } catch (e) {
+          estSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+          container.innerHTML = `<div class="pw-error">${escapeHtml(e.message)}</div>`;
+        }
+      }
+
+      document.getElementById('refreshBtn')?.addEventListener('click', refreshWidget);
+      estSelect?.addEventListener('change', refreshWidget);
+      modeSelect?.addEventListener('change', refreshWidget);
+
+      document.getElementById('copyEmbedBtn')?.addEventListener('click', async () => {
+        const id = estSelect?.value;
+        const ok = await ProoflyWidgetUtils?.copyText(ProoflyWidgetUtils.buildEmbedSnippet(id, modeSelect?.value));
+        alert(ok ? '✅ Código HTML copiado!' : 'Não foi possível copiar.');
+      });
+
+      document.getElementById('copyIframeBtn')?.addEventListener('click', async () => {
+        const id = estSelect?.value;
+        const ok = await ProoflyWidgetUtils?.copyText(ProoflyWidgetUtils.buildIframeSnippet(id, modeSelect?.value));
+        alert(ok ? '✅ Código iframe copiado!' : 'Não foi possível copiar.');
+      });
+
+      if (!embedMode) {
+        const devScripts = ['./menu-lateral.js'];
+        devScripts.forEach(src => {
+          const s = document.createElement('script');
+          s.src = src;
+          document.body.appendChild(s);
+        });
+      }
+
+      loadEstablishments();
+    })();
+  </script>
+</body>
+</html>

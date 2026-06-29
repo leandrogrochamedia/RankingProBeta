@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Control Center (DEV)</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="control-center-page">
+
+  <div id="controlCenter" class="cc-shell">
+    <header class="cc-hero glass-surface">
+      <span class="cc-eyebrow">Ferramentas internas</span>
+      <h1>⚙️ Control Center</h1>
+      <p class="cc-sub">Sessão, match, banco e troca de papel — poder DEV escondido do fluxo principal.</p>
+      <div class="cc-hero-actions">
+        <button type="button" class="btn btn-outline btn-small" id="ccRefresh">↻ Atualizar</button>
+        <a href="./cliente.html" class="btn btn-small" style="text-decoration:none">🔎 Cliente</a>
+      </div>
+    </header>
+
+    <section class="cc-section glass-surface">
+      <h2>🔀 Trocar papel</h2>
+      <p class="cc-hint" style="margin:-4px 0 12px;">Usa o mesmo seletor do produto — <a href="./selecionar-perfil.html?forceProfileSelect=true" style="color:#a5b4fc;">selecionar-perfil</a></p>
+      <div class="cc-role-grid">
+        <button type="button" class="cc-role-btn" onclick="simularCliente()">
+          <span class="cc-role-icon">👤</span>
+          <span><strong>Cliente</strong><small>perfil client → selecionar-cliente</small></span>
+        </button>
+        <button type="button" class="cc-role-btn" onclick="simularProfissional()">
+          <span class="cc-role-icon">💼</span>
+          <span><strong>Profissional</strong><small>perfil professional → selecionar-prof</small></span>
+        </button>
+        <button type="button" class="cc-role-btn" onclick="simularEstabelecimento()">
+          <span class="cc-role-icon">🏢</span>
+          <span><strong>Estabelecimento</strong><small>perfil establishment → selecionar-est</small></span>
+        </button>
+      </div>
+    </section>
+
+    <section class="cc-section glass-surface">
+      <h2>📡 Sessão (live)</h2>
+      <div id="ccSessionLive" class="cc-session-grid"></div>
+      <div class="cc-btn-row">
+        <button type="button" class="btn btn-outline btn-small" id="ccLogSession">Log no console</button>
+        <button type="button" class="btn btn-outline btn-small" id="ccClearSession">Limpar sessão</button>
+      </div>
+    </section>
+
+    <section class="cc-section glass-surface">
+      <h2>🗄️ SQL Log</h2>
+      <p class="cc-hint" style="margin:-4px 0 12px;">Migrations do Supabase — copiar SQL, verificar owners, histórico local.</p>
+      <div class="cc-role-grid">
+        <a href="./sql-log.html" class="cc-role-btn" style="text-decoration:none;color:inherit">
+          <span class="cc-role-icon">🗄️</span>
+          <span><strong>SQL Log</strong><small>sequências · copiar SQL · verificar</small></span>
+        </a>
+        <a href="./sql-run/027-establishment-owners.html" class="cc-role-btn" style="text-decoration:none;color:inherit">
+          <span class="cc-role-icon">🏢</span>
+          <span><strong>Migration 027</strong><small>owners em todos os estabelecimentos</small></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="cc-section glass-surface">
+      <h2>🎯 Match debug</h2>
+      <div id="ccMatchDebug"></div>
+      <button type="button" class="btn btn-outline btn-small" id="ccToggleMatch">
+        <span id="ccMatchToggleLabel">Match debug: OFF</span>
+      </button>
+      <p class="cc-foot">Com ON: breakdown em <code>cliente.html</code> (match cliente) e <code>estabelecimento-marketplace.html</code> (match contratação: IGV×0.55 + estilo×0.45). Pill 🎯 no header ou console <code>PROOFLY_DEBUG.logContratanteMatch(prof, est)</code>.</p>
+    </section>
+
+    <section class="cc-section glass-surface">
+      <h2>🧭 Navegação rápida</h2>
+      <div class="cc-nav-grid">
+        <a href="./cliente.html" class="cc-nav-link">🔎 Busca cliente</a>
+        <a href="./dashboard-profissional.html" class="cc-nav-link">💼 Dashboard prof</a>
+        <a href="./dashboard-estabelecimento.html" class="cc-nav-link">🏢 Dashboard est</a>
+        <a href="./estabelecimento-marketplace.html" class="cc-nav-link">📋 Contratar</a>
+        <a href="./admin.html" class="cc-nav-link">📊 Admin</a>
+        <a href="./apendice.html" class="cc-nav-link">📚 Apêndice</a>
+        <a href="./widget.html" class="cc-nav-link">📣 Widget</a>
+        <a href="./base-de-dados-completa.html" class="cc-nav-link">🗄️ Base de dados</a>
+      </div>
+    </section>
+
+    <section class="cc-section glass-surface">
+      <h2>🗄️ Banco (leve)</h2>
+      <div id="ccDbLight"></div>
+    </section>
+
+    <footer class="cc-footer">
+      <button type="button" class="btn btn-outline btn-small" onclick="resetSessionAndGoHome()">🚪 Sair</button>
+      <a href="./index.html" class="btn btn-outline btn-small" style="text-decoration:none">🏠 Início</a>
+    </footer>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./session.js"></script>
+  <script src="./profile-selector.js"></script>
+  <script src="./user-service.js"></script>
+  <script src="./proofly-debug.js"></script>
+  <script src="./talent-market.js"></script>
+  <script src="./base-de-dados-schema.js"></script>
+  <script src="./dev-control-center.js"></script>
+  <script src="./dev-role-simulation.js"></script>
+  <script src="./menu.js"></script>
+  <script src="./menu-lateral.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Configurações do Cliente</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-settings-page">
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <main class="cliente-settings-shell">
+    <header class="cliente-settings-hero">
+      <a href="./cliente.html" class="cliente-settings-back" aria-label="Voltar">← Voltar</a>
+      <h1>Configurações do Cliente</h1>
+      <p>Perfil, preferências, privacidade e conta — sem ferramentas administrativas.</p>
+    </header>
+
+    <section class="cliente-settings-group glass-surface">
+      <h2 class="cliente-settings-group-title">Perfil</h2>
+      <nav class="cliente-settings-list" aria-label="Perfil">
+        <a href="./meu-perfil.html" class="cliente-settings-item">
+          <span>Editar perfil<small>Nome, foto e dados do cliente</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </a>
+        <a href="./selecionar-perfil.html?forceProfileSelect=true" class="cliente-settings-item" id="linkTrocarPerfil">
+          <span>Trocar perfil<small>Cliente, profissional ou estabelecimento</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </a>
+      </nav>
+    </section>
+
+    <section class="cliente-settings-group glass-surface">
+      <h2 class="cliente-settings-group-title">Preferências</h2>
+      <nav class="cliente-settings-list" aria-label="Preferências">
+        <a href="./cliente.html?openStyle=1" class="cliente-settings-item">
+          <span>Estilo e match<small>Tags que personalizam recomendações</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </a>
+        <a href="./favoritos.html" class="cliente-settings-item">
+          <span>Favoritos<small>Profissionais e lugares salvos</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </a>
+      </nav>
+    </section>
+
+    <section class="cliente-settings-group glass-surface">
+      <h2 class="cliente-settings-group-title">Privacidade</h2>
+      <nav class="cliente-settings-list" aria-label="Privacidade">
+        <button type="button" class="cliente-settings-item" onclick="showSettingsSoon('Privacidade')">
+          <span>Visibilidade do perfil<small>Quem pode ver suas avaliações</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </button>
+        <button type="button" class="cliente-settings-item" onclick="showSettingsSoon('Dados')">
+          <span>Seus dados<small>Exportar ou revisar informações</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </button>
+      </nav>
+    </section>
+
+    <section class="cliente-settings-group glass-surface">
+      <h2 class="cliente-settings-group-title">Notificações</h2>
+      <nav class="cliente-settings-list" aria-label="Notificações">
+        <button type="button" class="cliente-settings-item" onclick="showSettingsSoon('Notificações')">
+          <span>Alertas e lembretes<small>Avaliações, match e novidades</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </button>
+      </nav>
+    </section>
+
+    <section class="cliente-settings-group glass-surface">
+      <h2 class="cliente-settings-group-title">Conta</h2>
+      <nav class="cliente-settings-list" aria-label="Conta">
+        <a href="./minhas-avaliacoes.html" class="cliente-settings-item">
+          <span>Minhas avaliações<small>Histórico de avaliações feitas</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </a>
+        <button type="button" class="cliente-settings-item cliente-settings-item--danger" id="btnSairConta">
+          <span>Sair da conta<small>Encerrar sessão neste dispositivo</small></span>
+          <span class="cliente-settings-item-chevron" aria-hidden="true">›</span>
+        </button>
+      </nav>
+    </section>
+  </main>
+
+  <script src="./loader.js"></script>
+  <script>
+    function showSettingsSoon(area) {
+      if (typeof showAlert === 'function') {
+        showAlert('Em breve', area + ' — disponível em uma próxima versão.');
+      } else {
+        alert(area + ' — em breve.');
+      }
+    }
+
+    document.getElementById('btnSairConta')?.addEventListener('click', () => {
+      if (typeof resetSessionAndGoHome === 'function') {
+        resetSessionAndGoHome();
+      } else if (typeof clearSession === 'function') {
+        clearSession();
+        window.location.href = './index.html';
+      } else {
+        window.location.href = './login.html';
+      }
+    });
+
+    function guardClienteSettings() {
+      const session = typeof getSession === 'function' ? getSession() : null;
+      if (!session?.userId) {
+        window.location.replace('./login.html?returnTo=configuracoes-cliente.html');
+        return;
+      }
+      if (typeof getActiveProfileType === 'function' && getActiveProfileType(session) !== 'client') {
+        const url = typeof getProfileSelectorUrl === 'function'
+          ? getProfileSelectorUrl(true)
+          : './selecionar-perfil.html?forceProfileSelect=true';
+        window.location.replace(url);
+      }
+      const link = document.getElementById('linkTrocarPerfil');
+      if (link && typeof getProfileSelectorUrl === 'function') {
+        link.href = getProfileSelectorUrl(true);
+      }
+    }
+
+    document.addEventListener('scriptsLoaded', guardClienteSettings);
+  </script>
+</body>
+</html>

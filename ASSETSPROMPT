@@ -1,0 +1,480 @@
+# RANKING PRO (PROOFLY) — ASSETSPROMPT
+## Referência de design, CSS, modais, assets e JavaScript
+**Gerado:** 27/JUN/2026 | **Uso:** prompt para IA implementar/refatorar UI e lógica mantendo DNA do projeto
+
+---
+
+## 1. IDENTIDADE DO PRODUTO
+
+- **Nome:** Ranking Pro (código interno: PROOFLY)
+- **Proposta:** Reputação verificada para profissionais e estabelecimentos de beleza — avaliações reais, match por afinidade (tags), mercado de talentos (IGV).
+- **Paradigma visual:** Apple/iCloud Glass — dark mode premium, glassmorphism, safe-area iOS, tipografia SF Pro / system-ui.
+- **Personas:** Cliente 👤 | Profissional 💼 | Estabelecimento 🏢 | Admin | Visitante (QR público)
+- **Stack:** HTML estático + JS vanilla + Supabase REST (PostgREST) + sessionStorage/localStorage
+
+---
+
+## 2. ARQUITETURA CSS (ordem de carregamento)
+
+```
+base.css          → tokens globais (cores, espaços, z-index, breakpoints)
+style.css         → layout, componentes base, drawers legados, loading, QR modal
+proofly-glass.css → glass design system (discovery, cliente, tema escuro)
+profile-dashboard.css → dashboards profissional/estabelecimento (cards brancos)
+components/tinder-profile.css → cards Tinder + drawer bottom-sheet
+widget.css        → widget embed de prova social
+base-de-dados.css → painel admin DB (DM Sans + JetBrains Mono)
+```
+
+### 2.1 Tokens obrigatórios (`base.css`)
+
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--color-primary` | `#6366f1` | CTAs, links, bordas ativas |
+| `--color-secondary` | `#8b5cf6` | Gradientes secundários |
+| `--bg-body` | `#0d0d1a` | Fundo app |
+| `--gradient-primary` | `135deg #6366f1 → #8b5cf6` | Botões primários |
+| `--glass-bg` | `rgba(255,255,255,0.06)` | Superfícies glass |
+| `--glass-blur` | `blur(28px) saturate(160%)` | Backdrop |
+| `--glass-radius` | `22px` | Cards glass |
+| `--glass-radius-lg` | `28px` | Shell discovery |
+| `--text-glass-primary` | `#eaeaea` | Texto em dark glass |
+| `--z-drawer` | `1000` | Drawer overlay |
+| `--z-drawer-overlay` | `999` | Backdrop drawer |
+| `--z-confirm` | `200` | (reservado) |
+| `--breakpoint-mobile` | `480px` | Mobile first |
+| `--container-max` | `750px` | Conteúdo centralizado |
+
+### 2.2 Fundo vivo (`proofly-glass.css`)
+
+```css
+body {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(99,102,241,0.22), transparent 55%),
+    radial-gradient(ellipse 55% 45% at 95% 20%, rgba(139,92,246,0.14), transparent 50%),
+    linear-gradient(175deg, #08080f 0%, #0f0f1a 35%, #12121f 70%, #0a0a12 100%);
+  background-color: #08080f;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+```
+
+- `theme-color` e `color-scheme: dark` em todas as páginas
+- `viewport-fit=cover` para notch iOS
+- `prefers-reduced-motion` respeitado em `base.css`
+
+### 2.3 Hierarquia de superfícies
+
+1. **Landing splash** (`index.html` inline) — card central, botões pill 16px radius
+2. **Glass discovery** (cliente) — `.glass-discovery-shell`, tabs segmentadas, inputs inset
+3. **Dashboards** — cards brancos sólidos (`profile-dashboard.css`), NÃO glass
+4. **Tinder cards** — foto hero 280px, gradient overlay, match orb
+5. **Admin DB** — sidebar fixa, pills, diagrama ER (`base-de-dados.css`)
+
+---
+
+## 3. MODAIS, JANELAS E OVERLAYS
+
+### 3.1 Confirm Modal global (`confirm-modal.js` — CSS injetado)
+
+| Classe | Comportamento |
+|--------|---------------|
+| `.confirm-overlay` | `fixed inset-0`, blur 4px, z-index 99999 |
+| `.confirm-box` | 360px, radius 20px, fundo branco, anim zoom |
+| `.btn-confirm` | Gradiente indigo → violet |
+| `.btn-confirm.danger` | Gradiente vermelho |
+| `.btn-ok` | Gradiente verde (modo alert) |
+| `.btn-cancel` | `#f1f5f9` |
+
+**API JS:** `showConfirm({ title, message, confirmText, cancelText, danger, confirmOnly })` → Promise\<boolean\>
+**API JS:** `showAlert(title, message)` → só botão OK
+
+### 3.2 QR Scanner Modal (`style.css` + `index.html`)
+
+| Classe | Comportamento |
+|--------|---------------|
+| `.qr-modal` | `display:none` → `.open` = flex center, z-index 9000 |
+| `.qr-modal-backdrop` | `rgba(0,0,0,0.7)` + blur 6px |
+| `.qr-modal-content` | max-width 420px, radius `--radius-2xl` |
+| `.scanner-box` | fundo preto, `#qr-reader` para html5-qrcode |
+
+**Funções:** `fecharScannerQR()`, botão `#btnScanQr` em `index-qr.js`
+
+### 3.3 Style Onboarding Sheet (`style.css` + `cliente.js`)
+
+| Classe | Comportamento |
+|--------|---------------|
+| `.style-onboarding-modal` | bottom sheet container, z-index 10000 |
+| `.style-onboarding-backdrop` | overlay escuro blur |
+| `.style-onboarding-sheet` | slide up `sheetUp 0.38s`, radius 24px top |
+| `.style-onboarding-chips` | tags selecionáveis estilo Tinder |
+
+**Funções:** `abrirOnboardingEstilo()`, `fecharOnboardingEstilo()`, `salvarOnboardingEstilo()`, `toggleOnboardingChip()`
+
+### 3.4 Loading Overlay (`style.css`)
+
+| Classe | Comportamento |
+|--------|---------------|
+| `.loading-overlay` | fullscreen blur escuro, z-index 10000 |
+| `.loading-box` | glass leve, logo pulse, progress bar |
+| `.loading-overlay.hidden` | fade out + pointer-events none |
+
+Usado em: `components/cliente-page-boot.js`, `components/estabelecimento-marketplace-boot.js`
+
+### 3.5 Drawer Tinder (`components/tinder-profile.css` + `style.css`)
+
+| Variante | Comportamento |
+|----------|---------------|
+| `.drawer.drawer-tinder` | bottom sheet mobile-first, `translateY(100%)` → `.open` |
+| `.drawer-overlay` | backdrop blur, z-index 999–1000 |
+| `.drawer-drag-handle` | pill 40×4px no topo |
+| `.drawer-close-floating` | botão ✕ flutuante |
+| `.drawer-actions-sticky` | CTAs fixos no rodapé do drawer |
+| `.drawer:not(.drawer-tinder)` | slide lateral direita (legado admin) |
+
+**Funções globais:** `openProfile(tipo, id)`, `fecharDrawer()`, `scrollDrawerToReviews()`
+**Componente:** `components/profile-card.js` → `renderDrawer()`, `renderDrawerActions()`
+
+### 3.6 Perfil em página (`perfil-page.html`)
+
+- Usa `profile-page-view.js` em vez de drawer persistente (menor RAM mobile)
+- Classes: `.perfil-page-content`, `.drawer-body.drawer-tinder`
+- Boot: `components/perfil-page-boot.js`
+
+---
+
+## 4. COMPONENTES UI REUTILIZÁVEIS
+
+### 4.1 Cards Tinder (`.tinder-card`)
+
+- Foto hero 280px, `.tinder-card-gradient`, `.tinder-card-overlay-info`
+- Match orb: `.tinder-card-match-orb-wrap`, tiers hot/normal
+- Estabelecimento: `.tinder-card.est` com border-top azul `#0ea5e9`
+- High match: `.card-high-match` sombra âmbar
+- Favorito: `.tinder-fav-btn` localStorage `proofly_favorites`
+
+### 4.2 Tags & Chips
+
+- `utils.js` → `TAG_MAP` com emoji por tag
+- `renderTagWithEmoji()`, chips por categoria (música, visual, vibe…)
+- Cores em `base.css`: `--tag-music-bg`, `--tag-vibe-bg`, etc.
+
+### 4.3 Botões
+
+| Classe | Uso |
+|--------|-----|
+| `.btn` / `.btn-primary` | CTA padrão gradiente |
+| `.btn-search` | Busca glass discovery |
+| `.btn-tinder-action` | Ações no drawer |
+| `.btn-tinder-xl` | Fechar drawer full-width |
+| `.home-splash-btn--primary` | Landing |
+| `.db-btn-primary` | Admin DB |
+
+### 4.4 Scores & Métricas
+
+- **IGV ring:** `.proofly-score-block`, tiers elite/strong/solid/forming
+- **Match %:** `.match-ring-viz`, `.tinder-card-match-orb-wrap.match-tier-hot`
+- **Stars:** `--star-color: #f59e0b`, `renderStars()` em utils
+
+### 4.5 Menu flutuante (`menu.js`)
+
+- Dock inferior contextual por persona (cliente / prof / estab)
+- Hubs sem botão Voltar: index, cliente, dashboards, marketplace
+- Safe-area: `env(safe-area-inset-bottom)`
+- DEV: injeta `dev-role-simulation.js` quando `DEBUG_MODE`
+
+### 4.6 Widget embed (`widget.css` + `widget-embed.js`)
+
+- `.pw-widget` — card branco com barra gradiente top 3px
+- Embed externo via `<script src="widget-embed.js">`
+- Props: `data-establishment-id`, `data-professional-id`
+
+---
+
+## 5. PÁGINAS HTML (mapa de telas)
+
+| Página | Persona | CSS extra | JS principal |
+|--------|---------|-----------|--------------|
+| `index.html` | Visitante | inline splash | `index-qr.js`, `loader.js` |
+| `login.html` | Auth | glass | `loader.js` |
+| `selecionar-perfil.html` | Multi-role | glass | `profile-selector.js` |
+| `cliente.html` | Cliente | tinder + glass | `cliente-page-boot.js` → `cliente.js` |
+| `favoritos.html` | Cliente | tinder + glass | inline + profile-card |
+| `perfil-page.html` | Todos | tinder + glass | `perfil-page-boot.js` → `profile-page-view.js` |
+| `dashboard-profissional.html` | Prof | profile-dashboard | inline + confirm-modal |
+| `dashboard-estabelecimento.html` | Estab | profile-dashboard | inline |
+| `estabelecimento-marketplace.html` | Estab | glass | `estabelecimento-marketplace-boot.js` |
+| `cadastro-cliente.html` | Cliente | style | `cadastro-cliente.js` |
+| `onboarding-profissional.html` | Prof | style | inline |
+| `onboarding-estabelecimento.html` | Estab | style | inline |
+| `meu-perfil.html` | Cliente | glass | `meu-perfil.js` |
+| `minhas-avaliacoes.html` | Todos | glass | reviews inline |
+| `admin.html` | Admin | style | `admin.js` |
+| `base-de-dados-completa.html` | Dev | base-de-dados.css | `base-de-dados-schema.js`, `base-de-dados-app.js` |
+| `sql-log.html` | Dev | style | `sql-runner.js`, `sql-embedded.js` |
+| `dev-simulation.html` | Dev | style | `dev-control-center.js` |
+| `widget.html` | Embed demo | widget.css | `widget-embed.js` |
+
+---
+
+## 6. ARQUITETURA JAVASCRIPT
+
+### 6.1 Loader central (`loader.js`)
+
+Carrega scripts em ordem sequencial (não async). Dispara evento `scriptsLoaded` e flag `window.PROOFLY_SCRIPTS_READY`.
+
+**CORE (sempre):**
+```
+config.js → seed-images.js → utils.js → api.js → session.js
+→ flow-registry.js → profile-selector.js → proofly-debug.js
+→ router.js → user-greeting.js → confirm-modal.js → cep.js
+→ menu.js → menu-lateral.js → dev-role-simulation.js
+```
+
+**OPTIONAL (por página):**
+| Condição | Script |
+|----------|--------|
+| login, cadastro, meu-perfil, admin, marketplace… | `user-service.js` |
+| `meu-perfil.html` | `meu-perfil.js` |
+| cliente, perfil, marketplace, admin… | `reviews-service.js` |
+| cliente, marketplace, admin | `talent-market.js` |
+| marketplace, perfil, dashboards | `hiring-service.js` |
+
+### 6.2 Camada de config (`config.js`)
+
+- `SUPABASE_URL`, `SUPABASE_KEY`, `DEBUG_MODE`
+- Nunca commitar keys reais em produção — usar env ou placeholder
+
+### 6.3 API (`api.js`)
+
+- `fetchAPI(path, method, body)` — wrapper Supabase REST com anon key
+- `recalcularMedia(profId)` — fallback client-side se trigger SQL falhar
+- Sanitização via `sanitizeObject()` de utils
+- Header `Prefer: return=representation` em POST/PATCH
+
+### 6.4 Sessão (`session.js`)
+
+- Storage: `sessionStorage.proofly_session`
+- Campos: `userId`, `clientId`, `professionalId`, `establishmentId`, `activeProfile`, `role`
+- `setActiveProfile(type, id)` — escolha explícita do usuário
+- `resetSessionAndGoHome()` — logout completo
+- Caches localStorage limpos: `proofly_client_prefs`, `selectedProfessionalId`, etc.
+
+### 6.5 Fluxos (`flow-registry.js`)
+
+- `PERSONA_FLOWS` — rotas home, onboarding, guards, dock por persona
+- `resolvePersonaHome(type, session)` — linked vs unlinked
+- `LEGACY_REDIRECTS` — contratar.html → marketplace, etc.
+- Usado por `router.js` → `resolveRedirect(intent, user)`
+
+### 6.6 Perfil multi-role (`profile-selector.js`)
+
+- `PROFILE_TYPES`: client, professional, establishment
+- `getActiveProfileType()` — só conta escolha explícita (`activeProfile`)
+- `fetchUserAffiliations()` via user-service
+- `selecionar-perfil.html` — UI de escolha quando múltiplos papéis
+
+### 6.7 Usuários (`user-service.js`)
+
+- Modelo: `users.client_id` → `client_profiles` (1:1)
+- `syncUserSession(email)`, `prepareUserAfterAuth(user)`
+- `fetchUserAffiliations()` — owner via `establishments.owner_user_id`
+- `LEANDRO_DEMO_LINKS` — demo Batel Barber Club
+- `relinkOrphanedProfessional()` — corrige vínculos órfãos pós-onboarding
+
+### 6.8 Utils & Match Engine (`utils.js`)
+
+- `TAG_MAP` — emoji + categoria para todas as tags
+- `calcularMatchPercent()` — engine de afinidade cliente↔prof/estab
+- `getProfilePhotos()`, `getAvatarUrl()`, `renderStars()`, `escapeHtml()`
+- `buildPostgrestFilter()` helpers (também em cliente.js)
+- `getStoredClientPrefs()` / `saveClientPrefs()` — localStorage
+- Funções de drawer: `openProfile()`, `abrirDrawer()`, `fecharDrawer()`
+
+### 6.9 Reviews (`reviews-service.js`)
+
+- Tipos: `REVIEW_TYPES` — client_to_professional, establishment_to_professional, profile_like…
+- Select adaptativo: tenta joins com users, fallback legacy sem `is_verified`
+- `submitReview()`, `fetchReviewsForTarget()`, `isReviewVerified()`
+- Pesos: `REVIEW_RATING_WEIGHTS` por source
+- Integra com QR token e snapshot de vínculo
+
+### 6.10 Talent Market (`talent-market.js`)
+
+- Fórmula IGV: `carteira×0.45 + nota×7 + anos×4 + verificação×5` (max 100)
+- `calcularCarteiraClientes()`, `calcularIGVScore()`, `formatCarteiraLabel()`
+- `renderTalentCard()`, `renderIGVRing()` — UI mercado de talentos
+- Espelha trigger SQL `recalc_prof_talent_metrics`
+
+### 6.11 Hiring (`hiring-service.js`)
+
+- IIFE exportando `window.HiringService`
+- Storage: `localStorage.proofly_hiring_proposals_v1` + sync `hiring_proposals` Supabase
+- Status: proposed → negotiating → accepted → hired / declined
+- `COMP_MODELS`: comissão, fixo+comissão, parceria, a_combinar
+- UI: modais de proposta, painel negociação no marketplace
+
+### 6.12 Profile Card (`components/profile-card.js`)
+
+- IIFE `window.ProfileCard`
+- Render: `renderTinderCard()`, `renderDrawer()`, `renderDrawerActions()`
+- Favoritos localStorage, galeria swipe, reviews zone
+- Depende de: utils, reviews-service, talent-market (opcional)
+
+### 6.13 Cliente discovery (`cliente.js` / `cliente-exp.js`)
+
+- Busca PostgREST com filtros OR em tags (GIN arrays)
+- Tabs profissional / estabelecimento
+- Onboarding de estilo (chips)
+- Paginação, sort toolbar, empty states
+- Boot via `components/cliente-page-boot.js` (loading overlay + progress)
+
+### 6.14 Perfil página (`profile-page-view.js`)
+
+- Versão page-based do drawer (URL `?tipo=profissional&id=…`)
+- Reutiliza ProfileCard para render
+- Formulários de avaliação inline
+
+### 6.15 Marketplace (`estabelecimento-marketplace.js`)
+
+- Busca profissionais para contratar
+- Match + filtros RH (available_now, seeking_work, igv_score)
+- Integra HiringService para propostas
+
+### 6.16 Admin (`admin.js`)
+
+- Guard: `role === 'admin'`
+- Dashboard: contagens, tabelas prof/estab/reviews
+- Usa view `professional_establishment`
+
+### 6.17 SQL Runner DEV (`sql-runner.js` + `sql-embedded.js`)
+
+- UI em `sql-log.html` para migrations 027/028
+- `proofly_run_migration('027_establishment_owners')` via RPC
+- Log em `localStorage.proofly_sql_log_v1`
+
+### 6.18 Base de Dados Admin (`base-de-dados-schema.js` + `base-de-dados-app.js`)
+
+- `window.PROOFLY_DB_SCHEMA` — modelo JS espelha PostgreSQL
+- UI: diagrama ER, KPIs live via REST count, export JSON
+- Botão SQL abre `schema.sql` (legado — preferir `DATABASE27JUN.sql`)
+
+### 6.19 Widget (`widget-embed.js` + `widget-utils.js`)
+
+- Embed leve para sites externos
+- Fetch reviews + avatar + rating summary
+- CSS auto-detectado pelo path do script
+
+### 6.20 Outros
+
+| Arquivo | Função |
+|---------|--------|
+| `cep.js` | ViaCEP — autopreenchimento endereço |
+| `seed-images.js` | URLs demo (randomuser.me, picsum) determinísticas por ID |
+| `proofly-debug.js` | `window.PROOFLY_DEBUG` — sessão, match debug overlay |
+| `dev-role-simulation.js` | Simular persona em DEV |
+| `dev-control-center.js` | Painel dev-simulation.html |
+| `user-greeting.js` | Saudação contextual no header |
+| `menu-lateral.js` | Menu lateral admin/dev |
+| `cadastro-cliente.js` | Fluxo cadastro + link users.client_id |
+| `meu-perfil.js` | Edição perfil cliente |
+| `router.js` | `resolveRedirect()`, `executeRedirect()` |
+| `index-qr.js` | Scanner QR na landing |
+| `profile-page-view.js` | Perfil dedicado sem drawer |
+| `cliente-bak.js` | Backup legado cliente (não usar em prod) |
+
+### 6.21 Dependências entre módulos
+
+```
+config.js
+    └── api.js ← utils.js ← seed-images.js
+            └── session.js
+                    └── user-service.js
+                            └── reviews-service.js
+                                    └── talent-market.js
+                                            └── hiring-service.js
+                                                    └── profile-card.js
+                                                            └── cliente.js / marketplace / perfil-page
+flow-registry.js → router.js → profile-selector.js
+confirm-modal.js (global, sem deps)
+menu.js → (session, profile-selector, flow-registry)
+loader.js (orquestra tudo)
+```
+
+### 6.22 Storage keys (localStorage / sessionStorage)
+
+| Key | Uso |
+|-----|-----|
+| `proofly_session` | Sessão auth (sessionStorage) |
+| `proofly_favorites` | Favoritos cliente |
+| `proofly_client_prefs` | Tags estilo cliente |
+| `proofly_hiring_proposals_v1` | Propostas contratação |
+| `proofly_sql_log_v1` | Log migrations DEV |
+| `proofly_match_debug` | Overlay debug match % |
+| `proofly_dev_tools` | Flag ferramentas DEV |
+
+---
+
+## 7. ASSETS VISUAIS
+
+### 7.1 Ícones & Emoji (padrão do projeto)
+
+- Logo: 🏆 Ranking Pro
+- Personas: 👤 💼 🏢
+- Ações: ❤️ 🤍 ⭐ 📷 🔐 ✕
+- Status hiring: 📨 🤝 ✅ ❌ 🚫 🎉
+- **Não usar** icon fonts externos — emoji nativos + SVG inline quando necessário
+
+### 7.2 Fontes
+
+- **App:** `-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui`
+- **Admin DB:** `DM Sans` + `JetBrains Mono` (Google Fonts)
+- Tamanhos: escala `--font-size-xs` (11px) até `--font-size-7xl` (48px)
+
+### 7.3 Imagens demo (`seed-images.js`)
+
+- Avatares: `randomuser.me/api/portraits/{men|women}/{n}.jpg`
+- Galeria: `picsum.photos/seed/{hash}`
+- Fallback: inicial do nome em gradiente indigo
+
+### 7.4 Screenshots de referência
+
+- `ver bug/mobile/*.png` — layouts mobile validados
+- `ver bug/comparativo-home-antes.png` / `depois.png`
+
+---
+
+## 8. REGRAS DE IMPLEMENTAÇÃO (PROMPT PARA IA)
+
+Ao criar ou refatorar qualquer tela/componente:
+
+1. **Respeitar ordem CSS:** base → style → (tinder/dashboard) → proofly-glass por último
+2. **Discovery/glass** só em fluxos cliente (busca, favoritos, perfil público) — dashboards ficam cards brancos
+3. **Modais:** usar `showConfirm`/`showAlert` — nunca `window.confirm()` nativo
+4. **Drawers mobile:** preferir `.drawer-tinder` bottom sheet; perfil pesado → `perfil-page.html`
+5. **Safe-area:** sempre `env(safe-area-inset-bottom)` no dock e sheets
+6. **Animações:** `cubic-bezier(0.32, 0.72, 0, 1)` para sheets; `0.25–0.38s` duração
+7. **Cores match quente:** `#f59e0b` (âmbar); estabelecimento: `#0ea5e9`
+8. **JS:** expor funções no `window` seguindo padrão existente; IIFE só quando encapsular estado
+9. **API:** sempre via `fetchAPI()` — nunca fetch direto sem headers Supabase
+10. **Sessão:** ler com `getSession()`, nunca assumir role do banco como perfil ativo
+11. **Tags:** usar `TAG_MAP` + `renderTagWithEmoji()` — consistência visual
+12. **Acessibilidade:** `role="button"`, `tabindex="0"`, `aria-hidden` em decorativos
+13. **Mobile first:** testar em 375px; drawer actions em coluna abaixo 480px
+14. **Não quebrar loader.js** — novos scripts globais entram no array CORE ou OPTIONAL
+
+---
+
+## 9. CHECKLIST NOVA FEATURE
+
+- [ ] Tokens CSS reutilizados (sem cores hardcoded fora do sistema)
+- [ ] Modal/sheet segue padrão existente (overlay + animação + ESC)
+- [ ] Script adicionado ao `loader.js` se for global
+- [ ] Tabelas Supabase alinhadas com `DATABASE27JUN.sql`
+- [ ] Favoritos/prefs usam keys documentadas
+- [ ] Dock menu atualizado em `flow-registry.js` se nova hub page
+- [ ] Glass vs solid dashboard respeitado
+- [ ] `prefers-reduced-motion` não quebrado
+
+---
+
+*Este arquivo é a referência única de design + JS do Ranking Pro. Atualizar quando novos módulos forem adicionados.*

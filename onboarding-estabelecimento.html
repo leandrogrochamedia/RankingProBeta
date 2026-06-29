@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Cadastro Estabelecimento</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    /* mesmo estilo do onboarding profissional, adaptado */
+    @media (min-width: 769px) { body { padding-left: 80px; padding-right: 20px; } }
+    .onboarding-wrapper { max-width: 720px; margin: 32px auto; padding: 0 20px; }
+    .onboarding-wrapper .card { padding: 32px 40px; border-radius: 24px; background: #ffffff; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04); }
+    .progress-wrapper { margin-bottom: 28px; }
+    .progress-bar-bg { width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 999px; transition: width 0.4s ease; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-top: 6px; font-weight: 500; }
+    .progress-label .step-name { color: #0f172a; font-weight: 600; }
+    .onboarding-header { text-align: center; margin-bottom: 28px; }
+    .onboarding-header h1 { font-size: 26px; font-weight: 700; color: #0f172a; letter-spacing: -0.3px; }
+    .onboarding-header p { color: #64748b; font-size: 15px; margin-top: 4px; }
+    .step-container { display: none; animation: fadeStep 0.35s ease; }
+    .step-container.active { display: block; }
+    @keyframes fadeStep { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #64748b; letter-spacing: 0.2px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 14px; font-family: inherit; font-size: 15px; background: #fafbfc; color: #0f172a; transition: all 0.2s ease; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 4px rgba(99,102,241,0.08); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .form-row .form-group { flex: 1; min-width: 140px; }
+    .tags-section { margin-bottom: 24px; }
+    .tags-section h4 { font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .tags-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip-tag { padding: 8px 18px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; background: #f1f5f9; color: #1e293b; border: 1.5px solid #e2e8f0; transition: all 0.2s ease; user-select: none; }
+    .chip-tag:hover { transform: scale(1.04); background: #e2e8f0; }
+    .chip-tag.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border-color: #6366f1; box-shadow: 0 4px 12px rgba(99,102,241,0.25); }
+    .chip-tag-small { padding: 6px 14px; font-size: 12px; }
+    .step-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+    .step-actions .btn { padding: 12px 32px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; border: none; min-width: 120px; }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
+    .btn-primary:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-outline-step { background: transparent; border: 1.5px solid #e2e8f0; color: #64748b; }
+    .btn-outline-step:hover { background: #f1f5f9; border-color: #94a3b8; }
+    .btn-success-step { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .btn-success-step:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(16,185,129,0.35); }
+    .final-message { text-align: center; padding: 20px 0 10px; }
+    .final-message .icon-big { font-size: 56px; display: block; margin-bottom: 12px; }
+    .final-message h2 { font-size: 24px; font-weight: 700; color: #0f172a; }
+    .final-message p { color: #64748b; font-size: 15px; margin-top: 4px; }
+    .final-message .sub { font-size: 13px; color: #94a3b8; margin-top: 8px; }
+    .avatar-upload { display: flex; align-items: center; gap: 16px; }
+    .avatar-preview { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; display: none; }
+    .avatar-placeholder { width: 64px; height: 64px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #94a3b8; }
+    .btn-upload { padding: 8px 16px; border-radius: 999px; border: 1.5px solid #e2e8f0; background: transparent; cursor: pointer; font-size: 13px; color: #64748b; }
+    .btn-upload:hover { background: #f1f5f9; }
+    .tag-counter { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+    .gallery-upload-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+    .gallery-slot { width: 80px; height: 80px; border-radius: 14px; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #f8fafc; }
+    .gallery-slot img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-slot .remove-photo { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(15,23,42,0.75); color: #fff; font-size: 12px; cursor: pointer; }
+    .gallery-slot.primary::after { content: 'Principal'; position: absolute; bottom: 0; left: 0; right: 0; font-size: 9px; font-weight: 700; text-align: center; background: rgba(99,102,241,0.85); color: #fff; padding: 2px; }
+    @media (max-width: 600px) { .onboarding-wrapper .card { padding: 20px 18px; } .step-actions { flex-direction: column; } .step-actions .btn { width: 100%; text-align: center; justify-content: center; } .form-row { flex-direction: column; } .avatar-upload { flex-wrap: wrap; } }
+  </style>
+</head>
+<body>
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+  <div class="container onboarding-wrapper">
+    <div class="card">
+      <div class="progress-wrapper">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+        <div class="progress-label"><span>Passo <span id="stepNumber">1</span> de <span id="totalSteps">8</span></span><span class="step-name" id="stepName">Identidade</span></div>
+      </div>
+      <div class="onboarding-header"><h1>🏢 Cadastre seu estabelecimento</h1><p>Preencha os dados para começar</p></div>
+
+      <!-- STEP 1: IDENTIDADE + AVATAR -->
+      <div class="step-container active" data-step="1">
+        <div class="form-group"><label for="estName">Nome do estabelecimento *</label><input type="text" id="estName" placeholder="Ex: Barbearia do Zé" required /></div>
+        <div class="form-group"><label for="estType">Tipo</label><input type="text" id="estType" placeholder="Ex: Barbearia, Salão, Clínica" /></div>
+        <div class="form-group">
+          <label>Fotos do local <span style="font-weight:400;color:#94a3b8;">(até 4)</span></label>
+          <div class="gallery-upload-grid" id="galleryPreview"></div>
+          <input type="file" id="galleryInput" accept="image/*" multiple style="display:none;" />
+          <button type="button" class="btn-upload" onclick="document.getElementById('galleryInput').click()">📷 Adicionar fotos</button>
+          <span style="font-size:12px; color:#94a3b8; display:block; margin-top:6px;">A primeira foto será o destaque do perfil.</span>
+        </div>
+        <div class="step-actions"><span></span><button class="btn btn-primary" onclick="goToStep(2)">Continuar →</button></div>
+      </div>
+
+      <!-- STEP 2: PERFIL -->
+      <div class="step-container" data-step="2">
+        <div class="form-group"><label for="estDescription">Descrição</label><textarea id="estDescription" rows="3" placeholder="Fale sobre o ambiente, diferenciais, serviços..."></textarea></div>
+        <div class="form-group"><label for="estInstagram">Instagram</label><input type="text" id="estInstagram" placeholder="@seudesenho" /></div>
+        <div class="step-actions"><button class="btn btn-outline-step" onclick="goToStep(1)">← Voltar</button><button class="btn btn-primary" onclick="goToStep(3)">Continuar →</button></div>
+      </div>
+
+      <!-- STEP 3: LOCALIZAÇÃO -->
+      <div class="step-container" data-step="3">
+        <div class="form-group"><label for="estCep">CEP</label><input type="text" id="estCep" placeholder="00000-000" maxlength="9" oninput="formatarCEP(this)" /></div>
+        <div class="form-group"><label for="estStreet">Rua</label><input type="text" id="estStreet" placeholder="Rua" /></div>
+        <div class="form-row"><div class="form-group"><label for="estNumber">Número</label><input type="text" id="estNumber" placeholder="123" /></div><div class="form-group"><label for="estNeighborhood">Bairro</label><input type="text" id="estNeighborhood" placeholder="Centro" /></div></div>
+        <div class="form-row"><div class="form-group"><label for="estCity">Cidade</label><input type="text" id="estCity" placeholder="São Paulo" /></div><div class="form-group"><label for="estState">Estado</label><input type="text" id="estState" placeholder="SP" maxlength="2" /></div></div>
+        <div class="form-group"><label for="estCountry">País</label><input type="text" id="estCountry" placeholder="Brasil" value="Brasil" /></div>
+        <div class="step-actions"><button class="btn btn-outline-step" onclick="goToStep(2)">← Voltar</button><button class="btn btn-primary" onclick="goToStep(4)">Continuar →</button></div>
+      </div>
+
+      <!-- STEP 4: CONTATO -->
+      <div class="step-container" data-step="4">
+        <div class="form-group"><label for="estPhone">Telefone</label><input type="tel" id="estPhone" placeholder="(00) 00000-0000" oninput="formatarTelefone(this)" /><span class="error-message">Telefone inválido</span></div>
+        <div class="step-actions"><button class="btn btn-outline-step" onclick="goToStep(3)">← Voltar</button><button class="btn btn-primary" onclick="goToStep(5)">Continuar →</button></div>
+      </div>
+
+      <!-- STEP 5: TAGS (5 categorias) -->
+      <div class="step-container" data-step="5">
+        <h3 style="font-size:18px; margin-bottom:16px; color:#0f172a;">🎨 A identidade do seu espaço</h3>
+        <p style="color:#64748b; font-size:14px; margin-bottom:16px;">Selecione as tags que definem seu estabelecimento em cada categoria.</p>
+
+        <!-- Infraestrutura -->
+        <div class="tags-section">
+          <h4>🏗️ Infraestrutura <span style="font-size:12px; font-weight:400; color:#94a3b8;">(selecione até 3)</span></h4>
+          <div class="tags-grid" id="infraTagsContainer"></div>
+          <div class="tag-counter" id="infraTagsCounter">0 selecionadas</div>
+        </div>
+
+        <!-- Música -->
+        <div class="tags-section">
+          <h4>🎵 Música Ambiente <span style="font-size:12px; font-weight:400; color:#94a3b8;">(selecione até 3)</span></h4>
+          <div class="tags-grid" id="musicTagsContainer"></div>
+          <div class="tag-counter" id="musicTagsCounter">0 selecionadas</div>
+        </div>
+
+        <!-- Posicionamento -->
+        <div class="tags-section">
+          <h4>💎 Posicionamento <span style="font-size:12px; font-weight:400; color:#94a3b8;">(selecione até 3)</span></h4>
+          <div class="tags-grid" id="positioningTagsContainer"></div>
+          <div class="tag-counter" id="positioningTagsCounter">0 selecionadas</div>
+        </div>
+
+        <!-- Público -->
+        <div class="tags-section">
+          <h4>👥 Público <span style="font-size:12px; font-weight:400; color:#94a3b8;">(selecione até 3)</span></h4>
+          <div class="tags-grid" id="audienceTagsContainer"></div>
+          <div class="tag-counter" id="audienceTagsCounter">0 selecionadas</div>
+        </div>
+
+        <!-- Vibe -->
+        <div class="tags-section">
+          <h4>🌟 Vibe <span style="font-size:12px; font-weight:400; color:#94a3b8;">(selecione até 3)</span></h4>
+          <div class="tags-grid" id="vibeTagsContainer"></div>
+          <div class="tag-counter" id="vibeTagsCounter">0 selecionadas</div>
+        </div>
+
+        <div class="step-actions"><button class="btn btn-outline-step" onclick="goToStep(4)">← Voltar</button><button class="btn btn-primary" onclick="goToStep(6)">Continuar →</button></div>
+      </div>
+
+      <!-- STEP 6: PÚBLICO-ALVO (adicional) -->
+      <div class="step-container" data-step="6">
+        <div class="form-group">
+          <label for="targetAudience">Público-alvo principal</label>
+          <select id="targetAudience">
+            <option value="">Selecione...</option>
+            <option value="Infantil">Infantil</option>
+            <option value="Adulto">Adulto</option>
+            <option value="LGBTQIA+">LGBTQIA+</option>
+            <option value="Família">Família</option>
+            <option value="Empresarial">Empresarial</option>
+            <option value="Todos">Todos</option>
+          </select>
+        </div>
+        <div class="step-actions"><button class="btn btn-outline-step" onclick="goToStep(5)">← Voltar</button><button class="btn btn-primary" onclick="goToStep(7)">Continuar →</button></div>
+      </div>
+
+      <!-- STEP 7: FINALIZAÇÃO -->
+      <div class="step-container" data-step="7">
+        <div class="final-message"><span class="icon-big">🚀</span><h2>Quase lá!</h2><p>Revise os dados e clique em criar.</p><p class="sub">Você poderá editar tudo depois no dashboard.</p></div>
+        <div class="step-actions" style="justify-content:center;">
+          <button class="btn btn-outline-step" onclick="goToStep(6)">← Voltar</button>
+          <button class="btn btn-success-step" id="finalSubmitBtn" onclick="finalizarCadastro()">🚀 Criar estabelecimento</button>
+        </div>
+        <div id="finalMessage" style="margin-top:16px;"></div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:20px;"><a href="index.html" class="btn btn-outline-step" style="padding:8px 24px; font-size:13px; border:1px solid #e2e8f0; border-radius:999px; color:#94a3b8; text-decoration:none;">Cancelar e voltar ao início</a></div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./seed-images.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./session.js"></script>
+  <script src="./user-service.js"></script>
+  <script src="./router.js"></script>
+  <script src="./menu.js"></script>
+  <script src="./menu-lateral.js"></script>
+  <script src="./confirm-modal.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ===== LISTS =====
+      const infraOptions = ['Wi-Fi', 'Café', 'Bar', 'Ar Condicionado', 'Estacionamento', 'Pet Friendly', 'Acessibilidade', 'TV'];
+      const musicOptions = ['Hip Hop', 'Rock', 'Sertanejo', 'Pop', 'Clássico', 'MPB', 'Eletrônico', 'Reggae', 'Jazz', 'Blues'];
+      const positioningOptions = ['Premium', 'Popular', 'Tradicional', 'Moderno', 'Luxo', 'Despojado'];
+      const audienceOptions = ['Família', 'Adulto', 'LGBTQIA+', 'Empresarial', 'Infantil', 'Terceira idade', 'Todos'];
+      const vibeOptions = ['Descontraído', 'Sério', 'Animado', 'Calmo', 'Intimista', 'Grande', 'Acolhedor'];
+
+      // ===== STATE =====
+      let selectedInfra = [], selectedMusic = [], selectedPositioning = [], selectedAudience = [], selectedVibe = [];
+      let allTags = [], selectedTags = [], avatarBase64 = null, galleryPhotos = [];
+      let currentStep = 1, totalSteps = 7, isSubmitting = false;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const force = urlParams.get('force') === 'true';
+      const session = getSession();
+      let userId = null;
+
+      if (session) {
+        userId = session.userId;
+        if (!force && session.establishmentId) {
+          window.location.href = './dashboard-estabelecimento.html';
+          return;
+        }
+      } else {
+        window.location.href = './login.html?intent=onboarding-estabelecimento';
+        return;
+      }
+
+      // ===== DOM REFS =====
+      const dom = {
+        name: document.getElementById('estName'),
+        type: document.getElementById('estType'),
+        description: document.getElementById('estDescription'),
+        instagram: document.getElementById('estInstagram'),
+        cep: document.getElementById('estCep'),
+        street: document.getElementById('estStreet'),
+        number: document.getElementById('estNumber'),
+        neighborhood: document.getElementById('estNeighborhood'),
+        city: document.getElementById('estCity'),
+        state: document.getElementById('estState'),
+        country: document.getElementById('estCountry'),
+        phone: document.getElementById('estPhone'),
+        targetAudience: document.getElementById('targetAudience'),
+        galleryInput: document.getElementById('galleryInput'),
+        galleryPreview: document.getElementById('galleryPreview'),
+        tagsContainer: document.getElementById('tagsContainer'),
+        selectedTagsHidden: document.getElementById('selectedTagsHidden'),
+        tagCount: document.getElementById('tagCount'),
+        progressFill: document.getElementById('progressFill'),
+        stepNumber: document.getElementById('stepNumber'),
+        stepName: document.getElementById('stepName'),
+        finalMessage: document.getElementById('finalMessage'),
+        finalSubmitBtn: document.getElementById('finalSubmitBtn'),
+        infraTagsContainer: document.getElementById('infraTagsContainer'),
+        musicTagsContainer: document.getElementById('musicTagsContainer'),
+        positioningTagsContainer: document.getElementById('positioningTagsContainer'),
+        audienceTagsContainer: document.getElementById('audienceTagsContainer'),
+        vibeTagsContainer: document.getElementById('vibeTagsContainer'),
+        infraTagsCounter: document.getElementById('infraTagsCounter'),
+        musicTagsCounter: document.getElementById('musicTagsCounter'),
+        positioningTagsCounter: document.getElementById('positioningTagsCounter'),
+        audienceTagsCounter: document.getElementById('audienceTagsCounter'),
+        vibeTagsCounter: document.getElementById('vibeTagsCounter'),
+      };
+
+      const stepNames = ['Identidade', 'Perfil', 'Localização', 'Contato', 'Identidade Visual', 'Público', 'Finalização'];
+
+      // ===== RENDER TAGS =====
+      function renderTagGroup(container, options, selected, maxCount = 3, counterEl) {
+        let html = '';
+        options.forEach(tag => {
+          const active = selected.includes(tag) ? 'active' : '';
+          html += `<span class="chip-tag chip-tag-small ${active}" data-tag="${tag}" onclick="toggleTagGroup(this, '${tag}', '${container.id}')">${tag}</span>`;
+        });
+        container.innerHTML = html;
+        if (counterEl) counterEl.textContent = `${selected.length} selecionada${selected.length !== 1 ? 's' : ''}`;
+      }
+
+      window.toggleTagGroup = function(el, tag, containerId) {
+        const container = document.getElementById(containerId);
+        let selectedArray;
+        let counterEl;
+        const max = 3;
+
+        const map = {
+          'infraTagsContainer': { arr: selectedInfra, counter: dom.infraTagsCounter },
+          'musicTagsContainer': { arr: selectedMusic, counter: dom.musicTagsCounter },
+          'positioningTagsContainer': { arr: selectedPositioning, counter: dom.positioningTagsCounter },
+          'audienceTagsContainer': { arr: selectedAudience, counter: dom.audienceTagsCounter },
+          'vibeTagsContainer': { arr: selectedVibe, counter: dom.vibeTagsCounter }
+        };
+
+        const entry = map[containerId];
+        if (!entry) return;
+        selectedArray = entry.arr;
+        counterEl = entry.counter;
+
+        const idx = selectedArray.indexOf(tag);
+        if (idx !== -1) {
+          selectedArray.splice(idx, 1);
+          el.classList.remove('active');
+        } else {
+          if (selectedArray.length >= max) {
+            showAlert('⚠️ Atenção', `Máximo de ${max} tags por categoria.`);
+            return;
+          }
+          selectedArray.push(tag);
+          el.classList.add('active');
+        }
+        if (counterEl) counterEl.textContent = `${selectedArray.length} selecionada${selectedArray.length !== 1 ? 's' : ''}`;
+      };
+
+      // ===== GALERIA DE FOTOS =====
+      function renderGalleryPreview() {
+        if (!dom.galleryPreview) return;
+        dom.galleryPreview.innerHTML = galleryPhotos.map((url, i) => `
+          <div class="gallery-slot${i === 0 ? ' primary' : ''}">
+            <img src="${url}" alt="" />
+            <button type="button" class="remove-photo" onclick="removeGalleryPhoto(${i})" aria-label="Remover">✕</button>
+          </div>
+        `).join('');
+        if (galleryPhotos.length < 4) {
+          dom.galleryPreview.innerHTML += `<div class="gallery-slot" style="cursor:pointer;border-style:dashed;" onclick="document.getElementById('galleryInput').click()">+</div>`;
+        }
+        avatarBase64 = galleryPhotos[0] || null;
+      }
+
+      window.removeGalleryPhoto = function(index) {
+        galleryPhotos.splice(index, 1);
+        renderGalleryPreview();
+      };
+
+      dom.galleryInput.addEventListener('change', async function() {
+        const files = Array.from(this.files || []);
+        for (const file of files) {
+          if (galleryPhotos.length >= 4) {
+            await showAlert('⚠️', 'Máximo de 4 fotos.');
+            break;
+          }
+          try {
+            const dataUrl = await resizeAndCompressImage(file, 400, 400, 0.55);
+            galleryPhotos.push(dataUrl);
+          } catch (e) { console.warn(e); }
+        }
+        this.value = '';
+        renderGalleryPreview();
+      });
+      renderGalleryPreview();
+
+      // ===== CEP =====
+      setupCepAutoFill(dom.cep, { street: dom.street, neighborhood: dom.neighborhood, city: dom.city, state: dom.state });
+      if (typeof bindRegistrationFormatting === 'function') {
+        bindRegistrationFormatting({
+          establishmentName: dom.name,
+          street: dom.street,
+          neighborhood: dom.neighborhood,
+          city: dom.city,
+          state: dom.state,
+          bio: dom.description,
+          specialty: dom.type
+        });
+      }
+
+      // ===== PROGRESS =====
+      function updateProgress() {
+        const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        dom.progressFill.style.width = pct + '%';
+        dom.stepNumber.textContent = currentStep;
+        dom.stepName.textContent = stepNames[currentStep - 1];
+      }
+
+      window.goToStep = function(step) {
+        if (step > currentStep) {
+          if (currentStep === 1 && !dom.name.value.trim()) { showAlert('⚠️', 'Nome obrigatório.'); dom.name.focus(); return; }
+          if (currentStep === 4 && dom.phone.value.trim() && !formatarTelefone(dom.phone)) { showAlert('⚠️', 'Telefone inválido.'); dom.phone.focus(); return; }
+        }
+        document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.step-container[data-step="${step}"]`).classList.add('active');
+        currentStep = step;
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // ===== TAGS LEGACY =====
+      async function carregarTagsLegacy() {
+        dom.tagsContainer.innerHTML = '<div class="loading">Carregando tags...</div>';
+        try {
+          const data = await fetchAPI('/rest/v1/tags?select=*&order=category,name');
+          allTags = data || [];
+          renderizarTagsLegacy(allTags);
+        } catch (e) { dom.tagsContainer.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`; }
+      }
+
+      function renderizarTagsLegacy(tags) {
+        if (!tags.length) { dom.tagsContainer.innerHTML = '<p style="color:#94a3b8;">Nenhuma tag disponível.</p>'; return; }
+        const groups = {};
+        tags.forEach(t => { const cat = t.category || 'Outras'; if (!groups[cat]) groups[cat] = []; groups[cat].push(t); });
+        let html = '';
+        for (const [cat, items] of Object.entries(groups)) {
+          html += `<div class="tags-category"><h4>${cat}</h4><div class="tags-grid">`;
+          items.forEach(t => {
+            const sel = selectedTags.includes(t.id) ? 'active' : '';
+            html += `<span class="chip-tag ${sel}" data-tag-id="${t.id}" onclick="toggleTagLegacy(this, '${t.id}')">${escapeHtml(t.name)}</span>`;
+          });
+          html += `</div></div>`;
+        }
+        dom.tagsContainer.innerHTML = html;
+        dom.tagCount.textContent = `${selectedTags.length} selecionada${selectedTags.length !== 1 ? 's' : ''}`;
+      }
+
+      window.toggleTagLegacy = function(el, tagId) {
+        const idx = selectedTags.indexOf(tagId);
+        if (idx !== -1) { selectedTags.splice(idx, 1); el.classList.remove('active'); }
+        else { selectedTags.push(tagId); el.classList.add('active'); }
+        dom.selectedTagsHidden.value = selectedTags.join(',');
+        dom.tagCount.textContent = `${selectedTags.length} selecionada${selectedTags.length !== 1 ? 's' : ''}`;
+      };
+
+      // ===== FINALIZAR =====
+      window.finalizarCadastro = async function() {
+        if (isSubmitting) return;
+        const formatted = typeof formatTextFields === 'function'
+          ? formatTextFields({
+              name: dom.name.value.trim(),
+              description: dom.description.value.trim(),
+              street: dom.street.value.trim(),
+              neighborhood: dom.neighborhood.value.trim(),
+              city: dom.city.value.trim(),
+              state: dom.state.value.trim()
+            }, {
+              name: 'establishmentName',
+              description: 'bio',
+              street: 'address',
+              neighborhood: 'neighborhood',
+              city: 'city',
+              state: 'state'
+            })
+          : {
+              name: dom.name.value.trim(),
+              description: dom.description.value.trim(),
+              street: dom.street.value.trim(),
+              neighborhood: dom.neighborhood.value.trim(),
+              city: dom.city.value.trim(),
+              state: dom.state.value.trim()
+            };
+        const name = formatted.name;
+        if (!name) { await showAlert('⚠️', 'Nome obrigatório.'); goToStep(1); return; }
+
+        isSubmitting = true;
+        dom.finalSubmitBtn.disabled = true;
+        dom.finalSubmitBtn.textContent = '⏳ Criando...';
+        dom.finalMessage.innerHTML = '';
+
+        try {
+          const estBody = {
+            name,
+            type: dom.type.value.trim() || null,
+            description: formatted.description || null,
+            instagram: dom.instagram.value.trim() || null,
+            street: formatted.street || null,
+            number: dom.number.value.trim() || null,
+            neighborhood: formatted.neighborhood || null,
+            city: formatted.city || null,
+            state: formatted.state || null,
+            country: dom.country.value.trim() || null,
+            phone: dom.phone.value.trim() || null,
+            avatar_url: galleryPhotos[0] || avatarBase64 || null,
+            gallery_urls: galleryPhotos.length ? galleryPhotos : [],
+            tags: selectedTags.map(id => { const found = allTags.find(t => t.id === id); return found ? found.name : null; }).filter(Boolean),
+            target_audience: dom.targetAudience.value || null,
+            // NOVAS COLUNAS
+            infra_tags: selectedInfra,
+            music_tags: selectedMusic,
+            positioning_tags: selectedPositioning,
+            audience_tags: selectedAudience,
+            vibe_tags: selectedVibe
+          };
+
+          const estResult = await fetchAPI('/rest/v1/establishments', 'POST', estBody);
+          let estId = estResult?.length ? estResult[0].id : null;
+          if (!estId) {
+            const encoded = encodeURIComponent(name);
+            const search = await fetchAPI(`/rest/v1/establishments?select=id&name=eq.${encoded}&limit=1`);
+            if (search?.length) estId = search[0].id;
+          }
+          if (!estId) throw new Error('Não foi possível criar o estabelecimento.');
+
+          if (!galleryPhotos.length && !avatarBase64 && window.SeedImages) {
+            const seedImgs = SeedImages.forEstablishment(estId);
+            await fetchAPI(`/rest/v1/establishments?id=eq.${estId}`, 'PATCH', seedImgs);
+          }
+
+          if (selectedTags.length) {
+            for (const tagId of selectedTags) {
+              await fetchAPI('/rest/v1/establishment_tags', 'POST', { establishment_id: estId, tag_id: tagId });
+            }
+          }
+
+          if (userId) {
+            await updateUser(userId, { establishment_id: estId });
+            const newSession = getSession();
+            if (newSession) { newSession.establishmentId = estId; setSession(newSession); }
+          }
+
+          await showAlert('✅ Sucesso!', 'Estabelecimento criado com sucesso!');
+          setTimeout(() => window.location.href = './dashboard-estabelecimento.html', 1500);
+        } catch (e) {
+          dom.finalMessage.innerHTML = `<div style="background:#fee2e2; color:#991b1b; padding:16px; border-radius:14px; text-align:center;">❌ Erro: ${e.message}</div>`;
+          await showAlert('❌ Erro', 'Erro ao criar: ' + e.message);
+          console.error(e);
+          isSubmitting = false;
+          dom.finalSubmitBtn.disabled = false;
+          dom.finalSubmitBtn.textContent = '🚀 Criar estabelecimento';
+        }
+      };
+
+      // ===== INIT =====
+      renderTagGroup(dom.infraTagsContainer, infraOptions, selectedInfra, 3, dom.infraTagsCounter);
+      renderTagGroup(dom.musicTagsContainer, musicOptions, selectedMusic, 3, dom.musicTagsCounter);
+      renderTagGroup(dom.positioningTagsContainer, positioningOptions, selectedPositioning, 3, dom.positioningTagsCounter);
+      renderTagGroup(dom.audienceTagsContainer, audienceOptions, selectedAudience, 3, dom.audienceTagsCounter);
+      renderTagGroup(dom.vibeTagsContainer, vibeOptions, selectedVibe, 3, dom.vibeTagsCounter);
+
+      carregarTagsLegacy();
+      updateProgress();
+    });
+  </script>
+</body>
+</html>

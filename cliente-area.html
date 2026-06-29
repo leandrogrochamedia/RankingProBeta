@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Área do Cliente</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .cli-landing { max-width: 600px; margin: 40px auto; text-align: center; }
+    .cli-landing .card { padding: 40px 30px; }
+    .cli-landing .icon { font-size: 64px; margin-bottom: 16px; }
+    .cli-landing h1 { font-size: 28px; color: #0f172a; margin-bottom: 8px; }
+    .cli-landing .sub { color: #64748b; font-size: 16px; margin-bottom: 30px; }
+    .cli-landing .cta-group { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    .cli-landing .cta-group .btn { min-width: 240px; padding: 14px 32px; font-size: 16px; justify-content: center; text-decoration: none; }
+    .cli-landing .divider { width: 80px; height: 2px; background: #e2e8f0; margin: 12px auto; }
+    .cli-landing .already { margin-top: 20px; font-size: 14px; color: #94a3b8; }
+    .cli-landing .already a { color: #6366f1; font-weight: 600; text-decoration: none; }
+    @media (max-width: 480px) { .cli-landing .cta-group .btn { width: 100%; } }
+  </style>
+</head>
+<body>
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <div class="container cli-landing">
+    <div class="card">
+      <div class="icon">👤</div>
+      <h1>Área do Cliente</h1>
+      <p class="sub">Cadastre-se ou entre como um cliente para buscar profissionais e lugares.</p>
+
+      <div class="cta-group">
+        <a href="./cadastro-cliente.html" class="btn btn-large">📝 Cadastrar novo cliente</a>
+        <div class="divider"></div>
+        <a href="./login.html?intent=cliente" class="btn btn-outline btn-large">🔑 Quem é você? (entrar)</a>
+      </div>
+
+      <div class="already">
+        <a href="./cliente.html">← Ir para busca</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./session.js"></script>
+  <script src="./menu-lateral.js"></script>
+</body>
+</html>

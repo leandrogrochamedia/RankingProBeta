@@ -1,0 +1,338 @@
+// Ranking Pro — modelo de dados (espelha schema.sql)
+window.PROOFLY_DB_SCHEMA = {
+  version: '2026-06',
+  groups: [
+    { id: 'auth', label: 'Autenticação & clientes', icon: '🔐', color: '#8b5cf6' },
+    { id: 'core', label: 'Núcleo do negócio', icon: '💼', color: '#6366f1' },
+    { id: 'profiles', label: 'Perfis & LGPD', icon: '👤', color: '#0ea5e9' },
+    { id: 'tags', label: 'Tags & preferências', icon: '🏷️', color: '#14b8a6' },
+    { id: 'relations', label: 'Vínculos & histórico', icon: '🔗', color: '#f59e0b' },
+    { id: 'reviews', label: 'Avaliações & QR', icon: '⭐', color: '#ec4899' },
+    { id: 'views', label: 'Views', icon: '👁️', color: '#94a3b8' }
+  ],
+  tables: [
+    {
+      name: 'users',
+      group: 'auth',
+      kind: 'table',
+      description: 'Contas de login (demo Google, cadastro, seed). Vincula papel e IDs de perfil.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'name', type: 'TEXT', nullable: false, desc: 'Nome exibido' },
+        { name: 'email', type: 'TEXT', nullable: false, desc: 'Único — login' },
+        { name: 'provider', type: 'TEXT', nullable: true, default: 'google', desc: 'google | cadastro | seed' },
+        { name: 'role', type: 'TEXT', nullable: false, default: 'cliente', desc: 'cliente | profissional | estabelecimento | admin' },
+        { name: 'professional_id', type: 'UUID', nullable: true, isForeignKey: true, references: 'professionals(id)', desc: 'FK opcional' },
+        { name: 'establishment_id', type: 'UUID', nullable: true, isForeignKey: true, references: 'establishments(id)', desc: 'FK opcional' },
+        { name: 'client_id', type: 'UUID', nullable: true, isForeignKey: true, references: 'client_profiles(id)', desc: 'Perfil cliente 1:1' },
+        { name: 'is_admin', type: 'BOOLEAN', nullable: false, default: 'false', desc: 'Flag admin' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' },
+        { name: 'updated_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: 'Trigger set_updated_at' }
+      ],
+      foreignKeys: ['professional_id → professionals(id)', 'establishment_id → establishments(id)', 'client_id → client_profiles(id)'],
+      indexes: ['idx_users_email', 'idx_users_client_id']
+    },
+    {
+      name: 'user_profiles',
+      group: 'auth',
+      kind: 'table',
+      deprecated: true,
+      description: 'DEPRECATED — multi-perfil futuro. Use users.client_id / professional_id / establishment_id.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'user_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'users(id)', desc: 'FK CASCADE' },
+        { name: 'type', type: 'TEXT', nullable: false, desc: 'professional | establishment | client' },
+        { name: 'profile_id', type: 'UUID', nullable: false, desc: 'ID na tabela do tipo' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['user_id → users(id)'],
+      unique: ['(user_id, type, profile_id)']
+    },
+    {
+      name: 'client_profiles',
+      group: 'auth',
+      kind: 'table',
+      description: 'Perfil 1:1 do cliente (endereço, estilo, contato). Vinculado via users.client_id.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'name', type: 'TEXT', nullable: false, desc: 'Nome completo' },
+        { name: 'email', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'cpf', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'phone', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'whatsapp', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'birth_date', type: 'DATE', nullable: true, desc: '' },
+        { name: 'gender', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'avatar_url', type: 'TEXT', nullable: true, desc: 'Base64 ou URL' },
+        { name: 'zip_code', type: 'TEXT', nullable: true, desc: 'CEP' },
+        { name: 'street', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'number', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'complement', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'neighborhood', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'city', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'state', type: 'TEXT', nullable: true, desc: 'UF' },
+        { name: 'country', type: 'TEXT', nullable: true, default: 'Brasil', desc: '' },
+        { name: 'prof_style_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: 'Preferências profissional' },
+        { name: 'est_style_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: 'Preferências lugar' },
+        { name: 'tags', type: 'UUID[]', nullable: true, default: '{}', desc: 'Legado relacional' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' },
+        { name: 'updated_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ]
+    },
+    {
+      name: 'establishments',
+      group: 'core',
+      kind: 'table',
+      description: 'Barbearias, salões e espaços — endereço, tags de ambiente, métricas.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'name', type: 'TEXT', nullable: false, desc: 'Nome fantasia' },
+        { name: 'type', type: 'TEXT', nullable: true, desc: 'Barbearia, Salão…' },
+        { name: 'description', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'specialty', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'instagram', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'avatar_url', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'gallery_urls', type: 'TEXT[]', nullable: true, default: '{}', desc: 'Fotos' },
+        { name: 'phone', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'whatsapp', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'email', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'address', type: 'TEXT', nullable: true, desc: 'Endereço legado' },
+        { name: 'zip_code', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'street', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'number', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'neighborhood', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'city', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'state', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'country', type: 'TEXT', nullable: true, default: 'Brasil', desc: '' },
+        { name: 'tags', type: 'TEXT[]', nullable: true, default: '{}', desc: 'Legado' },
+        { name: 'style_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'target_audience', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'infra_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: 'Wi-Fi, Café…' },
+        { name: 'music_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'positioning_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'audience_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'vibe_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'avg_rating', type: 'NUMERIC(3,2)', nullable: true, default: '0', desc: 'Média' },
+        { name: 'total_reviews', type: 'INTEGER', nullable: false, default: '0', desc: '' },
+        { name: 'years_active', type: 'INTEGER', nullable: true, desc: '' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' },
+        { name: 'updated_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      indexes: ['idx_establishments_name', 'idx_establishments_city', 'idx_establishments_avg_rating', 'GIN vibe_tags…']
+    },
+    {
+      name: 'professionals',
+      group: 'core',
+      kind: 'table',
+      description: 'Profissionais de beleza — tags, talento (IGV), vínculo atual.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'name', type: 'TEXT', nullable: false, desc: '' },
+        { name: 'specialty', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'bio', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'phone', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'email', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'avatar_url', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'gallery_urls', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'style_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'music_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'visual_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'personality_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'lifestyle_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'work_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: '' },
+        { name: 'price_range', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'availability', type: 'TEXT[]', nullable: true, default: '{}', desc: 'Dias da semana' },
+        { name: 'salary_expectation', type: 'TEXT', nullable: true, desc: 'Pretensão salarial/comissão' },
+        { name: 'average_job_duration_months', type: 'INTEGER', nullable: true, desc: 'Permanência média nos últimos empregos (meses)' },
+        { name: 'work_style_tags', type: 'TEXT[]', nullable: true, default: '{}', desc: 'Estilo de trabalho para contratantes' },
+        { name: 'available_now', type: 'BOOLEAN', nullable: false, default: 'false', desc: '' },
+        { name: 'seeking_work', type: 'BOOLEAN', nullable: false, default: 'true', desc: '' },
+        { name: 'client_portfolio_count', type: 'INTEGER', nullable: false, default: '0', desc: 'Carteira IGV' },
+        { name: 'igv_score', type: 'NUMERIC(5,2)', nullable: true, desc: 'Índice de valor' },
+        { name: 'previous_workplaces', type: 'TEXT', nullable: true, desc: 'Histórico texto' },
+        { name: 'current_establishment_id', type: 'UUID', nullable: true, isForeignKey: true, references: 'establishments(id)', desc: 'FK SET NULL' },
+        { name: 'avg_rating', type: 'NUMERIC(3,2)', nullable: true, default: '0', desc: '' },
+        { name: 'total_reviews', type: 'INTEGER', nullable: false, default: '0', desc: '' },
+        { name: 'is_active', type: 'BOOLEAN', nullable: false, default: 'true', desc: '' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' },
+        { name: 'updated_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['current_establishment_id → establishments(id)'],
+      indexes: ['idx_professionals_name', 'idx_professionals_specialty', 'idx_professionals_avg_rating', 'GIN tag arrays']
+    },
+    {
+      name: 'professional_profiles',
+      group: 'profiles',
+      kind: 'table',
+      description: 'Perfil público 1:1 do profissional (especialidade, anos, Instagram).',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'professional_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'professionals(id)', desc: 'UNIQUE FK CASCADE' },
+        { name: 'bio', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'specialty', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'years_experience', type: 'INTEGER', nullable: true, desc: '' },
+        { name: 'instagram', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' },
+        { name: 'updated_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['professional_id → professionals(id)'],
+      unique: ['professional_id']
+    },
+    {
+      name: 'professional_private_data',
+      group: 'profiles',
+      kind: 'table',
+      description: 'Dados sensíveis / LGPD do profissional (CPF, endereço).',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'professional_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'professionals(id)', desc: 'UNIQUE FK CASCADE' },
+        { name: 'full_name', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'cpf', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'birth_date', type: 'DATE', nullable: true, desc: '' },
+        { name: 'email', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'phone', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'zip_code', type: 'TEXT', nullable: true, desc: 'CEP' },
+        { name: 'street', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'number', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'neighborhood', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'city', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'state', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'country', type: 'TEXT', nullable: true, default: 'Brasil', desc: '' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' },
+        { name: 'updated_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['professional_id → professionals(id)'],
+      unique: ['professional_id']
+    },
+    {
+      name: 'tags',
+      group: 'tags',
+      kind: 'table',
+      description: 'Catálogo normalizado de tags (categoria + nome).',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'name', type: 'TEXT', nullable: false, desc: '' },
+        { name: 'category', type: 'TEXT', nullable: true, desc: 'Música, Vibe…' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      unique: ['(name, category)']
+    },
+    {
+      name: 'establishment_tags',
+      group: 'tags',
+      kind: 'table',
+      description: 'N:N estabelecimento ↔ tag (legado relacional).',
+      columns: [
+        { name: 'establishment_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'establishments(id)', desc: 'PK composta' },
+        { name: 'tag_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'tags(id)', desc: 'PK composta' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['establishment_id → establishments(id)', 'tag_id → tags(id)'],
+      primaryKey: '(establishment_id, tag_id)'
+    },
+    {
+      name: 'professional_tags',
+      group: 'tags',
+      kind: 'table',
+      description: 'N:N profissional ↔ tag (legado relacional).',
+      columns: [
+        { name: 'professional_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'professionals(id)', desc: 'PK composta' },
+        { name: 'tag_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'tags(id)', desc: 'PK composta' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['professional_id → professionals(id)', 'tag_id → tags(id)'],
+      primaryKey: '(professional_id, tag_id)'
+    },
+    {
+      name: 'professional_establishments',
+      group: 'relations',
+      kind: 'table',
+      description: 'Histórico e vínculo atual profissional ↔ estabelecimento.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'professional_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'professionals(id)', desc: 'FK CASCADE' },
+        { name: 'establishment_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'establishments(id)', desc: 'FK CASCADE' },
+        { name: 'is_current', type: 'BOOLEAN', nullable: false, default: 'false', desc: 'Vínculo ativo' },
+        { name: 'started_at', type: 'TIMESTAMPTZ', nullable: true, default: 'now()', desc: '' },
+        { name: 'ended_at', type: 'TIMESTAMPTZ', nullable: true, desc: 'Se passado' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['professional_id → professionals(id)', 'establishment_id → establishments(id)'],
+      indexes: ['idx_prof_est_professional', 'idx_prof_est_establishment', 'idx_prof_est_current']
+    },
+    {
+      name: 'professional_establishment',
+      group: 'views',
+      kind: 'view',
+      description: 'View de compatibilidade (nome singular) — espelha professional_establishments.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: true, desc: 'De professional_establishments' },
+        { name: 'professional_id', type: 'UUID', nullable: true, desc: '' },
+        { name: 'establishment_id', type: 'UUID', nullable: true, desc: '' },
+        { name: 'is_current', type: 'BOOLEAN', nullable: true, desc: '' },
+        { name: 'started_at', type: 'TIMESTAMPTZ', nullable: true, desc: '' },
+        { name: 'ended_at', type: 'TIMESTAMPTZ', nullable: true, desc: '' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: true, desc: '' }
+      ],
+      source: 'SELECT … FROM professional_establishments'
+    },
+    {
+      name: 'reviews',
+      group: 'reviews',
+      kind: 'table',
+      description: 'Avaliações multi-tipo (cliente, estabelecimento, likes) com peso e verificação.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'user_id', type: 'UUID', nullable: true, isForeignKey: true, references: 'users(id)', desc: 'Autor' },
+        { name: 'professional_id', type: 'UUID', nullable: true, isForeignKey: true, references: 'professionals(id)', desc: 'Alvo prof' },
+        { name: 'establishment_id', type: 'UUID', nullable: true, isForeignKey: true, references: 'establishments(id)', desc: 'Alvo est' },
+        { name: 'rating', type: 'INTEGER', nullable: false, desc: '1–5 CHECK' },
+        { name: 'comment', type: 'TEXT', nullable: true, desc: '' },
+        { name: 'verified', type: 'BOOLEAN', nullable: false, default: 'false', desc: '' },
+        { name: 'is_verified', type: 'BOOLEAN', nullable: false, default: 'false', desc: 'Duplicata legado' },
+        { name: 'source', type: 'TEXT', nullable: true, desc: 'cliente | estabelecimento | profissional' },
+        { name: 'review_type', type: 'TEXT', nullable: false, default: 'client_to_professional', desc: 'ENUM CHECK' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' },
+        { name: 'qr_token', type: 'TEXT', nullable: true, desc: 'Rastreio QR' },
+        { name: 'rating_weight', type: 'NUMERIC(4,2)', nullable: true, desc: '' },
+        { name: 'prof_link_snapshot', type: 'JSONB', nullable: true, desc: 'Snapshot vínculo' }
+      ],
+      foreignKeys: ['user_id → users(id)', 'professional_id → professionals(id)', 'establishment_id → establishments(id)'],
+      checks: ['professional_id IS NOT NULL OR establishment_id IS NOT NULL'],
+      indexes: ['idx_reviews_professional', 'idx_reviews_establishment', 'idx_reviews_type', 'idx_reviews_user_id']
+    },
+    {
+      name: 'qr_codes',
+      group: 'reviews',
+      kind: 'table',
+      description: 'Tokens QR para avaliação verificada do profissional.',
+      columns: [
+        { name: 'id', type: 'UUID', nullable: false, default: 'gen_random_uuid()', isPrimary: true, desc: 'PK' },
+        { name: 'professional_id', type: 'UUID', nullable: false, isForeignKey: true, references: 'professionals(id)', desc: 'FK CASCADE' },
+        { name: 'token', type: 'TEXT', nullable: false, desc: 'UNIQUE' },
+        { name: 'url', type: 'TEXT', nullable: false, desc: 'Link avaliação' },
+        { name: 'expires_at', type: 'TIMESTAMPTZ', nullable: true, desc: '' },
+        { name: 'created_at', type: 'TIMESTAMPTZ', nullable: false, default: 'now()', desc: '' }
+      ],
+      foreignKeys: ['professional_id → professionals(id)'],
+      unique: ['token']
+    }
+  ],
+  relations: [
+    { from: 'users', to: 'professionals', label: 'professional_id' },
+    { from: 'users', to: 'establishments', label: 'establishment_id' },
+    { from: 'professionals', to: 'establishments', label: 'current_establishment_id' },
+    { from: 'professional_profiles', to: 'professionals', label: 'professional_id' },
+    { from: 'professional_private_data', to: 'professionals', label: 'professional_id' },
+    { from: 'professional_establishments', to: 'professionals', label: 'professional_id' },
+    { from: 'professional_establishments', to: 'establishments', label: 'establishment_id' },
+    { from: 'reviews', to: 'users', label: 'user_id' },
+    { from: 'reviews', to: 'professionals', label: 'professional_id' },
+    { from: 'reviews', to: 'establishments', label: 'establishment_id' },
+    { from: 'qr_codes', to: 'professionals', label: 'professional_id' },
+    { from: 'establishment_tags', to: 'establishments', label: 'establishment_id' },
+    { from: 'establishment_tags', to: 'tags', label: 'tag_id' },
+    { from: 'professional_tags', to: 'professionals', label: 'professional_id' },
+    { from: 'professional_tags', to: 'tags', label: 'tag_id' }
+  ]
+};

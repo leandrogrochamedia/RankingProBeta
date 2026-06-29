@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta http-equiv="refresh" content="0;url=./perfil-page.html" />
+  <title>Redirecionando…</title>
+  <script>
+    (function() {
+      const p = new URLSearchParams(location.search);
+      const id = p.get('id');
+      const tipo = p.get('tipo') || 'prof';
+      if (id) {
+        location.replace('./perfil-page.html?tipo=' + encodeURIComponent(tipo) + '&id=' + encodeURIComponent(id));
+      } else {
+        location.replace('./perfil-page.html');
+      }
+    })();
+  </script>
+</head>
+<body><p>Redirecionando para <a href="./perfil-page.html">perfil-page.html</a>…</p></body>
+</html>

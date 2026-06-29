@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Base de Dados (Admin)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./base-de-dados.css" />
+</head>
+<body>
+  <div class="db-app">
+    <aside class="db-sidebar">
+      <div class="db-brand">
+        <div class="db-brand-icon">🏆</div>
+        <div>
+          <h1>Ranking Pro DB</h1>
+          <p>Documentação administrativa</p>
+        </div>
+      </div>
+
+      <p class="db-nav-label">Módulos</p>
+      <nav class="db-nav" id="dbNav"></nav>
+
+      <p class="db-nav-label">Índice de tabelas</p>
+      <div class="db-index" id="dbIndex"></div>
+
+      <div class="db-sidebar-links">
+        <a href="./admin.html">📊 Painel Admin (dados)</a>
+        <a href="./schema.sql" target="_blank" rel="noopener">📄 schema.sql</a>
+        <a href="./index.html">🏠 Início do app</a>
+      </div>
+    </aside>
+
+    <main class="db-main">
+      <header class="db-hero">
+        <div>
+          <h2>Base de dados completa</h2>
+          <p>Visão administrativa do modelo Supabase/PostgreSQL — estrutura, relacionamentos, constraints e contagens em tempo real.</p>
+          <div class="db-hero-meta">
+            <span class="db-pill">Schema v<span id="dbVersion">—</span></span>
+            <span class="db-pill db-pill-live" id="dbLivePill">● Conectando…</span>
+          </div>
+        </div>
+        <div class="db-actions">
+          <button type="button" class="db-btn db-btn-primary" id="dbBtnRefresh">🔄 Atualizar</button>
+          <button type="button" class="db-btn db-btn-ghost" id="dbBtnExpand">Expandir</button>
+          <button type="button" class="db-btn db-btn-ghost" id="dbBtnCollapse">Recolher</button>
+          <button type="button" class="db-btn db-btn-ghost" id="dbBtnExport">⬇️ JSON</button>
+          <button type="button" class="db-btn db-btn-ghost" id="dbBtnSql">📄 SQL</button>
+        </div>
+      </header>
+
+      <div class="db-kpis" id="dbKpis"></div>
+      <div class="db-modules" id="dbModules"></div>
+
+      <div class="db-toolbar">
+        <div class="db-search-wrap">
+          <span class="db-search-icon">🔍</span>
+          <input type="search" id="dbSearch" placeholder="Buscar tabela, coluna ou tipo…" autocomplete="off" />
+          <span class="db-search-kbd">/</span>
+        </div>
+        <div class="db-view-tabs">
+          <button type="button" class="db-btn db-btn-ghost active" data-view="diagram" id="dbViewDiagram">🗺️ Diagrama</button>
+          <button type="button" class="db-btn db-btn-ghost" data-view="relations" id="dbViewRelations">🔗 Relações</button>
+        </div>
+        <p class="db-live-status" id="dbLiveStatus">Carregando…</p>
+      </div>
+
+      <section class="db-panel" id="dbDiagramPanel">
+        <div class="db-section-head">
+          <h3 class="db-section-title">Mapa entidade-relacionamento</h3>
+          <span class="db-section-sub">Clique em uma tabela para ir ao detalhe</span>
+        </div>
+        <div class="db-diagram-wrap" id="dbDiagram"></div>
+      </section>
+
+      <section class="db-panel" id="dbRelationsPanel" hidden>
+        <div class="db-section-head">
+          <h3 class="db-section-title">Relacionamentos (FK)</h3>
+          <span class="db-section-sub">Clique para destacar origem e destino</span>
+        </div>
+        <div class="db-relations" id="dbRelations"></div>
+      </section>
+
+      <h3 class="db-section-title" style="margin-bottom:14px">Estrutura detalhada</h3>
+      <div id="dbTables"></div>
+      <div class="db-empty" id="dbEmpty">Nenhuma tabela encontrada para este filtro.</div>
+    </main>
+  </div>
+
+  <div class="db-toast" id="dbToast" role="status"></div>
+
+  <script src="./config.js"></script>
+  <script src="./base-de-dados-schema.js"></script>
+  <script src="./base-de-dados-app.js"></script>
+</body>
+</html>

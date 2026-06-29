@@ -1,0 +1,1121 @@
+/* ============================================================
+   PROOFLY — Tinder Profile UX (drawer + cards + gallery)
+   ============================================================ */
+
+/* --- Result cards (busca) --- */
+.tinder-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 22px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  cursor: pointer;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+  transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.28s ease;
+  animation: tinderCardEnter 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards;
+}
+.tinder-card:nth-child(1) { animation-delay: 0.04s; }
+.tinder-card:nth-child(2) { animation-delay: 0.08s; }
+.tinder-card:nth-child(3) { animation-delay: 0.12s; }
+.tinder-card:nth-child(4) { animation-delay: 0.16s; }
+.tinder-card:nth-child(5) { animation-delay: 0.2s; }
+@keyframes tinderCardEnter {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.tinder-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 48px rgba(99, 102, 241, 0.28);
+}
+.tinder-card:hover .card-hero-img { transform: scale(1.06); }
+.tinder-card.card-high-match {
+  box-shadow: 0 12px 36px rgba(245, 158, 11, 0.22);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.tinder-card.est { border-top: 3px solid #0ea5e9; }
+.tinder-card.est:hover { box-shadow: 0 20px 48px rgba(14, 165, 233, 0.28); }
+
+.tinder-card-photo {
+  position: relative;
+  height: 280px;
+  background: linear-gradient(145deg, #1e293b 0%, #312e81 50%, #4c1d95 100%);
+  overflow: hidden;
+}
+.tinder-card-photo img,
+.tinder-card-photo .card-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.tinder-card-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.tinder-card:hover .tinder-card-shine { transform: translateX(100%); }
+.tinder-card-match-orb-wrap {
+  position: absolute;
+  bottom: 68px;
+  right: 12px;
+  z-index: 3;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.tinder-card-match-orb-wrap.match-tier-hot {
+  box-shadow: 0 8px 28px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: matchOrbPulse 2.2s ease-in-out infinite;
+}
+.tinder-card-match-orb-wrap .match-ring-viz {
+  width: 48px;
+  height: 48px;
+}
+.tinder-card-match-orb-wrap .match-ring-pct {
+  font-size: 11px;
+}
+.tinder-card-photo-count {
+  position: absolute;
+  top: 58px;
+  right: 14px;
+  z-index: 3;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.tinder-card-photo .photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+}
+.tinder-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, transparent 35%, rgba(0, 0, 0, 0.82) 100%);
+  pointer-events: none;
+}
+.tinder-card-badge-row {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 2;
+}
+.tinder-fav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.tinder-fav-btn:hover { transform: scale(1.08); }
+.tinder-fav-btn.active { background: #fce7f3; }
+
+.tinder-card-overlay-info {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  right: 16px;
+  z-index: 2;
+  color: #fff;
+}
+.tinder-card-overlay-info .name {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+.tinder-card-overlay-info .sub {
+  font-size: 14px;
+  opacity: 0.95;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.tinder-card-match-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  background-size: 200% 200%;
+  animation: gradientFlow 4s ease infinite;
+}
+.tinder-card-match-banner.match-tier-hot {
+  background-image: linear-gradient(90deg, #f59e0b, #ef4444, #f97316);
+}
+.tinder-card-match-banner.match-tier-warm {
+  background-image: linear-gradient(90deg, #6366f1, #8b5cf6, #6366f1);
+}
+.tinder-card-match-banner.match-tier-cool {
+  background-image: linear-gradient(90deg, #475569, #64748b, #475569);
+}
+.tinder-card-match-banner .match-banner-left { flex: 1; min-width: 0; }
+.tinder-card-match-banner .match-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+  display: block;
+}
+.tinder-card-match-banner .match-hint {
+  font-size: 13px;
+  font-weight: 600;
+  display: block;
+  margin-top: 2px;
+  line-height: 1.25;
+}
+.tinder-card-match-banner .match-banner-sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.88;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+.tinder-card-match-banner.match-banner-cta {
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+.tinder-card-match-banner.match-banner-cta:hover {
+  filter: brightness(1.08);
+}
+.match-banner-cta-arrow {
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+.match-combina-badge.match-combina-muted {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: rgba(255, 255, 255, 0.9);
+}
+.tinder-card-match-banner .match-value {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.tinder-card-match-banner .match-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.match-card-chip .style-chip {
+  font-size: 10px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.25);
+  color: #fff;
+}
+.tinder-card-explore {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6366f1;
+  letter-spacing: 0.2px;
+}
+.tinder-card.card-high-match .tinder-card-explore { color: #ea580c; }
+.pulse-glow { animation: scorePulse 2.8s ease-in-out infinite; }
+
+.tinder-card-body {
+  padding: 14px 16px 16px;
+}
+.tinder-card-score-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.tinder-card-rating {
+  color: #f59e0b;
+  font-size: 14px;
+}
+.tinder-card-rating strong { color: var(--text-on-surface, #0f172a); }
+.tinder-card-proofly {
+  font-size: 13px;
+  font-weight: 800;
+  color: #4f46e5;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #c7d2fe;
+}
+.tinder-card-distance {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tinder-card-badges { margin-top: 10px; }
+.tinder-card-badges .proofly-badges .proofly-badge {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  backdrop-filter: none;
+}
+.tinder-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.tinder-card-chips .style-chip {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.tinder-card-reviews-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* --- Drawer Tinder --- */
+.drawer.drawer-tinder {
+  position: fixed;
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-drawer, 1001);
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  height: 94vh;
+  max-height: 860px;
+  border-radius: 26px 26px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  box-shadow: 0 -16px 56px rgba(0, 0, 0, 0.4);
+  isolation: isolate;
+}
+.drawer.drawer-tinder.open { transform: translateY(0); }
+.drawer-drag-handle {
+  width: 44px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  margin: 12px auto 0;
+  flex-shrink: 0;
+}
+.drawer-close-floating {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 25;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+.drawer-tinder .drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  -webkit-overflow-scrolling: touch;
+}
+.drawer-tinder #drawerActions { flex-shrink: 0; }
+
+/* Hero */
+.tinder-profile-hero {
+  position: relative;
+  background: linear-gradient(160deg, #312e81, #1e1b4b);
+}
+.tinder-profile-hero img {
+  width: 100%;
+  height: min(42vh, 420px);
+  min-height: 300px;
+  object-fit: cover;
+  display: block;
+}
+.tinder-profile-hero .hero-fallback {
+  height: min(42vh, 420px);
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 100px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
+}
+.tinder-profile-hero .hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(15, 23, 42, 0.35) 100%);
+  pointer-events: none;
+}
+.tinder-hero-score-float {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 4;
+}
+
+/* Hero vivo */
+.tinder-hero-alive .hero-main-img {
+  animation: heroKenBurns 18s ease-in-out infinite alternate;
+}
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.35);
+  pointer-events: none;
+  z-index: 1;
+}
+.hero-photo-badge {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 4;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(10px);
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Match insight (drawer) */
+.match-insight-block {
+  position: relative;
+  margin: 0 16px;
+  margin-top: -8px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.match-insight-glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, rgba(99,102,241,0.35), transparent 70%);
+  animation: insightGlow 3s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.match-insight-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.match-insight-block.match-tier-hot .match-insight-inner {
+  background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.15));
+  border-color: rgba(245,158,11,0.35);
+}
+.match-insight-block.match-tier-warm .match-insight-inner {
+  background: linear-gradient(135deg, rgba(99,102,241,0.22), rgba(139,92,246,0.12));
+  border-color: rgba(129,140,248,0.35);
+}
+.match-insight-block.match-tier-cool .match-insight-inner {
+  background: rgba(255,255,255,0.05);
+}
+.match-insight-headline {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+.match-insight-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.match-shared-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.match-shared-chip .style-chip {
+  background: rgba(16,185,129,0.2);
+  border-color: rgba(52,211,153,0.45);
+  color: #a7f3d0;
+  font-size: 12px;
+}
+
+.match-ring-viz {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.match-ring-viz.sm {
+  width: 48px;
+  height: 48px;
+}
+.match-ring-viz.lg {
+  width: 68px;
+  height: 68px;
+}
+.match-ring-viz.md .match-ring-pct,
+.match-ring-viz .match-ring-pct {
+  font-size: 13px;
+}
+.match-ring-viz.sm .match-ring-pct { font-size: 11px; }
+.match-ring-viz.lg .match-ring-pct { font-size: 15px; }
+.match-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.match-ring-svg .ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.12);
+  stroke-width: 3;
+}
+.match-ring-svg .ring-fill {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
+.match-tier-hot .ring-fill { stroke: #fbbf24; }
+.match-tier-warm .ring-fill { stroke: #818cf8; }
+.match-tier-cool .ring-fill { stroke: #94a3b8; }
+.match-ring-pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+}
+
+/* Galeria explorável */
+.tinder-gallery-wrap {
+  padding: 14px 16px 4px;
+  background: #0f172a;
+}
+.tinder-gallery-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.tinder-gallery-label .gallery-count {
+  background: rgba(99,102,241,0.25);
+  color: #c7d2fe;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+.tinder-gallery-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.gallery-secondary-slot {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.08);
+  padding: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  position: relative;
+}
+.gallery-secondary-slot:hover {
+  transform: translateY(-3px) scale(1.03);
+  border-color: rgba(129,140,248,0.6);
+  box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+}
+.gallery-secondary-slot.active {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129,140,248,0.4);
+}
+.gallery-slot-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.08));
+  pointer-events: none;
+}
+.tags-shared-hint {
+  font-size: 13px;
+  color: #6ee7b7;
+  font-weight: 600;
+  margin: -4px 0 12px;
+}
+.tinder-tag-pill.tag-shared .style-chip {
+  background: rgba(16,185,129,0.22) !important;
+  border-color: rgba(52,211,153,0.5) !important;
+  color: #a7f3d0 !important;
+  box-shadow: 0 0 12px rgba(16,185,129,0.2);
+}
+
+@keyframes heroKenBurns {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+@keyframes gradientFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes matchOrbPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
+  50% { transform: scale(1.06); box-shadow: 0 8px 28px rgba(245,158,11,0.55); }
+}
+@keyframes scorePulse {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  50% { filter: drop-shadow(0 0 10px rgba(99,102,241,0.5)); }
+}
+@keyframes insightGlow {
+  from { opacity: 0.5; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.05); }
+}
+.gallery-secondary-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Identidade abaixo do hero */
+.tinder-hero-identity {
+  padding: 18px 20px 20px;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.tinder-hero-identity-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.tinder-hero-identity .hero-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  margin: 0;
+  line-height: 1.1;
+}
+.tinder-hero-identity .hero-specialty {
+  font-size: 16px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 6px 0 0;
+}
+.hero-rating-chip {
+  flex-shrink: 0;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px 12px;
+  min-width: 72px;
+}
+.hero-rating-chip .stars { color: #fbbf24; font-size: 14px; display: block; }
+.hero-rating-chip .val { color: #fff; font-size: 20px; font-weight: 800; display: block; margin-top: 2px; }
+.hero-rating-chip.empty .stars { color: #475569; }
+.hero-rating-chip.empty .val { color: #64748b; font-size: 16px; }
+.hero-meta-lines { margin-top: 12px; }
+.hero-meta-line {
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.tinder-hero-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 14px;
+}
+.tinder-hero-badges-row .match-ring {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.tinder-profile-content { padding: 20px; background: #0f172a; }
+.tinder-profile-content .style-chip {
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  color: #e2e8f0;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.tinder-rating-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 18px;
+}
+.tinder-rating-bar .stars { color: #fbbf24; font-size: 20px; }
+.tinder-rating-bar .score { font-size: 24px; font-weight: 800; color: #fff; }
+.tinder-rating-bar .count { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+.tinder-rating-bar.empty .stars { color: #475569; }
+.tinder-rating-bar.empty .score { color: #64748b; font-size: 16px; }
+
+.profile-decision-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.profile-decision-stack > .glass-surface,
+.profile-decision-stack > .tinder-section,
+.profile-decision-stack > .quick-style-block,
+.profile-decision-stack > .reputation-overview,
+.profile-decision-stack > .credibility-strip {
+  margin-bottom: 0 !important;
+}
+.profile-reviews-zone {
+  margin-top: 18px;
+}
+.profile-reviews-zone .reviews-grouped {
+  gap: 12px;
+}
+.tinder-section { margin-bottom: 22px; }
+.tinder-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+}
+.tinder-section-bio {
+  color: #e2e8f0;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.tinder-empty-msg { color: var(--text-on-surface-muted, #64748b); font-size: 14px; margin: 0; }
+
+.tinder-tags-section .tinder-tag-cat { margin-bottom: 16px; }
+.tinder-tag-cat-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #818cf8;
+  margin-bottom: 8px;
+}
+.tinder-tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tinder-tag-pill .style-chip {
+  margin: 0;
+  font-size: 13px;
+  padding: 8px 14px;
+}
+
+.tinder-reviews-block .tinder-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tinder-review-card {
+  background: var(--review-card-bg, #f8fafc);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--surface-border, #e2e8f0);
+  border-left: 4px solid #6366f1;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.tinder-review-card .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.tinder-review-card .stars { color: #f59e0b; font-size: 15px; }
+.tinder-review-card .date { color: #64748b; font-size: 12px; }
+.tinder-review-card .text { color: var(--review-card-text, #334155); font-size: 14px; line-height: 1.55; margin-top: 8px; }
+.tinder-review-card .text .muted { color: var(--text-on-surface-faint, #94a3b8); font-style: italic; }
+.tinder-review-card .review-context-line { color: var(--text-on-surface-muted, #475569); font-size: 13px; margin-top: 4px; line-height: 1.5; }
+.tinder-review-card .review-context-action,
+.tinder-review-card .review-context-role { font-weight: 400; color: var(--text-on-surface-muted, #64748b); }
+.tinder-review-card .review-author-name { font-weight: 700; color: var(--text-on-surface, #0f172a); }
+.tinder-review-card .review-author-link { font-weight: 700; color: #6366f1; }
+.tinder-review-card .tinder-review-badges { margin-top: 8px; }
+
+.tinder-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 14px;
+  color: #6ee7b7;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+/* Drawer actions */
+.drawer-actions-sticky {
+  flex-shrink: 0;
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: #0f172a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.drawer-actions-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.drawer-actions-row .btn { flex: 1; min-width: 0; }
+.btn-tinder-xl {
+  width: 100%;
+  padding: 17px !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  border-radius: 999px !important;
+}
+.btn-tinder-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+.btn-tinder-action {
+  padding: 14px 10px !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+}
+.btn-tinder-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+}
+.btn-tinder-like {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fda4af;
+  border: 1.5px solid rgba(244, 63, 94, 0.35);
+}
+.btn-tinder-like.liked {
+  background: rgba(244, 63, 94, 0.3);
+  color: #fff;
+}
+.btn-tinder-fav.active {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fda4af;
+  border-color: rgba(244, 63, 94, 0.4);
+}
+.btn-tinder-close {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.drawer-overlay {
+  z-index: var(--z-drawer-overlay, 1000);
+}
+.drawer-overlay.active {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+/* Ranking Pro Score — medidor visual */
+.proofly-score-gauge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.proofly-score-gauge.sm { gap: 0; }
+.proofly-score-ring-viz {
+  position: relative;
+  flex-shrink: 0;
+}
+.proofly-score-gauge.md .proofly-score-ring-viz,
+.proofly-score-gauge.lg .proofly-score-ring-viz { width: 64px; height: 64px; }
+.proofly-score-gauge.sm .proofly-score-ring-viz { width: 44px; height: 44px; }
+.proofly-score-gauge.lg .proofly-score-ring-viz { width: 72px; height: 72px; }
+.proofly-score-ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+}
+.proofly-score-ring-svg .ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 3;
+}
+.proofly-score-ring-svg .ring-fill {
+  fill: none;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.proofly-tier-elite .ring-fill { stroke: #34d399; }
+.proofly-tier-strong .ring-fill { stroke: #818cf8; }
+.proofly-tier-solid .ring-fill { stroke: #fbbf24; }
+.proofly-tier-forming .ring-fill { stroke: #94a3b8; }
+.proofly-score-tier-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 900;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  padding: 4px;
+}
+.proofly-score-gauge.sm .proofly-score-tier-center { font-size: 9px; letter-spacing: 0.02em; }
+.proofly-score-gauge.md .proofly-score-tier-center { font-size: 11px; }
+.proofly-score-gauge.lg .proofly-score-tier-center { font-size: 12px; }
+.proofly-score-gauge-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.proofly-score-gauge-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.72);
+}
+.proofly-score-gauge-tagline {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.3;
+}
+.proofly-score-gauge-num {
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.5px;
+  margin-top: 2px;
+}
+.proofly-score-gauge-of {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.7;
+  margin-left: 1px;
+}
+.hero-score-premium .proofly-score-gauge {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.hero-score-premium .proofly-score-gauge-meta {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.proofly-level-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.proofly-level-track {
+  width: 56px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.15);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.proofly-level-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+.proofly-tier-elite .proofly-level-fill { background: linear-gradient(90deg, #10b981, #34d399); }
+.proofly-tier-strong .proofly-level-fill { background: linear-gradient(90deg, #6366f1, #818cf8); }
+.proofly-tier-solid .proofly-level-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.proofly-tier-forming .proofly-level-fill { background: linear-gradient(90deg, #64748b, #94a3b8); }
+.proofly-level-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.proofly-tier-elite .proofly-level-label { color: #059669; }
+.proofly-tier-strong .proofly-level-label { color: #4f46e5; }
+.proofly-tier-solid .proofly-level-label { color: #d97706; }
+.proofly-tier-forming .proofly-level-label { color: #64748b; }
+
+.proofly-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.proofly-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.proofly-badge-hot { background: rgba(239, 68, 68, 0.35); }
+.proofly-badge-verified { background: rgba(16, 185, 129, 0.35); }
+
+.proofly-social-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.proofly-social-pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.proofly-why-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.work-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  border-left: 3px solid #6366f1;
+}
+.work-history-item .work-name { font-weight: 700; color: #e2e8f0; font-size: 14px; }
+.work-history-item .work-rating { color: #fbbf24; font-size: 13px; font-weight: 600; }
+.work-current {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Dashboard gallery preview */
+.dash-gallery-preview {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+}
+.dash-gallery-hero {
+  width: 100%;
+  aspect-ratio: 4/3;
+  max-height: 340px;
+  background: linear-gradient(145deg, #1e293b, #312e81);
+  overflow: hidden;
+}
+.dash-gallery-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.dash-gallery-preview:hover .dash-gallery-hero img { transform: scale(1.03); }
+.dash-gallery-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.dash-gallery-empty {
+  color: #94a3b8;
+  font-size: 14px;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .tinder-card-photo { height: 240px; }
+  .tinder-profile-hero img,
+  .tinder-profile-hero .hero-fallback {
+    height: min(38vh, 360px);
+    min-height: 260px;
+  }
+  .drawer.drawer-tinder {
+    max-width: 100%;
+    height: 96vh;
+    border-radius: 22px 22px 0 0;
+  }
+  .tinder-hero-identity .hero-name { font-size: 22px; }
+  .drawer-actions-row { flex-direction: column; }
+  .work-history-item { flex-direction: column; align-items: flex-start; }
+  .tinder-gallery-secondary { gap: 6px; padding: 8px 12px 0; }
+}

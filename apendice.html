@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Apêndice DEV</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .apx { max-width: 900px; margin: 32px auto 90px; padding: 0 20px; }
+    .apx h1 { font-size: 28px; color: #0f172a; margin-bottom: 6px; }
+    .apx .sub { color: #64748b; margin-bottom: 28px; }
+    .apx-group { margin-bottom: 28px; }
+    .apx-group h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin-bottom: 10px; }
+    .apx-list { display: flex; flex-direction: column; gap: 8px; }
+    .apx-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      text-decoration: none; color: inherit; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .apx-item:hover { border-color: #818cf8; box-shadow: 0 4px 16px rgba(99,102,241,0.1); }
+    .apx-item-main strong { display: block; font-size: 15px; color: #0f172a; }
+    .apx-item-main span { font-size: 12px; color: #64748b; }
+    .apx-tag {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 4px 8px; border-radius: 999px; white-space: nowrap; flex-shrink: 0;
+    }
+    .tag-prod { background: #d1fae5; color: #065f46; }
+    .tag-dev { background: #dbeafe; color: #1e40af; }
+    .tag-legacy { background: #fef3c7; color: #92400e; }
+    .tag-admin { background: #ede9fe; color: #5b21b6; }
+    .apx-top { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <div class="apx">
+    <h1>📚 Apêndice DEV</h1>
+    <p class="sub">Catálogo de páginas do projeto — use para testar rotas, legado e ferramentas administrativas.</p>
+
+    <div class="apx-top">
+      <a href="./dev-simulation.html" class="btn btn-small" style="text-decoration:none;">🧪 Simulação</a>
+      <a href="./index.html" class="btn btn-outline btn-small" style="text-decoration:none;">🏠 Início</a>
+    </div>
+
+    <section class="apx-group">
+      <h2>App principal</h2>
+      <div class="apx-list" id="listMain"></div>
+    </section>
+
+    <section class="apx-group">
+      <h2>Ferramentas & admin</h2>
+      <div class="apx-list" id="listTools"></div>
+    </section>
+
+    <section class="apx-group">
+      <h2>Variantes / backup (dev)</h2>
+      <div class="apx-list" id="listVariants"></div>
+    </section>
+
+    <section class="apx-group">
+      <h2>Legado (redirecionado ou substituído)</h2>
+      <div class="apx-list" id="listLegacy"></div>
+    </section>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./menu-lateral.js"></script>
+  <script>
+    const PAGES = {
+      main: [
+        { href: './index.html', title: 'Início', desc: 'Landing e entrada no app', tag: 'prod' },
+        { href: './login.html', title: 'Login', desc: 'Autenticação e intents', tag: 'prod' },
+        { href: './cliente.html', title: 'Cliente (busca)', desc: 'Descoberta, match e carrosséis', tag: 'prod' },
+        { href: './perfil-page.html?tipo=prof&id=20000000-0000-4000-8000-000000000001', title: 'Perfil (página)', desc: 'Perfil público profissional', tag: 'prod' },
+        { href: './favoritos.html', title: 'Favoritos', desc: 'Lista salva no localStorage', tag: 'prod' },
+        { href: './estabelecimento-marketplace.html', title: 'Contratar', desc: 'Estabelecimento busca profissionais', tag: 'prod' },
+        { href: './cadastro-cliente.html', title: 'Cadastro cliente', desc: 'Onboarding cliente completo', tag: 'prod' },
+        { href: './onboarding-profissional.html', title: 'Onboarding profissional', desc: 'Cadastro novo profissional', tag: 'prod' },
+        { href: './onboarding-estabelecimento.html', title: 'Onboarding estabelecimento', desc: 'Cadastro novo local', tag: 'prod' },
+        { href: './dashboard-profissional.html', title: 'Dashboard profissional', desc: 'Painel do profissional', tag: 'prod' },
+        { href: './dashboard-estabelecimento.html', title: 'Dashboard estabelecimento', desc: 'Painel + widget embed', tag: 'prod' },
+        { href: './minhas-avaliacoes.html', title: 'Minhas avaliações', desc: 'Reviews do cliente logado (Supabase)', tag: 'prod' },
+        { href: './apendice.html', title: 'Apêndice DEV', desc: 'Esta página — catálogo de rotas', tag: 'dev' },
+        { href: './widget.html', title: 'Widget prova social', desc: 'Preview e código embed', tag: 'prod' },
+        { href: './relatorio-contratante.html', title: 'Relatório contratante', desc: 'RH / mercado de talentos', tag: 'prod' }
+      ],
+      tools: [
+        { href: './dev-simulation.html', title: 'Control Center DEV', desc: 'Sessão, match, banco e troca de papel', tag: 'dev' },
+        { href: './sql-log.html', title: 'SQL Log', desc: 'Rodar migrations com botão + histórico', tag: 'dev' },
+        { href: './admin.html', title: 'Admin', desc: 'Painel administrativo', tag: 'admin' },
+        { href: './base-de-dados-completa.html', title: 'Base de dados completa', desc: 'Mapa ER + schema + contagens live', tag: 'admin' },
+        { href: './selecionar-cliente.html?force=true', title: 'Selecionar cliente', desc: 'Modo dev — escolher cliente', tag: 'dev' },
+        { href: './selecionar-profissional.html?force=true', title: 'Selecionar profissional', desc: 'Modo dev — escolher prof', tag: 'dev' },
+        { href: './selecionar-estabelecimento.html', title: 'Selecionar estabelecimento', desc: 'Modo dev — escolher local', tag: 'dev' },
+        { href: './cliente-area.html', title: 'Área cliente (landing)', desc: 'Links cadastro/login', tag: 'dev' },
+        { href: './profissional.html', title: 'Área profissional (landing)', desc: 'Links onboarding prof', tag: 'dev' },
+        { href: './estabelecimento.html', title: 'Área estabelecimento (landing)', desc: 'Links onboarding est', tag: 'dev' }
+      ],
+      variants: [
+        { href: './cliente-exp.html', title: 'Cliente EXP', desc: 'Variante experimental da busca', tag: 'dev' },
+        { href: './cliente-bak.html', title: 'Cliente BAK', desc: 'Backup da página cliente', tag: 'legacy' },
+        { href: './cliente-home.html', title: 'Cliente Home', desc: 'Home alternativa', tag: 'legacy' },
+        { href: './---dashboard-profissional 2.html', title: 'Dashboard prof (backup)', desc: 'Cópia antiga', tag: 'legacy' }
+      ],
+      legacy: [
+        { href: './---perfil-publico.html?id=20000000-0000-4000-8000-000000000001', title: 'Perfil público (legado)', desc: 'Redireciona → perfil-page.html', tag: 'legacy' },
+        { href: './---minhas-avaliacoes.html', title: 'Minhas avaliações (legado)', desc: 'Redireciona → minhas-avaliacoes.html', tag: 'legacy' },
+        { href: './----vincular-profissional.html', title: 'Vincular profissional (legado)', desc: 'Redireciona → selecionar-profissional', tag: 'legacy' },
+        { href: './---onboarding-cliente.html', title: 'Onboarding cliente (legado)', desc: 'Redireciona → cadastro-cliente', tag: 'legacy' },
+        { href: './BASE DE DADOS COMPLETA.html', title: 'BASE DE DADOS (Downloads)', desc: 'Cópia com nome antigo', tag: 'legacy' }
+      ]
+    };
+
+    const TAG = { prod: 'Principal', dev: 'DEV', legacy: 'Legado', admin: 'Admin' };
+
+    function render(listId, items) {
+      const el = document.getElementById(listId);
+      el.innerHTML = items.map(p => `
+        <a class="apx-item" href="${p.href}">
+          <div class="apx-item-main">
+            <strong>${p.title}</strong>
+            <span>${p.desc}</span>
+          </div>
+          <span class="apx-tag tag-${p.tag}">${TAG[p.tag] || p.tag}</span>
+        </a>
+      `).join('');
+    }
+
+    render('listMain', PAGES.main);
+    render('listTools', PAGES.tools);
+    render('listVariants', PAGES.variants);
+    render('listLegacy', PAGES.legacy);
+  </script>
+</body>
+</html>

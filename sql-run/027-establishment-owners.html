@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>027 — Owners nos estabelecimentos</title>
+  <link rel="stylesheet" href="../base.css" />
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="../proofly-glass.css" />
+</head>
+<body class="control-center-page sql-log-page">
+
+  <div class="cc-shell" style="max-width:720px;">
+    <header class="cc-hero glass-surface">
+      <span class="cc-eyebrow">Sequência Owners</span>
+      <h1>🏢 Migration 027</h1>
+      <p class="cc-sub">Sem a coluna no Supabase, o botão <strong>só copia o SQL</strong>. Cole no SQL Editor e clique Run — depois use Verificar.</p>
+    </header>
+
+    <section class="cc-section glass-surface">
+      <p id="mig027Status" class="cc-hint">Verificando…</p>
+      <textarea id="sqlEmbeddedText" class="sql-embedded-textarea" readonly style="margin-top:12px;"></textarea>
+      <div class="cc-btn-row" style="margin-top:16px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-small" id="btnOneShot">📋 Copiar SQL</button>
+        <a href="https://supabase.com/dashboard/project/pyywdhjstvhmarvzijji/sql/new" target="_blank" rel="noopener" class="btn btn-outline btn-small" style="text-decoration:none">🔗 SQL Editor</a>
+        <button type="button" class="btn btn-outline btn-small" id="btnRun027">📋 Copiar SQL</button>
+        <button type="button" class="btn btn-outline btn-small" id="btnVerify">✓ Verificar</button>
+        <a href="../sql-log.html" class="btn btn-outline btn-small" style="text-decoration:none">🗄️ SQL Log</a>
+      </div>
+    </section>
+  </div>
+
+  <script src="../config.js"></script>
+  <script src="../utils.js"></script>
+  <script src="../api.js"></script>
+  <script src="../confirm-modal.js"></script>
+  <script src="../sql-embedded.js?v=4"></script>
+  <script src="../sql-runner.js?v=4"></script>
+  <script src="../menu-lateral.js"></script>
+
+  <script>
+    const statusEl = document.getElementById('mig027Status');
+
+    async function refreshStatus() {
+      const [rpc, col, st] = await Promise.all([
+        probeSqlRpc(),
+        probeOwnerColumn(),
+        checkMigration027Status()
+      ]);
+      const lines = [];
+      lines.push(rpc.available ? '✅ RPC instalada' : '⏳ RPC ausente — copie o SQL único ou passo 1 no SQL Log');
+      lines.push(col.exists ? '✅ Coluna owner_user_id' : '⏳ Coluna ausente — rode o SQL no Supabase primeiro');
+      lines.push('Owners: ' + (st.label || '—'));
+      statusEl.innerHTML = lines.map((l) => `<div>${l}</div>`).join('');
+    }
+
+    const ta = document.getElementById('sqlEmbeddedText');
+    const sql = getSqlText('migrations/027_RODE_NO_SUPABASE.sql');
+    if (ta && sql) ta.value = sql;
+
+    document.getElementById('btnOneShot').addEventListener('click', () => runOneShotSql('owners_pipeline'));
+    const btnRun027 = document.getElementById('btnRun027');
+    async function refreshRunBtn() {
+      const mig = getMigrationById('027_establishment_owners');
+      const mode = await getMigrationRunMode(mig);
+      btnRun027.textContent = mode === 'copy' ? '📋 Copiar SQL' : '▶️ Executar owners';
+    }
+    btnRun027.addEventListener('click', () => runSqlMigration('027_establishment_owners'));
+    document.getElementById('btnVerify').addEventListener('click', async () => {
+      invalidateOwnerColumnCache();
+      const st = await verifyMigrationStep('027_establishment_owners');
+      const msg = st.ok ? (st.label || 'OK') : (st.friendly || st.label || 'Pendente');
+      if (st.ok) await showSqlSuccess('OK', msg);
+      else await showSqlError('Pendente', msg);
+      refreshStatus();
+      refreshRunBtn();
+    });
+
+    refreshStatus();
+    refreshRunBtn();
+  </script>
+</body>
+</html>

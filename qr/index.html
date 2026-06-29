@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#08080f">
+  <meta name="color-scheme" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Ranking Pro — QR</title>
+  <link rel="stylesheet" href="../base.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../proofly-glass.css">
+  <link rel="stylesheet" href="../nucleus.css">
+  <script src="../site-paths.js"></script>
+</head>
+<body class="cliente-page nucleus-page">
+  <div class="nucleus-shell">
+    <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact" id="state-loading">
+      <p class="nucleus-eyebrow">Sessão QR</p>
+      <h1 class="nucleus-title">Validando QR</h1>
+      <p class="nucleus-state">Aguarde enquanto verificamos o token…</p>
+    </div>
+    <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact nucleus-hidden" id="state-error">
+      <p class="nucleus-error-title" id="error-title">QR inválido</p>
+      <p class="nucleus-subtitle" id="error-message"></p>
+      <a href="../index.html" class="home-splash-btn home-splash-btn--secondary" style="margin-top:12px;">Voltar ao início</a>
+    </div>
+  </div>
+  <script src="../config.js"></script>
+  <script src="../api.js"></script>
+  <script src="../qr-service.js"></script>
+  <script>
+    (async function () {
+      const loading = document.getElementById('state-loading');
+      const errorBlock = document.getElementById('state-error');
+      const errorTitle = document.getElementById('error-title');
+      const errorMessage = document.getElementById('error-message');
+      function showError(title, message) {
+        loading.classList.add('nucleus-hidden');
+        errorBlock.classList.remove('nucleus-hidden');
+        errorTitle.textContent = title;
+        errorMessage.textContent = message || '';
+      }
+      const token = RankingProQR.getTokenFromUrl();
+      if (!token) { showError('QR inválido', 'Este link não contém um código válido.'); return; }
+      try {
+        const result = await RankingProQR.validateToken(token);
+        if (result.status === 'valid') {
+          const profId = result.professional_id;
+          const dest = profId
+            ? RankingProQR.buildProfileBuscaUrl('professional', profId, { token })
+            : RankingProQR.buildAvaliarUrl(token);
+          window.location.replace(dest);
+          return;
+        }
+        if (result.status === 'expired') { showError('QR expirado', 'Este QR expirou. Peça um novo ao profissional.'); return; }
+        if (result.status === 'used') { showError('Avaliação já registrada', 'Esta avaliação já foi registrada.'); return; }
+        showError('QR inválido', 'Este link não é válido ou já expirou.');
+      } catch (err) {
+        console.error(err);
+        showError('Erro', 'Não foi possível validar o QR. Tente novamente.');
+      }
+    })();
+  </script>
+</body>
+</html>

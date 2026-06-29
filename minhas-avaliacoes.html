@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Minhas avaliações</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-page reviews-history-page">
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+  <main class="reviews-page">
+    <header class="reviews-hero">
+      <span class="reviews-eyebrow">🏆 Ranking Pro</span>
+      <h1>⭐ Minhas Avaliações</h1>
+      <p class="sub">Avaliações que você enviou como cliente.</p>
+    </header>
+    <div id="reviewList"><p class="empty-box">Carregando...</p></div>
+  </main>
+
+  <script src="./loader.js"></script>
+
+  <script>
+    const TYPE_LABELS = {
+      client_to_professional: 'Cliente → Profissional',
+      client_to_establishment: 'Cliente → Estabelecimento'
+    };
+
+    async function loadReviews() {
+      const list = document.getElementById('reviewList');
+      const sess = typeof getSession === 'function' ? getSession() : null;
+      if (!sess?.userId) {
+        list.innerHTML = '<div class="empty-box">Faça login como cliente para ver suas avaliações.<br><a href="./login.html">Entrar</a></div>';
+        return;
+      }
+
+      try {
+        const data = await fetchAPI(
+          `/rest/v1/reviews?user_id=eq.${sess.userId}&review_type=in.(client_to_professional,client_to_establishment)&select=id,rating,comment,created_at,review_type,professional:professionals!professional_id(id,name),establishment:establishments!establishment_id(id,name)&order=created_at.desc&limit=50`
+        );
+        if (!data?.length) {
+          list.innerHTML = '<div class="empty-box">Você ainda não avaliou ninguém. <a href="./cliente.html">Buscar profissionais</a></div>';
+          return;
+        }
+        list.innerHTML = data.map(r => {
+          const target = r.professional?.name || r.establishment?.name || 'Perfil';
+          const tipo = TYPE_LABELS[r.review_type] || r.review_type;
+          const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '';
+          const stars = typeof renderStars === 'function' ? renderStars(r.rating) : '★'.repeat(r.rating || 0);
+          return `
+            <article class="review-card">
+              <div class="review-card-head">
+                <div><strong>${escapeHtml(target)}</strong><div class="review-type">${escapeHtml(tipo)}</div></div>
+                <div style="text-align:right"><span class="review-stars">${stars}</span><div class="review-meta">${escapeHtml(date)}</div></div>
+              </div>
+              <p class="review-comment">${escapeHtml(r.comment || 'Sem comentário')}</p>
+            </article>
+          `;
+        }).join('');
+      } catch (e) {
+        list.innerHTML = `<div class="empty-box">Erro ao carregar: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    document.addEventListener('scriptsLoaded', function () {
+      if (typeof enforceProfileGuardAny === 'function' && !enforceProfileGuardAny(['client', 'professional'])) {
+        return;
+      }
+      loadReviews();
+    });
+  </script>
+</body>
+</html>

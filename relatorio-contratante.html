@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Relatório Contratação</title>
+  <link rel="stylesheet" href="./base.css" />
+  <style>
+    body { background: #f8fafc; min-height: 100vh; }
+    .rel-boot {
+      max-width: 520px; margin: 80px auto; padding: 32px; text-align: center;
+      background: #fff; border-radius: 16px; border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .rel-boot p { color: #64748b; margin: 12px 0 20px; line-height: 1.5; }
+    .rel-boot .btn { text-decoration: none; display: inline-block; }
+    .rel-err { color: #dc2626; font-size: 14px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <script src="./config.js"></script>
+  <script src="./shark-mode.js"></script>
+
+  <div id="relBoot" class="rel-boot">
+    <p id="relStatus">⏳ Carregando relatório...</p>
+    <a href="./estabelecimento-marketplace.html" class="btn btn-outline btn-small" id="relBack" style="display:none;">← Voltar ao Contratar</a>
+    <p class="rel-err" id="relError" style="display:none;"></p>
+  </div>
+  <div id="relReport" hidden></div>
+
+  <script src="./loader.js"></script>
+  <script>
+    function showBoot(msg, showBack) {
+      const boot = document.getElementById('relBoot');
+      const status = document.getElementById('relStatus');
+      const back = document.getElementById('relBack');
+      if (boot) boot.hidden = false;
+      if (document.getElementById('relReport')) document.getElementById('relReport').hidden = true;
+      if (status) status.textContent = msg;
+      if (back) back.style.display = showBack ? 'inline-block' : 'none';
+    }
+
+    function showError(msg) {
+      const err = document.getElementById('relError');
+      if (err) { err.textContent = msg; err.style.display = 'block'; }
+      showBoot('Não foi possível gerar o relatório.', true);
+    }
+
+    function injectReportHtml(fullHtml) {
+      const parsed = new DOMParser().parseFromString(fullHtml, 'text/html');
+      document.title = parsed.querySelector('title')?.textContent || document.title;
+      document.head.querySelectorAll('style[data-rel-injected]').forEach(n => n.remove());
+      parsed.querySelectorAll('style').forEach(style => {
+        const s = document.createElement('style');
+        s.setAttribute('data-rel-injected', '1');
+        s.textContent = style.textContent;
+        document.head.appendChild(s);
+      });
+      document.getElementById('relBoot')?.remove();
+      document.getElementById('relReport')?.remove();
+      document.body.innerHTML = parsed.body.innerHTML;
+    }
+
+    async function initRelatorio() {
+      if (typeof fetchAPI !== 'function') {
+        showError('fetchAPI não definido. Recarregue a página.');
+        return;
+      }
+      if (typeof buildRelatorioContratanteHtml !== 'function') {
+        showError('Módulo talent-market não carregou. Recarregue a página.');
+        return;
+      }
+
+      let payload;
+      try {
+        payload = JSON.parse(sessionStorage.getItem('proofly_relatorio_contratante') || 'null');
+      } catch {
+        payload = null;
+      }
+
+      if (!payload?.profIds?.length) {
+        showBoot('Nenhum candidato selecionado. Volte à busca Contratar e marque os profissionais.', true);
+        return;
+      }
+
+      try {
+        const estId = payload.establishmentId;
+        const [estData, profData] = await Promise.all([
+          estId
+            ? fetchAPI(`/rest/v1/establishments?id=eq.${estId}&select=*`)
+            : Promise.resolve([]),
+          fetchAPI(
+            `/rest/v1/professionals?id=in.(${payload.profIds.join(',')})&select=*,profile:professional_profiles(years_experience,specialty),current_establishment:establishments!professionals_current_establishment_id_fkey(id,name)`
+          )
+        ]);
+
+        const establishment = estData?.[0] || { name: payload.establishmentName || 'Estabelecimento' };
+        const profs = (profData || []).map(p => {
+          let e = typeof enrichProfWithTalentMetrics === 'function' ? enrichProfWithTalentMetrics(p) : p;
+          return typeof enrichProfForContratante === 'function'
+            ? enrichProfForContratante(e, establishment)
+            : e;
+        });
+
+        if (!profs.length) {
+          showBoot('Profissionais não encontrados no banco. Tente gerar o relatório novamente em Contratar.', true);
+          return;
+        }
+
+        const html = buildRelatorioContratanteHtml(establishment, profs);
+        injectReportHtml(html);
+      } catch (e) {
+        console.error(e);
+        showError(e.message || 'Erro ao buscar dados.');
+      }
+    }
+
+    document.addEventListener('scriptsLoaded', initRelatorio, { once: true });
+    if (typeof fetchAPI === 'function' && typeof buildRelatorioContratanteHtml === 'function') {
+      initRelatorio();
+    }
+  </script>
+</body>
+</html>

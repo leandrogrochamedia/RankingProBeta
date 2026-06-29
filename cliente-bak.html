@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro - Cliente (backup drawer)</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-page">
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="loading-logo">🏆</div>
+      <div class="loading-text">Carregando Ranking Pro...</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="loading-percent" id="loadingPercent">0%</div>
+    </div>
+  </div>
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <div class="qr-modal" id="qrScannerContainer">
+    <div class="qr-modal-backdrop" onclick="fecharScannerQR()"></div>
+    <div class="qr-modal-content">
+      <div class="qr-modal-header">
+        <h3>📷 Escanear QR Code</h3>
+        <button class="qr-modal-close" onclick="fecharScannerQR()">✕</button>
+      </div>
+      <div class="scanner-box"><div id="qr-reader"></div></div>
+      <p id="qrScannerStatus" class="qr-status">Iniciando câmera...</p>
+    </div>
+  </div>
+
+  <header class="cliente-hero">
+    <div class="cliente-hero-inner">
+      <div class="cliente-hero-text">
+        <span class="cliente-eyebrow">🏆 Ranking Pro</span>
+        <h1>Encontre quem combina com você</h1>
+        <p>Profissionais e estabelecimentos com reputação verificada.</p>
+      </div>
+      <div class="cliente-hero-actions">
+        <button type="button" id="clientLocationChip" class="client-location-chip" style="display:none;" title="Toque para atualizar localização" onclick="retryClientLocation()"></button>
+        <div id="userGreeting" class="cliente-greeting"></div>
+        <a href="./favoritos.html" class="btn btn-outline btn-favoritos" style="text-decoration:none;">
+          <span>❤️</span>
+          <span>Meus favoritos</span>
+        </a>
+        <button class="btn btn-qr" onclick="abrirScannerQR()">
+          <span class="btn-qr-icon">📷</span>
+          <span>Escanear QR</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="clientStyleBar" class="client-style-bar" style="display:none;" aria-live="polite">
+    <div class="client-style-bar-inner">
+      <div class="client-style-bar-text">
+        <span class="client-style-label">🎯 Baseado no seu estilo</span>
+        <div id="clientStyleChips" class="client-style-chips"></div>
+      </div>
+      <button type="button" class="btn-style-edit" onclick="abrirOnboardingEstilo()">Editar</button>
+    </div>
+  </div>
+
+  <div id="styleOnboardingModal" class="style-onboarding-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="styleOnboardingTitle">
+    <div class="style-onboarding-backdrop" onclick="fecharOnboardingEstilo()"></div>
+    <div class="style-onboarding-sheet">
+      <button type="button" class="style-onboarding-close" onclick="fecharOnboardingEstilo()" aria-label="Fechar">✕</button>
+      <h2 id="styleOnboardingTitle">O que combina com você?</h2>
+      <p class="style-onboarding-sub">Escolha até 5 preferências — o Ranking Pro personaliza seus matches e destaca quem tem afinidade com você.</p>
+      <div class="style-onboarding-section">
+        <h3>👤 Profissionais</h3>
+        <div id="onboardingProfChips" class="style-onboarding-chips"></div>
+      </div>
+      <div class="style-onboarding-section">
+        <h3>🏢 Lugares <span class="optional">(opcional, até 3)</span></h3>
+        <div id="onboardingEstChips" class="style-onboarding-chips"></div>
+      </div>
+      <p id="onboardingSelectionHint" class="style-onboarding-hint">0 selecionadas</p>
+      <button type="button" class="btn btn-tinder-primary btn-tinder-xl" id="btnSalvarEstilo" onclick="salvarOnboardingEstilo()">✨ Salvar e ver recomendações</button>
+      <button type="button" class="style-onboarding-skip" onclick="pularOnboardingEstilo()">Agora não</button>
+    </div>
+  </div>
+
+  <main class="cliente-main">
+
+    <div class="glass-discovery-shell">
+      <nav class="cliente-tabs glass-tabs" role="tablist">
+        <button class="cliente-tab active" role="tab" aria-selected="true" data-tab="prof" id="tab-prof" type="button">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">Profissionais</span>
+        </button>
+        <button class="cliente-tab" role="tab" aria-selected="false" data-tab="est" id="tab-est" type="button">
+          <span class="tab-icon">🏢</span>
+          <span class="tab-label">Estabelecimentos</span>
+        </button>
+      </nav>
+
+      <div class="glass-search-zone active" id="searchZoneProf" data-zone="prof">
+        <div id="selectedPillsProf" class="pills-container active-pills-bar"></div>
+        <div class="search-input-wrap glass-input-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="searchProfInput" placeholder="Nome ou especialidade..." autocomplete="off" />
+          <button class="btn btn-search" type="button" id="btnBuscarProf">Buscar</button>
+        </div>
+        <div class="search-actions">
+          <button class="btn btn-outline btn-small" type="button" id="btnListarProf" onclick="toggleListarProfissionais()">📋 Listar todos</button>
+        </div>
+        <div class="sort-toolbar" id="sortToolbarProf"></div>
+      </div>
+
+      <div class="glass-search-zone" id="searchZoneEst" data-zone="est">
+        <div id="selectedPillsEst" class="pills-container active-pills-bar"></div>
+        <div class="search-input-wrap glass-input-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="searchEstabInput" placeholder="Nome do estabelecimento..." autocomplete="off" />
+          <button class="btn btn-search" type="button" id="btnBuscarEst">Buscar</button>
+        </div>
+        <div class="search-actions">
+          <button class="btn btn-outline btn-small" type="button" id="btnListarEst" onclick="toggleListarEstabelecimentos()">📋 Listar todos</button>
+        </div>
+        <div class="sort-toolbar" id="sortToolbarEst"></div>
+      </div>
+    </div>
+
+    <!-- ===== PROFISSIONAIS ===== -->
+    <section class="cliente-panel active" id="panel-prof" role="tabpanel">
+
+      <div class="filters-card glass-surface" id="tinderFiltersProf"></div>
+
+      <div id="profissionaisList" class="result-list tinder-results">
+        <div class="empty-state">
+          <div class="empty-state-icon">👤</div>
+          <p class="empty-state-title">Nenhum resultado ainda</p>
+          <p class="empty-state-desc">Toque nas pílulas abaixo ou clique em "Listar todos".</p>
+        </div>
+      </div>
+      <div id="profissionaisPagination" class="pagination"></div>
+    </section>
+
+    <!-- ===== ESTABELECIMENTOS ===== -->
+    <section class="cliente-panel" id="panel-est" role="tabpanel">
+
+      <div class="filters-card glass-surface" id="tinderFiltersEst"></div>
+
+      <div id="estabelecimentosList" class="result-list tinder-results">
+        <div class="empty-state">
+          <div class="empty-state-icon">🏢</div>
+          <p class="empty-state-title">Nenhum resultado ainda</p>
+          <p class="empty-state-desc">Toque nas pílulas abaixo ou clique em "Listar todos".</p>
+        </div>
+      </div>
+      <div id="estabelecimentosPagination" class="pagination"></div>
+    </section>
+  </main>
+
+  <div class="drawer-overlay" id="drawerOverlay" onclick="fecharDrawer()"></div>
+  <div class="drawer drawer-tinder" id="drawer">
+    <div class="drawer-drag-handle" aria-hidden="true"></div>
+    <button type="button" class="drawer-close-floating" onclick="fecharDrawer()" aria-label="Fechar">✕</button>
+    <div class="drawer-body" id="drawerBody"><div class="loading">Carregando...</div></div>
+    <div id="drawerActions"></div>
+  </div>
+
+  <script src="./loader.js"></script>
+  <script src="./components/cliente-page-boot.js" data-app="./cliente-bak.js"></script>
+</body>
+</html>
