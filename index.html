@@ -9,253 +9,87 @@
   <link rel="stylesheet" href="./base.css" />
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="./proofly-glass.css" />
+  <link rel="stylesheet" href="./nucleus.css" />
   <style>
-    body.home-splash {
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      background:
-        radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18), transparent 55%),
-        radial-gradient(circle at 80% 90%, rgba(139, 92, 246, 0.08), transparent 50%),
-        #08080f;
-    }
-    .home-splash-main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 20px 32px;
-    }
-    .home-splash-card {
-      width: 100%;
-      max-width: 460px;
-      text-align: center;
-      animation: fadeInUp 0.8s ease-out;
-    }
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .home-splash-logo {
-      font-size: 64px;
-      line-height: 1;
-      margin-bottom: 20px;
-      animation: gentleFloat 3s ease-in-out infinite;
-    }
-    @keyframes gentleFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-    .home-splash-card h1 {
-      font-size: clamp(32px, 6vw, 40px);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      color: #f8fafc;
-      margin: 0 0 12px;
-      line-height: 1.15;
-    }
-    .home-splash-tagline {
-      font-size: 18px;
-      color: #a78bfa;
-      font-weight: 600;
-      margin: 0 0 16px;
-    }
-    .home-splash-lead {
-      font-size: 16px;
-      color: #cbd5e1;
-      line-height: 1.6;
-      margin: 0 0 32px;
-    }
-    .trust-badges {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-    }
-    .trust-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: #94a3b8;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 8px 14px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .home-splash-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .home-splash-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 18px 24px;
-      font-size: 17px;
-      font-weight: 700;
-      border: none;
-      border-radius: 16px;
-      cursor: pointer;
+    .home-entry-card .profile-select-card-btn {
       text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
     }
-    .home-splash-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      transition: left 0.5s;
+    .home-entry-card .profile-select-grid {
+      margin-top: 4px;
     }
-    .home-splash-btn:hover::before {
-      left: 100%;
-    }
-    .home-splash-btn--primary {
-      color: #fff;
-      background: linear-gradient(135deg, #6366f1, #7c3aed);
-      box-shadow: 0 12px 40px rgba(99, 102, 241, 0.35);
-    }
-    .home-splash-btn--primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 50px rgba(99, 102, 241, 0.5);
-    }
-    .home-splash-btn--secondary {
-      color: #e2e8f0;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-    .home-splash-btn--secondary:hover {
-      background: rgba(255, 255, 255, 0.12);
-      transform: translateY(-2px);
-      border-color: rgba(167, 139, 250, 0.4);
-    }
-    .home-splash-divider {
-      margin: 28px 0 20px;
-      font-size: 12px;
-      color: #64748b;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .home-splash-divider::before,
-    .home-splash-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(100, 116, 139, 0.5), transparent);
-    }
-    .home-splash-links {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .home-splash-link {
-      font-size: 14px;
-      color: #94a3b8;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .home-splash-link:hover { 
-      color: #c4b5fd;
-      text-decoration: underline;
-    }
-    .home-splash-footer {
-      padding: 24px 20px;
-      text-align: center;
-      font-size: 13px;
-      color: #64748b;
-    }
-    .welcome-message {
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
-      font-size: 15px;
-      color: #c7d2fe;
-      line-height: 1.5;
+    .home-entry-card .home-splash-steps {
+      text-align: left;
     }
   </style>
 </head>
-<body class="home-splash">
+<body class="home-splash nucleus-page">
 
   <main class="home-splash-main">
-    <div class="home-splash-card">
-      <div class="home-splash-logo" aria-hidden="true">🏆</div>
-      <h1>Olá! Bem-vindo ao Ranking Pro</h1>
-      <p class="home-splash-tagline">Sua reputação vale ouro ✨</p>
-      
-      <div class="welcome-message">
-        👋 Seja muito bem-vindo! Aqui, cada avaliação conta de verdade. 
-        Conectamos profissionais incríveis a clientes satisfeitos através de feedbacks verificados.
+    <div class="home-splash-card home-entry-card profile-select-card glass-surface">
+      <span class="profile-select-eyebrow">🏆 Ranking Pro</span>
+
+      <div class="home-splash-badge-wrap">
+        <p class="home-splash-badge">✓ Só após atendimento real</p>
       </div>
 
-      <p class="home-splash-lead">
-        Avaliações reais e verificadas por QR Code — porque confiança se constrói com transparência. 
-        Junte-se a milhares de profissionais que já estão crescendo com reputação comprovada!
-      </p>
+      <h1>Reputação verificada</h1>
+      <p class="home-splash-lead">QR Code → avaliação → perfil público. Transparência que gera confiança.</p>
 
-      <div class="trust-badges">
-        <div class="trust-badge">✓ Verificado</div>
-        <div class="trust-badge">🔒 Seguro</div>
-        <div class="trust-badge">⭐ Transparente</div>
+      <div class="home-splash-steps" aria-label="Como funciona">
+        <div class="home-splash-step">
+          <span class="home-splash-step-num">1</span>
+          <div><strong>QR por atendimento</strong><span>Válido 2h · token único</span></div>
+        </div>
+        <div class="home-splash-step">
+          <span class="home-splash-step-num">2</span>
+          <div><strong>Nota + comentário</strong><span>Cliente avalia na hora</span></div>
+        </div>
+        <div class="home-splash-step">
+          <span class="home-splash-step-num">3</span>
+          <div><strong>Perfil atualizado</strong><span>Média e histórico verificados</span></div>
+        </div>
       </div>
 
-      <div class="home-splash-actions">
-        <a href="./login.html" class="home-splash-btn home-splash-btn--primary">
-          <span aria-hidden="true">🚀</span>
-          <span>Começar agora — é grátis!</span>
+      <div id="rp-site-nav"></div>
+
+      <div class="profile-select-grid" role="navigation" aria-label="Entrada no app">
+        <a href="./login.html" class="profile-select-card-btn">
+          <span class="profile-select-icon" aria-hidden="true">🔐</span>
+          <div class="profile-select-text">
+            <strong>Entrar</strong>
+            <small>Profissional, estabelecimento ou cliente</small>
+          </div>
+          <span class="profile-select-chevron" aria-hidden="true">›</span>
         </a>
-        <a href="./cliente.html?scanQr=1" class="home-splash-btn home-splash-btn--secondary" style="text-decoration:none;">
-          <span aria-hidden="true">📱</span>
-          <span>Escanear QR para avaliar</span>
+        <a href="./cliente.html?scanQr=1" class="profile-select-card-btn">
+          <span class="profile-select-icon" aria-hidden="true">📷</span>
+          <div class="profile-select-text">
+            <strong>Escanear QR</strong>
+            <small>Avaliar após atendimento — sem conta</small>
+          </div>
+          <span class="profile-select-chevron" aria-hidden="true">›</span>
         </a>
-        <a href="./cliente.html" class="home-splash-btn home-splash-btn--secondary" style="text-decoration:none;">
-          <span aria-hidden="true">🔍</span>
-          <span>Encontrar profissionais</span>
+        <a href="./cliente.html" class="profile-select-card-btn">
+          <span class="profile-select-icon" aria-hidden="true">🔍</span>
+          <div class="profile-select-text">
+            <strong>Buscar</strong>
+            <small>Profissionais e estabelecimentos</small>
+          </div>
+          <span class="profile-select-chevron" aria-hidden="true">›</span>
         </a>
       </div>
 
-      <p class="home-splash-divider">Ou explore</p>
-      
-      <div class="home-splash-links">
-        <a href="./sobre.html" class="home-splash-link">Saiba mais sobre nós →</a>
-        <a href="./ajuda.html" class="home-splash-link">Precisa de ajuda? Estamos aqui!</a>
-      </div>
-
-      <p class="home-splash-footnote" style="margin-top:32px;font-size:14px;color:#64748b;line-height:1.6;">
-        💡 <strong>Dica:</strong> Não tem conta? Sem problemas! Após seu atendimento, é só escanear o QR Code do profissional para deixar sua avaliação verificada.
-      </p>
+      <p class="home-splash-divider">Sem conta? Escaneie o QR após o atendimento.</p>
     </div>
   </main>
-  
-  <footer class="home-splash-footer">
-    Feito com ❤️ em 2026 — Ranking Pro • Reputação que transforma negócios
-  </footer>
+
+  <footer class="home-splash-footer">© 2026 Ranking Pro — Reputação verificada</footer>
 
   <script src="./site-paths.js"></script>
   <script src="./qr-service.js"></script>
-  <script src="./index-qr.js?v=20260628-index-no-qr"></script>
+  <script src="./index-qr.js?v=20260629-index-app"></script>
   <script src="./loader.js"></script>
+  <script src="./site-nav.js"></script>
 
 </body>
 </html>
