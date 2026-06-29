@@ -19,8 +19,9 @@ const ROOT_DIR = path.join(DEVTOOL_DIR, '..');
 const PORT = Number(process.env.DEVTOOL_PORT || 8790);
 const LAUNCHER_PORT = Number(process.env.DEVTOOL_LAUNCHER_PORT || 8789);
 const GROK_BIN = process.env.GROK_BIN || path.join(process.env.HOME || '', '.grok/bin/grok');
+const GITHUB_PAGES_PROJECT = 'RankingProBeta';
 const ONLINE_PREVIEW = process.env.DEVTOOL_ONLINE_URL
-  || 'https://leandrogrochamedia.github.io/RankingProBeta/';
+  || `https://leandrogrochamedia.github.io/${GITHUB_PAGES_PROJECT}/index.html`;
 const SKIP_DIRS = new Set(['.git', 'node_modules', '__pycache__', '.cursor', 'terminals']);
 const PREVIEW_EXTS = new Set(['.html', '.htm']);
 

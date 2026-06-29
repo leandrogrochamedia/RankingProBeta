@@ -1,7 +1,18 @@
 (function () {
   'use strict';
 
-  const ONLINE_ROOT = 'https://leandrogrochamedia.github.io/RankingProBeta/';
+  const GITHUB_PAGES_USER = 'leandrogrochamedia';
+  const GITHUB_PAGES_PROJECT = 'RankingProBeta';
+  const ONLINE_ROOT = `https://${GITHUB_PAGES_USER}.github.io/${GITHUB_PAGES_PROJECT}/`;
+
+  function githubPagesPathPrefix() {
+    return new RegExp(`^/${GITHUB_PAGES_PROJECT}(?=/|$)`, 'i');
+  }
+
+  function getOnlinePreviewUrl(page) {
+    const clean = String(page || 'index.html').replace(/^\//, '');
+    return ONLINE_ROOT + clean;
+  }
 
   function stripCacheBust(url) {
     if (!url) return '';
@@ -91,7 +102,7 @@
   }
 
   function extractGithubSitePath(pathname, search, hash) {
-    const path = (pathname || '').replace(/^\/RankingPro(?:Beta)?/i, '') || '/';
+    const path = (pathname || '').replace(githubPagesPathPrefix(), '') || '/';
     return normalizeSitePath(path, search || '', hash || '');
   }
 
@@ -138,7 +149,7 @@
         };
       }
 
-      if (/github\.io$/i.test(u.hostname) && /\/RankingPro(?:Beta)?(\/|$)/i.test(u.pathname)) {
+      if (/github\.io$/i.test(u.hostname) && githubPagesPathPrefix().test(u.pathname)) {
         const path = extractGithubSitePath(u.pathname, u.search, u.hash);
         return { path, full: u.href };
       }
@@ -165,17 +176,26 @@
     return `Root · ${root}/`;
   }
 
-  /** Label estático: root publicada online. */
+  /** Label estático: root publicada online (sem espaços no slug). */
   function formatOnlineRootLabel() {
-    return `Root · ${ONLINE_ROOT}`;
+    return `${GITHUB_PAGES_PROJECT} · ${ONLINE_ROOT}`;
+  }
+
+  function formatOnlinePath(sitePath) {
+    const rel = String(sitePath || '/').replace(/^\//, '') || 'index.html';
+    return `${GITHUB_PAGES_PROJECT}/${rel}`;
   }
 
   window.PreviewUrlDisplay = {
+    GITHUB_PAGES_USER,
+    GITHUB_PAGES_PROJECT,
     ONLINE_ROOT,
+    getOnlinePreviewUrl,
     stripCacheBust,
     parsePreviewUrl,
     formatRootLabel,
     formatOnlineRootLabel,
+    formatOnlinePath,
     sitePathToFullFile,
     parseFilesystemDisplay
   };
