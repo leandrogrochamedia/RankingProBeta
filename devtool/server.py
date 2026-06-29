@@ -18,9 +18,10 @@ GROK_BIN = os.environ.get(
     "GROK_BIN",
     str(Path.home() / ".grok" / "bin" / "grok"),
 )
+GITHUB_PAGES_PROJECT = "RankingProBeta"
 ONLINE_PREVIEW = os.environ.get(
     "DEVTOOL_ONLINE_URL",
-    "https://leandrogrochamedia.github.io/RankingProBeta/",
+    f"https://leandrogrochamedia.github.io/{GITHUB_PAGES_PROJECT}/index.html",
 )
 
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".cursor", "terminals"}

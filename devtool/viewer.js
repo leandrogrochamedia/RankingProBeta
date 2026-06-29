@@ -20,6 +20,7 @@
     btnMobile: $('#btnMobile'),
     btnRefresh: $('#btnRefresh'),
     btnOpen: $('#btnOpenExternal'),
+    pathLabel: $('#previewPathLabel'),
     frameWrap: $('#frameWrap'),
     previewViewport: $('#previewViewport'),
     mobileChrome: $('#mobileChrome'),
@@ -34,7 +35,7 @@
     btnEmptyTertiary: $('#btnEmptyTertiary')
   };
 
-  const ONLINE_PREVIEW = 'https://leandrogrochamedia.github.io/RankingProBeta/index.html';
+  const ONLINE_PREVIEW = PUD.getOnlinePreviewUrl('index.html');
   const DEVTOOL_URL = 'http://127.0.0.1:8790/';
   const DEVTOOL_PREVIEW = 'http://127.0.0.1:8790/app/index.html';
   const DEVTOOL_LAUNCHER = 'http://127.0.0.1:8789';
@@ -75,7 +76,7 @@
     'error-empty': {
       eyebrow: 'Preview vazio',
       title: 'O app não apareceu no iframe',
-      text: 'Tente recarregar. Se persistir, abra no navegador ou use GitHub Pages.',
+      text: 'Tente recarregar. Se persistir, use “Abrir no navegador” ou a aba Pages.',
       className: 'is-error'
     }
   };
@@ -109,7 +110,7 @@
       : PUD.formatRootLabel(siteRootPath);
     els.urlRootLabel.textContent = text;
     els.urlRootLabel.title = previewMode === 'online'
-      ? 'Root publicada (GitHub Pages)'
+      ? `Publicado em GitHub Pages (${PUD.GITHUB_PAGES_PROJECT})`
       : 'Pasta do site no disco (onde está index.html)';
   }
 
@@ -175,7 +176,9 @@
   }
 
   function applyIframeNavPath(path, href, title) {
-    const display = path || '—';
+    const display = previewMode === 'online'
+      ? PUD.formatOnlinePath(path || '/')
+      : (path || '—');
     const live = href ? PUD.stripCacheBust(href) : '';
     lastIframeLiveUrl = live;
     lastIframeDisplayPath = display;
@@ -322,22 +325,32 @@
     if (protocol.startsWith('http') && hostname === '127.0.0.1' && port === '8790') {
       return `${origin}/app/index.html`;
     }
-    // LOCAL BROWSER aberto via file:// ou outra porta: iframe no DevTool server (evita file:// + fetch quebrado)
+    // LOCAL BROWSER via file:// — carrega index.html da pasta do projeto (acima de devtool/)
+    try {
+      const projectRoot = new URL('../', window.location.href);
+      if (projectRoot.protocol === 'file:') {
+        return new URL('index.html', projectRoot).href;
+      }
+    } catch { /* noop */ }
+    // Fallback: DevTool server, se estiver rodando
     return DEVTOOL_PREVIEW;
   }
 
-  const LOCAL_PREVIEW = resolveLocalPreview();
+  function getLocalPreview() {
+    return resolveLocalPreview();
+  }
 
   function getPreviewUrl() {
-    return previewMode === 'online' ? ONLINE_PREVIEW : LOCAL_PREVIEW;
+    return previewMode === 'online' ? ONLINE_PREVIEW : getLocalPreview();
   }
 
   function getDisplayUrl() {
     if (previewMode === 'online') return ONLINE_PREVIEW;
+    const local = getLocalPreview();
     try {
-      return decodeURIComponent(LOCAL_PREVIEW.replace(/^file:\/\//, ''));
+      return decodeURIComponent(local.replace(/^file:\/\//, ''));
     } catch {
-      return LOCAL_PREVIEW;
+      return local;
     }
   }
 
@@ -347,10 +360,15 @@
       els.urlLabel.textContent = parsed.path || '—';
       els.urlLabel.title = parsed.full || parsed.path || 'Path a partir da root do site';
     }
+    if (els.urlIframeLabel && previewMode === 'online') {
+      const display = PUD.formatOnlinePath(parsed.path || '/');
+      els.urlIframeLabel.textContent = display;
+      els.urlIframeLabel.title = parsed.full || PUD.getOnlinePreviewUrl(parsed.path || '/');
+    }
   }
 
   function syncMeta() {
-    const sourceLabel = previewMode === 'online' ? 'GitHub Pages' : 'Arquivos locais';
+    const sourceLabel = previewMode === 'online' ? PUD.GITHUB_PAGES_PROJECT : 'Arquivos locais';
     if (els.metaSource) els.metaSource.textContent = sourceLabel;
     if (els.modeBadge) {
       els.modeBadge.textContent = sourceLabel;
@@ -684,6 +702,9 @@
     els.tabOnline?.classList.toggle('is-active', !isLocal);
     els.tabLocal?.setAttribute('aria-selected', isLocal ? 'true' : 'false');
     els.tabOnline?.setAttribute('aria-selected', isLocal ? 'false' : 'true');
+    if (els.pathLabel) {
+      els.pathLabel.textContent = isLocal ? 'Path' : 'URL';
+    }
     syncMeta();
     if (mobilePreview) requestAnimationFrame(fitMobileDevice);
   }
@@ -735,7 +756,10 @@
     if (display !== lastIframeDisplayPath) syncIframeUrlLabel();
   }, 250);
   loadSiteRoot().finally(() => {
-    checkDevToolServer().finally(() => {
+    const boot = window.location.protocol === 'file:'
+      ? Promise.resolve(false)
+      : checkDevToolServer();
+    boot.finally(() => {
       setMobilePreview(false);
       setPreviewTab('local');
     });

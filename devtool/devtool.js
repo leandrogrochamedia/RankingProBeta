@@ -71,10 +71,10 @@
   const MOBILE_PREVIEW_CLASS = 'devtool-mobile-preview';
 
   let config = {
-    localPreview: '/app/cliente.html',
-    onlinePreview: 'https://leandrogrochamedia.github.io/RankingProBeta/',
-    rootPath: '/Users/leandrogrocha/Documents/DEV/MVP Hanking PRO',
-    localFilePath: '/Users/leandrogrocha/Documents/DEV/MVP Hanking PRO/cliente.html',
+    localPreview: '/app/index.html',
+    onlinePreview: PUD.getOnlinePreviewUrl('index.html'),
+    rootPath: '/Users/leandrogrocha/Documents/DEV/RankingProBeta',
+    localFilePath: '/Users/leandrogrocha/Documents/DEV/RankingProBeta/index.html',
     startCommand: 'cd devtool && python3 launcher.py',
     launcherUrl: 'http://127.0.0.1:8789',
     serverUrl: 'http://127.0.0.1:8790'
@@ -141,7 +141,7 @@
       : PUD.formatRootLabel(config.rootPath);
     els.urlRootLabel.textContent = text;
     els.urlRootLabel.title = previewMode === 'online'
-      ? 'Root publicada (GitHub Pages)'
+      ? `Publicado em GitHub Pages (${PUD.GITHUB_PAGES_PROJECT})`
       : 'Pasta do site no disco (onde está index.html)';
   }
 
@@ -460,7 +460,7 @@
   }
 
   function previewModeLabel() {
-    if (previewMode === 'online') return 'GitHub Pages';
+    if (previewMode === 'online') return PUD.GITHUB_PAGES_PROJECT;
     if (previewMode === 'files') return 'Arquivos';
     return 'Local';
   }
