@@ -1,0 +1,14 @@
+{
+  "name": "ranking-pro-devtool",
+  "private": true,
+  "description": "DevTool local — chat Grok CLI + preview Ranking Pro",
+  "scripts": {
+    "start": "bash start.sh",
+    "dev": "bash start.sh",
+    "start:node": "node server.js",
+    "start:python": "python3 server.py"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Ranking Pro">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#08080f"/>
+  <circle cx="256" cy="256" r="168" fill="url(#g)" opacity="0.95"/>
+  <path fill="#f8fafc" d="M256 148l28 72h78l-63 46 24 72-67-48-67 48 24-72-63-46h78z"/>
+</svg>

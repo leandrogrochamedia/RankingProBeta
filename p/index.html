@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#08080f">
+  <meta name="color-scheme" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Passaporte de reputação verificada — Ranking Pro">
+  <title>Ranking Pro — Passaporte</title>
+  <link rel="stylesheet" href="../base.css">
+  <link rel="stylesheet" href="../css/perfil-premium.css">
+  <script src="../site-paths.js"></script>
+</head>
+<body class="perfil-premium-page pp-public">
+  <main class="perfil-page-shell" id="passaporte-root">
+    <div class="pp-state-error" id="state-loading">
+      <p>Carregando passaporte…</p>
+    </div>
+
+    <div class="passaporte-hidden" id="state-error">
+      <h1>Perfil não encontrado</h1>
+      <p>Este profissional não existe ou o link está incorreto.</p>
+      <a href="../index.html">Voltar ao início</a>
+    </div>
+
+    <div id="state-content" class="perfil-page-content passaporte-hidden"></div>
+  </main>
+
+  <script src="../loader.js"></script>
+  <script>
+    (function () {
+      function boot() {
+        const id = new URLSearchParams(window.location.search).get('id');
+        PassaporteLanding.bootProfessional(document.getElementById('passaporte-root'), id);
+      }
+      document.addEventListener('scriptsLoaded', boot);
+      if (window.RANKING_PRO_SCRIPTS_READY) boot();
+    })();
+  </script>
+</body>
+</html>

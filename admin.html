@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Admin</title>
+  <link rel="stylesheet" href="./base.css">
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    /* (mantido igual ao original, sem alterações) */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .mock-badge {
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 16px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .admin-section {
+      margin-top: 32px;
+    }
+    .admin-section .card {
+      padding: 20px;
+    }
+    .admin-section table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .admin-section th {
+      text-align: left;
+      padding: 10px 8px;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .admin-section td {
+      padding: 8px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+    }
+    .admin-section tr:hover td {
+      background: #f8fafc;
+    }
+    .admin-section .btn-small {
+      padding: 4px 12px;
+      font-size: 12px;
+    }
+    .admin-section .btn-red {
+      background: #ef4444;
+    }
+    .admin-section .btn-red:hover {
+      background: #dc2626;
+    }
+    .admin-section .empty-msg {
+      color: #94a3b8;
+      text-align: center;
+      padding: 20px;
+    }
+    .admin-refresh {
+      margin-top: 10px;
+      text-align: right;
+    }
+    @media (max-width: 600px) {
+      .admin-section table {
+        font-size: 12px;
+      }
+      .admin-section th, .admin-section td {
+        padding: 6px 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <div class="container">
+
+    <div class="admin-header">
+      <h1>📊 Painel Administrativo</h1>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <a href="./base-de-dados-completa.html" class="btn btn-outline btn-small" style="text-decoration:none;">🗄️ Base de dados</a>
+        <span class="mock-badge">🔓 Modo simulação (sem login real)</span>
+      </div>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-card"><div class="big" id="totalProfissionais">0</div><div class="lbl">Profissionais</div></div>
+      <div class="summary-card"><div class="big" id="totalEstabelecimentos">0</div><div class="lbl">Estabelecimentos</div></div>
+      <div class="summary-card"><div class="big" id="totalReviews">0</div><div class="lbl">Avaliações</div></div>
+      <div class="summary-card"><div class="big" id="totalVinculos">0</div><div class="lbl">Vínculos</div></div>
+    </div>
+
+    <div class="admin-section">
+      <div class="card">
+        <h2>📈 Mercado de Talentos (Fase 1)</h2>
+        <p style="color:#64748b;font-size:14px;line-height:1.5;margin-bottom:12px;">
+          Recalcula <strong>carteira</strong> (clientes únicos) e <strong>IGV</strong> de todos os profissionais.
+          No Supabase, prefira também <code>migrations/014_backfill_igv_carteira.sql</code>.
+        </p>
+        <button type="button" class="btn btn-small" id="btnBackfillTalent" onclick="executarBackfillTalent()">🔄 Backfill IGV + Carteira (API)</button>
+        <p id="backfillTalentStatus" style="font-size:13px;color:#64748b;margin-top:10px;"></p>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="card">
+        <h2>💼 Profissionais</h2>
+        <div id="adminProfissionaisList"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="card">
+        <h2>🏢 Estabelecimentos</h2>
+        <div id="adminEstabelecimentosList"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="card">
+        <h2>⭐ Avaliações Recentes</h2>
+        <div id="adminReviewsList"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <div class="admin-refresh">
+      <button class="btn btn-outline btn-small" onclick="carregarDashboardAdmin()">🔄 Atualizar dados</button>
+    </div>
+
+  </div>
+
+  <script src="./loader.js"></script>
+
+  <script>
+    // =====================================================
+    // PROOFLY - Página Admin (com modal customizado)
+    // =====================================================
+
+    function bootAdmin() {
+      if (typeof fetchAPI !== 'function') {
+        console.error('fetchAPI ainda não carregou — aguarde scriptsLoaded');
+        return;
+      }
+      carregarDashboardAdmin();
+    }
+
+    document.addEventListener('scriptsLoaded', bootAdmin, { once: true });
+    if (typeof fetchAPI === 'function') bootAdmin();
+
+    async function carregarDashboardAdmin() {
+      if (typeof fetchAPI !== 'function') {
+        console.error('fetchAPI não disponível — aguarde o carregamento dos scripts.');
+        return;
+      }
+      await Promise.all([
+        carregarEstatisticas(),
+        carregarProfissionais(),
+        carregarEstabelecimentos(),
+        carregarReviews(),
+      ]);
+    }
+    window.carregarDashboardAdmin = carregarDashboardAdmin;
+
+    // ---- Estatísticas ----
+    async function carregarEstatisticas() {
+      try {
+        const profs = await fetchAPI('/rest/v1/professionals?select=id');
+        const ests = await fetchAPI('/rest/v1/establishments?select=id');
+        const reviews = await fetchAPI('/rest/v1/reviews?select=id');
+        const vinculos = await fetchAPI('/rest/v1/professional_establishment?select=id');
+
+        document.getElementById('totalProfissionais').textContent = profs.length;
+        document.getElementById('totalEstabelecimentos').textContent = ests.length;
+        document.getElementById('totalReviews').textContent = reviews.length;
+        document.getElementById('totalVinculos').textContent = vinculos.length;
+      } catch (e) {
+        console.error('Erro ao carregar estatísticas:', e);
+      }
+    }
+
+    // ---- Profissionais ----
+    async function carregarProfissionais() {
+      const div = document.getElementById('adminProfissionaisList');
+      try {
+        const data = await fetchAPI('/rest/v1/professionals?select=id,name,specialty,avatar_url,avg_rating,total_reviews,client_portfolio_count,igv_score&order=igv_score.desc.nullslast&limit=20');
+        if (!data.length) {
+          div.innerHTML = '<p class="empty-msg">Nenhum profissional cadastrado.</p>';
+          return;
+        }
+        let html = `<table>
+          <thead><tr><th>Nome</th><th>Carteira</th><th>IGV</th><th>Média</th><th>Ações</th></tr></thead><tbody>`;
+        data.forEach(p => {
+          html += `
+            <tr>
+              <td>${escapeHtml(p.name)}<br><span style="font-size:11px;color:#94a3b8;">${escapeHtml(p.specialty || '-')}</span></td>
+              <td>${p.client_portfolio_count ?? 0}</td>
+              <td><strong>${p.igv_score != null ? Number(p.igv_score).toFixed(1) : '0'}</strong></td>
+              <td>${p.avg_rating ? p.avg_rating.toFixed(1) : '0.0'}</td>
+              <td>
+                <button class="btn btn-small btn-red" onclick="excluirProfissional('${p.id}')">🗑️</button>
+              </td>
+            </tr>
+          `;
+        });
+        html += '</tbody></table>';
+        div.innerHTML = html;
+      } catch (e) {
+        div.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`;
+      }
+    }
+
+    // ---- Estabelecimentos ----
+    async function carregarEstabelecimentos() {
+      const div = document.getElementById('adminEstabelecimentosList');
+      try {
+        const data = await fetchAPI('/rest/v1/establishments?select=id,name,city,phone&order=created_at.desc&limit=20');
+        if (!data.length) {
+          div.innerHTML = '<p class="empty-msg">Nenhum estabelecimento cadastrado.</p>';
+          return;
+        }
+        let html = `<table>
+          <thead><tr><th>Nome</th><th>Cidade</th><th>Telefone</th><th>Ações</th></tr></thead><tbody>`;
+        data.forEach(e => {
+          html += `
+            <tr>
+              <td>${escapeHtml(e.name)}</td>
+              <td>${escapeHtml(e.city || '-')}</td>
+              <td>${escapeHtml(e.phone || '-')}</td>
+              <td>
+                <button class="btn btn-small btn-red" onclick="excluirEstabelecimento('${e.id}')">🗑️</button>
+              </td>
+            </tr>
+          `;
+        });
+        html += '</tbody></table>';
+        div.innerHTML = html;
+      } catch (e) {
+        div.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`;
+      }
+    }
+
+    // ---- Avaliações ----
+    async function carregarReviews() {
+      const div = document.getElementById('adminReviewsList');
+      try {
+        const data = typeof fetchReviews === 'function'
+          ? await fetchReviews('', { limit: 20 })
+          : await fetchAPI('/rest/v1/reviews?select=id,rating,comment,created_at,verified,source&order=created_at.desc&limit=20');
+        if (!data.length) {
+          div.innerHTML = '<p class="empty-msg">Nenhuma avaliação ainda.</p>';
+          return;
+        }
+        let html = `<table>
+          <thead><tr><th>Nota</th><th>Autor</th><th>Tipo</th><th>Contexto</th><th>Comentário</th><th>Data</th><th>Ações</th></tr></thead><tbody>`;
+        data.forEach(r => {
+          const stars = renderStars(r.rating);
+          const author = typeof getReviewAuthorName === 'function' ? getReviewAuthorName(r) : (r.user?.name || '—');
+          const ctx = typeof getReviewContextText === 'function'
+            ? getReviewContextText(r)
+            : (typeof formatReviewContext === 'function' ? formatReviewContext(r) : '—');
+          const badge = typeof getReviewSourceBadge === 'function' ? getReviewSourceBadge(r) : (r.source || '—');
+          const verified = (r.is_verified ?? r.verified) ? ' ✅' : '';
+          html += `
+            <tr>
+              <td>${stars}</td>
+              <td>${escapeHtml(author)}${verified}</td>
+              <td style="font-size:12px;">${escapeHtml(badge)}</td>
+              <td style="font-size:12px;color:#64748b;">${escapeHtml(ctx)}</td>
+              <td>${r.comment ? escapeHtml(r.comment.substring(0, 50)) : '-'}</td>
+              <td>${tempoRelativo(r.created_at)}</td>
+              <td>
+                <button class="btn btn-small btn-red" onclick="excluirReview('${r.id}')">🗑️</button>
+              </td>
+            </tr>
+          `;
+        });
+        html += '</tbody></table>';
+        div.innerHTML = html;
+      } catch (e) {
+        div.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`;
+      }
+    }
+
+    // ========================================
+    // AÇÕES DE EXCLUSÃO COM MODAL
+    // ========================================
+    window.excluirProfissional = async function(id) {
+      const confirmado = await showConfirm({
+        title: '⚠️ Excluir profissional',
+        message: 'Tem certeza que deseja excluir este profissional? Todas as avaliações e vínculos serão removidos.',
+        confirmText: 'Excluir',
+        cancelText: 'Cancelar',
+        danger: true
+      });
+      if (!confirmado) return;
+      try {
+        await fetchAPI(`/rest/v1/professionals?id=eq.${id}`, 'DELETE');
+        await showAlert('✅ Sucesso!', 'Profissional excluído com sucesso.');
+        carregarDashboardAdmin();
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao excluir: ' + e.message);
+      }
+    };
+
+    window.excluirEstabelecimento = async function(id) {
+      const confirmado = await showConfirm({
+        title: '⚠️ Excluir estabelecimento',
+        message: 'Tem certeza que deseja excluir este estabelecimento?',
+        confirmText: 'Excluir',
+        cancelText: 'Cancelar',
+        danger: true
+      });
+      if (!confirmado) return;
+      try {
+        await fetchAPI(`/rest/v1/establishments?id=eq.${id}`, 'DELETE');
+        await showAlert('✅ Sucesso!', 'Estabelecimento excluído com sucesso.');
+        carregarDashboardAdmin();
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao excluir: ' + e.message);
+      }
+    };
+
+    window.executarBackfillTalent = async function() {
+      const btn = document.getElementById('btnBackfillTalent');
+      const status = document.getElementById('backfillTalentStatus');
+      if (typeof backfillAllTalentMetrics !== 'function') {
+        status.textContent = 'Carregue talent-market.js (via loader) antes de executar.';
+        return;
+      }
+      btn.disabled = true;
+      status.textContent = 'Recalculando carteira e IGV...';
+      try {
+        const result = await backfillAllTalentMetrics({ limit: 300 });
+        status.textContent = `✅ Concluído: ${result.ok} ok, ${result.fail} falhas.`;
+        carregarProfissionais();
+        if (result.fail) console.warn('Backfill errors:', result.errors);
+      } catch (e) {
+        status.textContent = '❌ Erro: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.excluirReview = async function(id) {
+      const confirmado = await showConfirm({
+        title: '⚠️ Excluir avaliação',
+        message: 'Tem certeza que deseja excluir esta avaliação?',
+        confirmText: 'Excluir',
+        cancelText: 'Cancelar',
+        danger: true
+      });
+      if (!confirmado) return;
+      try {
+        await fetchAPI(`/rest/v1/reviews?id=eq.${id}`, 'DELETE');
+        await showAlert('✅ Sucesso!', 'Avaliação excluída com sucesso.');
+        carregarDashboardAdmin();
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao excluir: ' + e.message);
+      }
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+-- ============================================================
+-- PROOFLY — Demo populada (beleza / barbearia)
+-- ============================================================
+-- Execute no SQL Editor do Supabase, UM ARQUIVO POR VEZ, nesta ordem:
+--
+--   (opcional, se ainda não rodou) migrations/019_prof_hiring_profile_fields.sql
+--   (opcional, se ainda não rodou) migrations/020_simplificar_client_model.sql
+--
+--   0. sql/demo/00_prepare_schema.sql   ← tabela professional_establishments + client_profiles
+--   0b. sql/demo/00b_prepare_colunas.sql ← colunas faltantes (recomendado)
+--   1. sql/demo/01_reset_keep_leandro.sql   (reset TOTAL — apaga tudo)
+--   2a. sql/demo/02a_establishments_schema.sql  ← SÓ ALTER (query separada)
+--   2b. sql/demo/02b_establishments_data.sql    ← SÓ INSERT (depois do 2a)
+--   3. sql/demo/03_usuarios_seed_avaliadores.sql
+--   4. sql/demo/04_profissionais_vinculos.sql  (cria UNIQUE em professional_profiles)
+--   5. sql/demo/05_avaliacoes.sql
+--   6. sql/demo/06_recalcular_metricas.sql
+--   7. migrations/018_demo_fotos_avaliacoes_completo.sql  ← RECOMENDADO (fotos + avaliações)
+--
+-- OU rode tudo de uma vez:
+--   migrations/016_reset_seed_leandro_demo.sql
+--
+-- Depois do reset: faça login/cadastro manual no app (Leandro)
+--
+-- Resultado esperado:
+--   • 20 usuários seed (avaliadores fictícios)
+--   • 16 estabelecimentos (6 Curitiba + 10 São Paulo)
+--   • 50 profissionais com histórico e avaliações
+-- ============================================================
+
+SELECT 'Abra e execute os arquivos 01 a 06 na ordem, ou use migrations/016_reset_seed_leandro_demo.sql' AS instrucao;

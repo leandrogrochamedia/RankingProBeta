@@ -1,0 +1,968 @@
+// Ranking Pro — Dashboard screen (extraído de dashboard-profissional.html)
+function bootDashboardProfissional() {
+    // ============================================================
+    // DASHBOARD PROFISSIONAL – COMPLETO
+    // ============================================================
+
+    if (typeof enforceProfileGuard === 'function' && !enforceProfileGuard('professional')) return;
+    const session = getSession();
+    if (!session?.userId) {
+      window.location.href = './login.html?returnTo=dashboard-profissional.html';
+      return;
+    }
+    if (!session.professionalId) {
+      window.location.href = './selecionar-profissional.html';
+      return;
+    }
+
+    let profId = session.professionalId;
+    let isEditMode = false;
+    let currentProf = null;
+    let currentPrivate = null;
+    let newAvatarBase64 = null;
+    let editGalleryPhotos = [];
+
+    // ===== OPÇÕES PARA CADA CATEGORIA =====
+    const musicOptions = ['Hip Hop', 'Rock', 'Sertanejo', 'Pop', 'Clássico', 'MPB', 'Eletrônico', 'Reggae', 'Jazz', 'Blues'];
+    const visualOptions = ['Streetwear', 'Clássico', 'Moderno', 'Tradicional', 'Casual', 'Urbano', 'Elegante', 'Despojado'];
+    const personalityOptions = ['Comunicativo', 'Reservado', 'Extrovertido', 'Detalhista', 'Rápido', 'Perfeccionista', 'Criativo', 'Ousado'];
+    const lifestyleOptions = ['Não bebe', 'Bebe socialmente', 'Não fuma', 'Fuma', 'Vegano', 'Esportista', 'Religioso', 'Noturno'];
+    const workOptions = ['Especialista', 'Generalista', 'Experiente', 'Iniciante', 'Premium', 'Popular'];
+    const workStyleOptions = typeof WORK_STYLE_TAG_OPTIONS !== 'undefined'
+      ? WORK_STYLE_TAG_OPTIONS
+      : ['Alto volume', 'Atendimento premium', 'Detalhista', 'Rápido e objetivo', 'Fiel ao estilo do salão', 'Criativo', 'Paciente', 'Foco em fidelização'];
+
+    // ===== VIEW REFS =====
+    const view = {
+      name: document.getElementById('viewName'),
+      specialty: document.getElementById('viewSpecialty'),
+      bio: document.getElementById('viewBio'),
+      instagram: document.getElementById('viewInstagram'),
+      phone: document.getElementById('viewPhone'),
+      email: document.getElementById('viewEmail'),
+      endereco: document.getElementById('viewEndereco'),
+      estab: document.getElementById('viewEstab'),
+      cpf: document.getElementById('viewCpf'),
+      musicTags: document.getElementById('viewMusicTags'),
+      visualTags: document.getElementById('viewVisualTags'),
+      personalityTags: document.getElementById('viewPersonalityTags'),
+      lifestyleTags: document.getElementById('viewLifestyleTags'),
+      workTags: document.getElementById('viewWorkTags'),
+      hiringSection: document.getElementById('viewHiringSection'),
+    };
+
+    // ===== EDIT REFS =====
+    const edit = {
+      name: document.getElementById('editName'),
+      specialty: document.getElementById('editSpecialty'),
+      bio: document.getElementById('editBio'),
+      instagram: document.getElementById('editInstagram'),
+      phone: document.getElementById('editPhone'),
+      email: document.getElementById('editEmail'),
+      street: document.getElementById('editStreet'),
+      city: document.getElementById('editCity'),
+      state: document.getElementById('editState'),
+      establishment: document.getElementById('editEstablishment'),
+      autonomo: document.getElementById('editAutonomo'),
+      cpf: document.getElementById('editCpf'),
+      musicContainer: document.getElementById('editMusicTagsContainer'),
+      visualContainer: document.getElementById('editVisualTagsContainer'),
+      personalityContainer: document.getElementById('editPersonalityTagsContainer'),
+      lifestyleContainer: document.getElementById('editLifestyleTagsContainer'),
+      workContainer: document.getElementById('editWorkTagsContainer'),
+      musicCounter: document.getElementById('musicTagsCounter'),
+      visualCounter: document.getElementById('visualTagsCounter'),
+      personalityCounter: document.getElementById('personalityTagsCounter'),
+      lifestyleCounter: document.getElementById('lifestyleTagsCounter'),
+      workCounter: document.getElementById('workTagsCounter'),
+      yearsExperience: document.getElementById('editYearsExperience'),
+      avgJobDuration: document.getElementById('editAvgJobDuration'),
+      birthDate: document.getElementById('editBirthDate'),
+      workStyleContainer: document.getElementById('editWorkStyleTagsContainer'),
+      workStyleCounter: document.getElementById('workStyleTagsCounter'),
+      salaryExpectation: document.getElementById('editSalaryExpectation'),
+      availableNow: document.getElementById('editAvailableNow'),
+      seekingWork: document.getElementById('editSeekingWork'),
+    };
+
+    // ===== AVATAR =====
+    const avatarImg = document.getElementById('profAvatar');
+    const avatarPlaceholder = document.getElementById('profAvatarPlaceholder');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    const uploadBtn = document.getElementById('uploadAvatarBtn');
+
+    uploadBtn.addEventListener('click', () => avatarFileInput.click());
+    avatarFileInput.addEventListener('change', async function() {
+      const file = this.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await resizeAndCompressImage(file, 300, 300, 0.6);
+        newAvatarBase64 = dataUrl;
+        avatarImg.src = dataUrl;
+        avatarImg.style.display = 'block';
+        avatarPlaceholder.style.display = 'none';
+        await showAlert('✅ Sucesso!', 'Imagem processada.');
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao processar imagem.');
+      }
+      this.value = '';
+    });
+
+    // ===== GALERIA (EDIÇÃO) =====
+    const profGalleryEdit = document.getElementById('profGalleryEdit');
+    const profGalleryInput = document.getElementById('profGalleryInput');
+    const profGalleryAddBtn = document.getElementById('profGalleryAddBtn');
+
+    function syncProfAvatarFromGallery() {
+      const main = editGalleryPhotos[0];
+      if (!main) return;
+      avatarImg.src = main;
+      avatarImg.style.display = 'block';
+      avatarPlaceholder.style.display = 'none';
+    }
+
+    function renderGalleryEdit() {
+      if (!profGalleryEdit) return;
+      profGalleryEdit.innerHTML = editGalleryPhotos.map((url, i) => `
+        <div class="gallery-slot${i === 0 ? ' primary' : ''}">
+          <img src="${url}" alt="" />
+          <button type="button" class="remove-photo" onclick="removeProfGalleryPhoto(${i})" aria-label="Remover">✕</button>
+        </div>
+      `).join('');
+      if (editGalleryPhotos.length < 4) {
+        profGalleryEdit.innerHTML += `<div class="gallery-slot add-slot" onclick="document.getElementById('profGalleryInput').click()">+</div>`;
+      }
+      syncProfAvatarFromGallery();
+    }
+
+    window.removeProfGalleryPhoto = function(index) {
+      editGalleryPhotos.splice(index, 1);
+      renderGalleryEdit();
+    };
+
+    profGalleryAddBtn?.addEventListener('click', () => profGalleryInput?.click());
+    profGalleryInput?.addEventListener('change', async function() {
+      const files = Array.from(this.files || []);
+      for (const file of files) {
+        if (editGalleryPhotos.length >= 4) {
+          await showAlert('⚠️ Atenção', 'Máximo de 4 fotos.');
+          break;
+        }
+        try {
+          const dataUrl = await resizeAndCompressImage(file, 600, 600, 0.7);
+          editGalleryPhotos.push(dataUrl);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      this.value = '';
+      renderGalleryEdit();
+    });
+
+    // ===== CARREGAR ESTABELECIMENTOS PARA SELECT =====
+    async function carregarEstabelecimentosSelect() {
+      try {
+        const data = await fetchAPI('/rest/v1/establishments?select=id,name&order=name');
+        const sel = edit.establishment;
+        sel.innerHTML = '<option value="">Autônomo</option>';
+        data.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.name;
+          sel.appendChild(opt);
+        });
+      } catch (e) { console.warn('Erro ao carregar estabelecimentos:', e); }
+    }
+
+    function renderCareerHub() {
+      renderPropostasRecebidas();
+      renderMinhasCandidaturas();
+      renderCareerStats();
+      carregarEstabelecimentosRecomendados();
+    }
+
+    function renderPropostasRecebidas() {
+      const el = document.getElementById('profHiringInbox');
+      if (!el || typeof HiringFlow === 'undefined') return;
+      const proposals = HiringFlow.getProposalsForProfessional(profId)
+        .filter(p => p.initiatedBy !== 'professional' && !['withdrawn', 'hired'].includes(p.status));
+      if (!proposals.length) {
+        el.innerHTML = '<p style="color:#64748b;font-size:14px;">Nenhuma proposta no momento. Explore os estabelecimentos abaixo e envie candidaturas — ou marque-se como <strong>disponível</strong> no perfil para aparecer no mercado de talentos.</p>';
+        return;
+      }
+      el.innerHTML = proposals.map(p => {
+        const row = HiringFlow.renderProposalRow(p, 'professional');
+        const detail = p.message
+          ? `<p style="font-size:13px;color:#475569;margin:8px 0 0;padding:0 16px 12px;">"${escapeHtml(p.message)}"${p.offerText ? ` · <strong>${escapeHtml(p.offerText)}</strong>` : ''}</p>`
+          : '';
+        return row.replace('</article>', `${detail}</article>`);
+      }).join('');
+    }
+
+    function renderMinhasCandidaturas() {
+      const el = document.getElementById('profApplicationsList');
+      if (!el || typeof HiringFlow === 'undefined') return;
+      const apps = HiringFlow.getProposalsForProfessional(profId)
+        .filter(p => (p.initiatedBy === 'professional' || p.type === 'application') && !['withdrawn'].includes(p.status));
+      if (!apps.length) {
+        el.innerHTML = '<p style="color:#64748b;font-size:14px;">Você ainda não se candidatou. Escolha um estabelecimento abaixo e clique em <strong>Pedir emprego</strong>.</p>';
+        return;
+      }
+      el.innerHTML = apps.map(p => HiringFlow.renderProposalRow(p, 'professional')).join('');
+    }
+
+    function renderCareerStats() {
+      if (typeof HiringFlow === 'undefined') return;
+      const all = HiringFlow.getProposalsForProfessional(profId);
+      const offers = all.filter(p => p.initiatedBy !== 'professional' && !['withdrawn', 'declined', 'hired'].includes(p.status)).length;
+      const apps = all.filter(p => (p.initiatedBy === 'professional' || p.type === 'application') && !['withdrawn', 'declined', 'hired'].includes(p.status)).length;
+      const offersEl = document.getElementById('profStatOffers');
+      const appsEl = document.getElementById('profStatApplications');
+      const matchEl = document.getElementById('profStatMatch');
+      const statusEl = document.getElementById('profStatStatus');
+      if (offersEl) offersEl.textContent = String(offers);
+      if (appsEl) appsEl.textContent = String(apps);
+
+      const isAutonomo = !currentProf?.current_establishment_id;
+      const seeking = currentProf?.seeking_work !== false;
+      const avail = currentProf?.available_now;
+      if (statusEl) {
+        statusEl.textContent = isAutonomo
+          ? (avail ? '🟢 Livre' : (seeking ? '🔓 Aberto' : '⏸️'))
+          : '🏢 Vinculado';
+        statusEl.style.fontSize = isAutonomo && !avail ? '18px' : '22px';
+      }
+      if (matchEl) matchEl.dataset.pending = '1';
+    }
+
+    async function carregarEstabelecimentosRecomendados() {
+      const el = document.getElementById('profEstabRecoGrid');
+      const matchEl = document.getElementById('profStatMatch');
+      if (!el || typeof HiringFlow === 'undefined' || !currentProf) return;
+      try {
+        const establishments = await fetchAPI(
+          '/rest/v1/establishments?select=id,name,type,city,neighborhood,avg_rating,total_reviews,music_tags,infra_tags,positioning_tags,audience_tags,vibe_tags,style_tags,tags&order=avg_rating.desc.nullslast&limit=40'
+        );
+        const prof = typeof enrichProfWithTalentMetrics === 'function'
+          ? enrichProfWithTalentMetrics(currentProf)
+          : currentProf;
+        const currentEstId = currentProf.current_establishment_id;
+
+        const profCity = (currentPrivate?.city || '').trim().toLowerCase();
+        const ranked = (establishments || [])
+          .filter(e => e.id !== currentEstId)
+          .map(est => {
+            const enriched = typeof enrichProfForContratante === 'function'
+              ? enrichProfForContratante(prof, est)
+              : { _contratanteMatch: null };
+            const match = enriched._contratanteMatch?.percent ?? 0;
+            const rating = Number(est.avg_rating) || 0;
+            const near = profCity && String(est.city || '').trim().toLowerCase() === profCity ? 1 : 0;
+            return { est, match, rating, near, enriched };
+          })
+          .sort((a, b) => {
+            if (b.match !== a.match) return b.match - a.match;
+            if (b.rating !== a.rating) return b.rating - a.rating;
+            return b.near - a.near;
+          })
+          .slice(0, 10);
+
+        if (!ranked.length) {
+          el.innerHTML = '<p class="prof-dash-muted">Nenhum estabelecimento recomendado agora. Complete seu perfil e marque <strong>disponível para contratação</strong>.</p>';
+          if (matchEl) matchEl.textContent = '—';
+          return;
+        }
+
+        if (matchEl) matchEl.textContent = `${ranked[0].match}%`;
+        el.innerHTML = ranked.map(({ est }) => HiringFlow.renderEstabOpportunityCard(est, prof)).join('');
+      } catch (e) {
+        console.warn('Estabelecimentos recomendados:', e);
+        el.innerHTML = '<p style="color:#94a3b8;">Não foi possível carregar oportunidades.</p>';
+      }
+    }
+
+    document.addEventListener('proofly:hiring-updated', () => {
+      renderCareerHub();
+      carregarDados();
+    });
+
+    // ===== CARREGAR DADOS =====
+    async function carregarDados() {
+      try {
+        const profData = await fetchAPI(
+          `/rest/v1/professionals?id=eq.${profId}&select=*,current_establishment:establishments!professionals_current_establishment_id_fkey(id,name),profile:professional_profiles(*),music_tags,visual_tags,personality_tags,lifestyle_tags,work_tags,work_style_tags,price_range,previous_workplaces,gallery_urls,salary_expectation,average_job_duration_months,available_now,seeking_work,client_portfolio_count,igv_score,availability`
+        );
+        if (!profData.length) {
+          await showAlert('❌ Erro', 'Profissional não encontrado.');
+          return;
+        }
+        currentProf = profData[0];
+        newAvatarBase64 = null;
+        editGalleryPhotos = typeof getProfilePhotos === 'function'
+          ? getProfilePhotos(currentProf).slice(0, 4)
+          : [];
+
+        const privData = await fetchAPI(`/rest/v1/professional_private_data?professional_id=eq.${profId}&select=*`);
+        currentPrivate = privData && privData.length > 0 ? privData[0] : null;
+
+        preencherVisual();
+        preencherEdicao();
+        atualizarResumo();
+
+        if (currentProf.current_establishment_id) {
+          edit.establishment.value = currentProf.current_establishment_id;
+          edit.autonomo.checked = false;
+          edit.establishment.disabled = false;
+        } else {
+          edit.establishment.value = '';
+          edit.autonomo.checked = true;
+          edit.establishment.disabled = true;
+        }
+
+        await carregarAvaliacoes();
+        await carregarEstabReviews();
+        await carregarProoflyScore();
+        await carregarVinculos();
+        renderCareerHub();
+        await carregarQrAtivo();
+
+        if (isEditMode) toggleEditMode(false);
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao carregar dados: ' + e.message);
+        console.error(e);
+      }
+    }
+
+    // ===== PREENCHER VISUAL =====
+    function preencherVisual() {
+      const p = currentProf;
+      const heroPhoto = (editGalleryPhotos && editGalleryPhotos[0])
+        || (typeof getProfilePhotos === 'function' ? getProfilePhotos(p)[0] : null)
+        || p.avatar_url;
+      applyProfileAvatar(avatarImg, avatarPlaceholder, p.name, heroPhoto);
+      if (avatarImg) avatarImg.style.display = 'block';
+      document.getElementById('profName').textContent = p.name || 'Sem nome';
+      const username = formatUsername(p.profile?.instagram);
+      const usernameEl = document.getElementById('profUsername');
+      usernameEl.textContent = username;
+      usernameEl.style.display = username ? 'block' : 'none';
+      document.getElementById('profSpecialty').textContent = p.profile?.specialty || p.specialty || 'Profissional';
+      const metaEl = document.getElementById('profMeta');
+      if (metaEl) {
+        metaEl.textContent = p.current_establishment?.name
+          ? `Trabalha em ${p.current_establishment.name}`
+          : 'Autônomo — sem vínculo fixo no momento';
+      }
+      updateProfileRatingBlock(
+        document.getElementById('profRatingBlock'),
+        document.getElementById('profRatingStars'),
+        document.getElementById('profRatingValue'),
+        document.getElementById('profRatingCount'),
+        p.avg_rating,
+        p.total_reviews
+      );
+      const ratingCountEl = document.getElementById('profRatingCount');
+      const reviewTotal = Number(p.total_reviews) || 0;
+      if (ratingCountEl && reviewTotal > 0) {
+        ratingCountEl.textContent = `${reviewTotal} avaliação${reviewTotal === 1 ? '' : 'ões'} verificada${reviewTotal === 1 ? '' : 's'}`;
+      }
+      const verifiedBadge = document.getElementById('profVerifiedBadge');
+      if (verifiedBadge) verifiedBadge.hidden = reviewTotal === 0;
+
+      const bioText = p.profile?.bio || p.bio || '';
+      const igHandle = p.profile?.instagram || '';
+      const phoneText = currentPrivate?.phone || '';
+
+      const bioCard = document.getElementById('viewBioCard');
+      const igCard = document.getElementById('viewInstagramCard');
+      const waCard = document.getElementById('viewWhatsappCard');
+      if (bioCard) bioCard.textContent = bioText || 'Bio ainda não preenchida — edite no perfil público.';
+      if (igCard) {
+        igCard.textContent = igHandle
+          ? `📷 ${formatUsername(igHandle) || '@' + igHandle.replace(/^@/, '')}`
+          : 'Instagram não informado';
+      }
+      if (waCard) waCard.textContent = phoneText ? `💬 ${phoneText}` : 'WhatsApp não informado';
+
+      view.name.textContent = p.name || '-';
+      view.specialty.textContent = p.profile?.specialty || p.specialty || '-';
+      view.bio.textContent = bioText || '-';
+      if (view.instagram) {
+        view.instagram.textContent = igHandle
+          ? (formatUsername(igHandle) || '@' + igHandle.replace(/^@/, ''))
+          : '-';
+      }
+
+      if (currentPrivate) {
+        view.phone.textContent = currentPrivate.phone || '-';
+        view.email.textContent = currentPrivate.email || '-';
+        const end = [currentPrivate.street, currentPrivate.city, currentPrivate.state].filter(Boolean).join(', ');
+        view.endereco.textContent = end || '-';
+        view.cpf.textContent = currentPrivate.cpf || '-';
+      } else {
+        view.phone.textContent = '-';
+        view.email.textContent = '-';
+        view.endereco.textContent = '-';
+        view.cpf.textContent = '-';
+      }
+      view.estab.textContent = p.current_establishment?.name || 'Autônomo';
+
+      // Tags
+      function renderViewTags(container, tags) {
+        if (tags && tags.length) {
+          container.innerHTML = tags.map(t => renderTagWithEmoji(t)).join('');
+        } else {
+          container.innerHTML = '<span style="color:#94a3b8; font-size:13px;">Nenhuma tag</span>';
+        }
+      }
+      renderViewTags(view.musicTags, p.music_tags || []);
+      renderViewTags(view.visualTags, p.visual_tags || []);
+      renderViewTags(view.personalityTags, p.personality_tags || []);
+      renderViewTags(view.lifestyleTags, p.lifestyle_tags || []);
+      renderViewTags(view.workTags, p.work_tags || []);
+
+      const galleryEl = document.getElementById('profGalleryDash');
+      if (galleryEl && typeof ProfileCard !== 'undefined') {
+        const photos = getProfilePhotos(p);
+        galleryEl.innerHTML = ProfileCard.renderGalleryPreview(photos, p.id);
+      }
+
+      if (view.hiringSection && typeof renderContratanteHiringSection === 'function') {
+        const hiringHtml = renderContratanteHiringSection(p, { privateData: currentPrivate, variant: 'dash' });
+        view.hiringSection.innerHTML = hiringHtml;
+        const statusPills = [];
+        if (typeof isDisponivelAgora === 'function' && isDisponivelAgora(p)) {
+          statusPills.push('<span class="tag-pill">🟢 Disponível agora</span>');
+        }
+        if (typeof isAbertoContratacao === 'function' && isAbertoContratacao(p)) {
+          statusPills.push('<span class="tag-pill">🔓 Aberto a contratação</span>');
+        }
+        if (statusPills.length) {
+          view.hiringSection.insertAdjacentHTML('beforeend', `<div class="tags-container" style="margin-top:12px;">${statusPills.join('')}</div>`);
+        }
+      }
+    }
+
+    // ===== PREENCHER EDIÇÃO =====
+    function preencherEdicao() {
+      const p = currentProf;
+      edit.name.value = p.name || '';
+      edit.specialty.value = p.profile?.specialty || p.specialty || '';
+      edit.bio.value = p.profile?.bio || p.bio || '';
+      if (edit.instagram) edit.instagram.value = p.profile?.instagram || '';
+      if (currentPrivate) {
+        edit.phone.value = currentPrivate.phone || '';
+        edit.email.value = currentPrivate.email || '';
+        edit.street.value = currentPrivate.street || '';
+        edit.city.value = currentPrivate.city || '';
+        edit.state.value = currentPrivate.state || '';
+        edit.cpf.value = currentPrivate.cpf || '';
+      } else {
+        edit.phone.value = '';
+        edit.email.value = '';
+        edit.street.value = '';
+        edit.city.value = '';
+        edit.state.value = '';
+        edit.cpf.value = '';
+      }
+      // Tags – usar renderEditChips do utils
+      renderEditChips(edit.musicContainer, musicOptions, p.music_tags || [], 3, edit.musicCounter);
+      renderEditChips(edit.visualContainer, visualOptions, p.visual_tags || [], 3, edit.visualCounter);
+      renderEditChips(edit.personalityContainer, personalityOptions, p.personality_tags || [], 3, edit.personalityCounter);
+      renderEditChips(edit.lifestyleContainer, lifestyleOptions, p.lifestyle_tags || [], 3, edit.lifestyleCounter);
+      renderEditChips(edit.workContainer, workOptions, p.work_tags || [], 3, edit.workCounter);
+      editGalleryPhotos = typeof getProfilePhotos === 'function'
+        ? getProfilePhotos(p).slice(0, 4)
+        : [];
+      renderGalleryEdit();
+      if (edit.yearsExperience) edit.yearsExperience.value = p.profile?.years_experience ?? '';
+      if (edit.avgJobDuration) edit.avgJobDuration.value = p.average_job_duration_months ?? '';
+      if (edit.birthDate) edit.birthDate.value = currentPrivate?.birth_date?.slice(0, 10) || '';
+      renderEditChips(edit.workStyleContainer, workStyleOptions, p.work_style_tags || [], 3, edit.workStyleCounter);
+      if (edit.salaryExpectation) edit.salaryExpectation.value = p.salary_expectation || '';
+      if (edit.availableNow) edit.availableNow.checked = !!p.available_now;
+      if (edit.seekingWork) edit.seekingWork.checked = p.seeking_work !== false;
+    }
+
+    // ===== ATUALIZAR RESUMO =====
+    function atualizarResumo() {
+      const p = currentProf;
+      const metrics = typeof enrichProfWithTalentMetrics === 'function'
+        ? enrichProfWithTalentMetrics(p)._talentMetrics
+        : (typeof calcularIGV === 'function' ? calcularIGV(p) : null);
+      document.getElementById('avgDisplay').textContent = p.avg_rating ? p.avg_rating.toFixed(1) : '0.0';
+      document.getElementById('totalDisplay').textContent = metrics?.carteira?.total ?? p.client_portfolio_count ?? p.total_reviews ?? 0;
+      document.getElementById('igvDisplay').textContent = metrics?.igv ?? p.igv_score ?? 0;
+      document.getElementById('estabDisplay').textContent = p.current_establishment?.name || 'Autônomo';
+      const carteiraLine = document.getElementById('carteiraLabelLine');
+      if (carteiraLine && metrics?.carteiraLabel) {
+        carteiraLine.innerHTML = `<strong>${escapeHtml(metrics.carteiraLabel)}</strong> — calculado automaticamente pelas avaliações`;
+      }
+    }
+
+    // ===== CARREGAR AVALIAÇÕES =====
+    function updateReviewAlert(reviews) {
+      const alertEl = document.getElementById('profReviewAlert');
+      const textEl = document.getElementById('profReviewAlertText');
+      if (!alertEl || !textEl) return;
+      const pending = (reviews || []).filter((r) => {
+        const rating = Number(r.rating) || 0;
+        const hasReply = !!(r.professional_reply || r.reply || r.response);
+        return rating <= 3 && !hasReply;
+      });
+      if (!pending.length) {
+        alertEl.hidden = true;
+        return;
+      }
+      alertEl.hidden = false;
+      textEl.textContent = pending.length === 1
+        ? '🔔 1 avaliação negativa ainda sem resposta.'
+        : `🔔 ${pending.length} avaliações negativas sem resposta.`;
+    }
+
+    async function carregarAvaliacoes() {
+      try {
+        const reviews = await fetchReviews(
+          `professional_id=eq.${profId}&review_type=eq.client_to_professional`,
+          { limit: 10, viewContext: { entityType: 'prof' } }
+        );
+        updateReviewAlert(reviews);
+        const list = document.getElementById('clientReviewsList');
+        list.innerHTML = typeof renderReviewsListHtml === 'function'
+          ? renderReviewsListHtml(reviews, 'Nenhuma avaliação de cliente ainda.', { entityType: 'prof' })
+          : '<p class="prof-dash-muted">Nenhuma avaliação de cliente ainda.</p>';
+      } catch (e) { console.warn('Erro ao carregar avaliações de clientes:', e); }
+    }
+
+    // ===== PROOFLY SCORE =====
+    async function carregarProoflyScore() {
+      try {
+        const allReviews = await fetchReviews(`professional_id=eq.${profId}`);
+        const data = calcularProoflyScoreFromReviews(allReviews, profId, 'prof');
+        updateProoflyScoreBlock(
+          document.getElementById('profProoflyBlock'),
+          null,
+          document.getElementById('profProoflyLabel'),
+          document.getElementById('profProoflyBreakdown'),
+          data
+        );
+        const badges = getProoflyBadges(currentProf, data.score, { clientTotal: data.clientStats?.total });
+        document.getElementById('profProoflyBadges').innerHTML = badges.map(b =>
+          `<span class="proofly-dash-badge">${b.icon} ${escapeHtml(b.label)}</span>`
+        ).join('');
+        const social = data.social || getMockSocialSignals(profId, 'prof');
+        document.getElementById('profProoflySocial').innerHTML = `
+          <span>❤️ ${social.likes || 0} curtidas</span>
+          <span>👁️ ${social.views || 0} views</span>
+          <span>⭐ ${social.favorites || 0} salvos</span>
+        `;
+        const strengths = buildStrengthPoints(currentProf, 'prof', data.score, data.groups);
+        const whyEl = document.getElementById('profWhySection');
+        if (whyEl && strengths.length) {
+          whyEl.innerHTML = `<ul style="margin:0;padding-left:18px;color:#475569;line-height:1.7;">${strengths.map(s => `<li>${s}</li>`).join('')}</ul>`;
+        }
+      } catch (e) { console.warn('Erro Ranking Pro Score:', e); }
+    }
+
+    // ===== CARREGAR AVALIAÇÕES DE ESTABELECIMENTOS =====
+    async function carregarEstabReviews() {
+      try {
+        const reviews = await fetchReviews(
+          `professional_id=eq.${profId}&review_type=eq.establishment_to_professional`,
+          { limit: 10, viewContext: { entityType: 'prof' } }
+        );
+        const list = document.getElementById('estabReviewsList');
+        list.innerHTML = typeof renderReviewsListHtml === 'function'
+          ? renderReviewsListHtml(reviews, 'Nenhuma avaliação de estabelecimento ainda.', { entityType: 'prof' })
+          : '<p style="color:#94a3b8;">Nenhuma avaliação de estabelecimento ainda.</p>';
+      } catch (e) { console.warn('Erro ao carregar avaliações de estabelecimentos:', e); }
+    }
+
+    // ===== CARREGAR VÍNCULOS =====
+    async function carregarVinculos() {
+      try {
+        const vinculos = await fetchAPI(
+          `/rest/v1/professional_establishment?select=*,establishment:establishment_id(id,name)&professional_id=eq.${profId}&order=started_at.desc&limit=8`
+        );
+        const estabReviews = await fetchAPI(
+          `/rest/v1/reviews?professional_id=eq.${profId}&review_type=eq.establishment_to_professional&select=rating,establishment_id`
+        );
+        const workHistory = buildWorkHistory(vinculos, estabReviews, currentProf.previous_workplaces);
+        const container = document.getElementById('vinculosContainer');
+        if (!workHistory.length) {
+          container.innerHTML = '<p style="color:#94a3b8;">Nenhum histórico registrado.</p>';
+          return;
+        }
+        let html = '';
+        workHistory.forEach(w => {
+          const rating = w.avg != null ? `⭐ ${w.avg.toFixed(1)}` : '— sem nota';
+          const badge = w.isCurrent ? ' <span style="font-size:10px;background:#d1fae5;color:#059669;padding:2px 8px;border-radius:999px;">Atual</span>' : '';
+          const verLocal = w.establishmentId
+            ? `<a href="${profilePageUrl('estabelecimento', w.establishmentId)}" class="btn btn-small" style="text-decoration:none;margin-top:6px;display:inline-block;">Ver local</a>`
+            : '';
+          html += `
+            <div class="work-row" style="flex-wrap:wrap;gap:8px;">
+              <div style="flex:1;min-width:140px;">
+                <div class="name">${escapeHtml(w.name)}${badge}</div>
+                <div class="rating">${rating}</div>
+              </div>
+              ${verLocal}
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (e) { console.warn('Erro ao carregar vínculos:', e); }
+    }
+
+    // ===== TOGGLE EDIÇÃO =====
+    function toggleEditMode(enable) {
+      isEditMode = (enable !== undefined) ? enable : !isEditMode;
+      document.body.classList.toggle('edit-mode', isEditMode);
+      const editPanel = document.getElementById('profEditPanel');
+      const editCta = document.getElementById('profEditCta');
+      if (editPanel) editPanel.hidden = !isEditMode;
+      if (editCta) editCta.hidden = isEditMode;
+      document.getElementById('editToggleBtn').style.display = isEditMode ? 'none' : 'inline-flex';
+      document.getElementById('saveBtn').style.display = isEditMode ? 'inline-flex' : 'none';
+      document.getElementById('cancelBtn').style.display = isEditMode ? 'inline-flex' : 'none';
+      document.getElementById('sairBtn').style.display = isEditMode ? 'none' : 'inline-flex';
+      document.getElementById('saveBtnBottom').style.display = isEditMode ? 'inline-flex' : 'none';
+      document.getElementById('cancelBtnBottom').style.display = isEditMode ? 'inline-flex' : 'none';
+      if (uploadBtn) uploadBtn.style.display = isEditMode ? 'flex' : 'none';
+      if (isEditMode) renderGalleryEdit();
+    }
+
+    // ===== SALVAR =====
+    async function salvarEdicao() {
+      const formatted = typeof formatTextFields === 'function'
+        ? formatTextFields({
+            name: edit.name.value.trim(),
+            specialty: edit.specialty.value.trim(),
+            bio: edit.bio.value.trim(),
+            street: edit.street.value.trim(),
+            city: edit.city.value.trim(),
+            state: edit.state.value.trim()
+          }, {
+            name: 'personName',
+            specialty: 'specialty',
+            bio: 'bio',
+            street: 'address',
+            city: 'city',
+            state: 'state'
+          })
+        : {
+            name: edit.name.value.trim(),
+            specialty: edit.specialty.value.trim(),
+            bio: edit.bio.value.trim(),
+            street: edit.street.value.trim(),
+            city: edit.city.value.trim(),
+            state: edit.state.value.trim()
+          };
+      const name = formatted.name;
+      if (!name) {
+        await showAlert('⚠️ Atenção', 'Nome é obrigatório.');
+        return;
+      }
+      if (edit.phone.value.trim() && !formatarTelefone(edit.phone)) {
+        await showAlert('⚠️ Atenção', 'Telefone inválido.');
+        edit.phone.focus();
+        return;
+      }
+      if (edit.cpf.value.trim() && !validarCPF(edit.cpf)) {
+        await showAlert('⚠️ Atenção', 'CPF inválido.');
+        edit.cpf.focus();
+        return;
+      }
+
+      // Coletar tags de cada categoria
+      const musicTags = Array.from(edit.musicContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const visualTags = Array.from(edit.visualContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const personalityTags = Array.from(edit.personalityContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const lifestyleTags = Array.from(edit.lifestyleContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const workTags = Array.from(edit.workContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const workStyleTags = Array.from(edit.workStyleContainer?.querySelectorAll('.active') || []).map(el => el.dataset.tag);
+      const yearsExp = parseInt(edit.yearsExperience?.value, 10);
+      const instagramRaw = edit.instagram?.value?.trim() || '';
+      const instagram = instagramRaw
+        ? (instagramRaw.startsWith('@') ? instagramRaw : '@' + instagramRaw.replace(/^@/, ''))
+        : null;
+
+      const profPayload = {
+        name: name,
+        specialty: formatted.specialty || null,
+        bio: formatted.bio || null,
+        current_establishment_id: edit.autonomo.checked ? null : (edit.establishment.value || null),
+        avatar_url: editGalleryPhotos[0] || newAvatarBase64 || currentProf?.avatar_url || null,
+        gallery_urls: editGalleryPhotos,
+        music_tags: musicTags,
+        visual_tags: visualTags,
+        personality_tags: personalityTags,
+        lifestyle_tags: lifestyleTags,
+        work_tags: workTags,
+        work_style_tags: workStyleTags,
+        salary_expectation: edit.salaryExpectation?.value || null,
+        average_job_duration_months: parseInt(edit.avgJobDuration?.value, 10) || null,
+        available_now: !!edit.availableNow?.checked,
+        seeking_work: edit.seekingWork?.checked !== false,
+      };
+
+      const privPayload = {
+        professional_id: profId,
+        phone: edit.phone.value.trim() || null,
+        email: edit.email.value.trim() || null,
+        street: formatted.street || null,
+        city: formatted.city || null,
+        state: formatted.state || null,
+        cpf: edit.cpf.value.trim() || null,
+        birth_date: edit.birthDate?.value || null,
+      };
+
+      try {
+        await fetchAPI(`/rest/v1/professionals?id=eq.${profId}`, 'PATCH', profPayload);
+        const profilePayload = {
+          specialty: formatted.specialty || null,
+          bio: formatted.bio || null,
+          instagram
+        };
+        if (!Number.isNaN(yearsExp)) profilePayload.years_experience = yearsExp;
+        await fetchAPI(`/rest/v1/professional_profiles?professional_id=eq.${profId}`, 'PATCH', profilePayload);
+        if (currentPrivate) {
+          await fetchAPI(`/rest/v1/professional_private_data?id=eq.${currentPrivate.id}`, 'PATCH', privPayload);
+        } else {
+          await fetchAPI('/rest/v1/professional_private_data', 'POST', privPayload);
+        }
+        await showAlert('✅ Sucesso!', 'Perfil atualizado com sucesso!');
+        await carregarDados();
+        toggleEditMode(false);
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao salvar: ' + e.message);
+      }
+    }
+
+    // ===== CANCELAR =====
+    async function cancelarEdicao() {
+      const confirmado = await showConfirm({
+        title: 'Cancelar edição?',
+        message: 'As alterações não salvas serão perdidas.',
+        confirmText: 'Sim, cancelar',
+        cancelText: 'Continuar editando',
+        danger: false
+      });
+      if (confirmado) {
+        carregarDados();
+        toggleEditMode(false);
+      }
+    }
+
+    // ===== QR CODE (salva em qr_codes + exibe na tela) =====
+    function ensureQrCodeLib(done) {
+      if (typeof QRCode !== 'undefined') {
+        done();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+      script.onload = done;
+      script.onerror = () => done();
+      document.head.appendChild(script);
+    }
+
+    function formatQrExpiry(expiresAt) {
+      if (!expiresAt) return 'Sem data de expiração';
+      const d = new Date(expiresAt);
+      if (Number.isNaN(d.getTime())) return 'Válido por 30 dias';
+      return 'Válido até ' + d.toLocaleString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderProfQrCanvas(url, expiresAt) {
+      const div = document.getElementById('qrResult');
+      const titleEl = document.getElementById('qrHeroTitle');
+      const subEl = document.getElementById('qrHeroSub');
+      if (!div || !url) return;
+      div.innerHTML = `
+        <div class="prof-qr-code-box">
+          <span class="prof-qr-saved-badge">✓ Salvo no banco</span>
+          <div id="qrcodeContainer" class="prof-qr-canvas"></div>
+          <p class="prof-qr-code-hint">${formatQrExpiry(expiresAt)}</p>
+          <p class="prof-qr-url-line" title="${escapeHtml(url)}">${escapeHtml(url)}</p>
+          <button type="button" class="btn-ios-pill btn-ios-pill-ghost prof-qr-copy-btn" id="btnCopyQrUrl">Copiar link do QR</button>
+        </div>
+      `;
+      ensureQrCodeLib(() => {
+        const el = document.getElementById('qrcodeContainer');
+        if (el && typeof QRCode !== 'undefined') {
+          el.innerHTML = '';
+          new QRCode(el, { text: url, width: 184, height: 184, correctLevel: QRCode.CorrectLevel.M });
+        }
+      });
+      document.getElementById('btnCopyQrUrl')?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+          await showAlert('✅ Copiado!', 'Link do QR copiado.');
+        } catch {
+          await showAlert('❌ Erro', 'Não foi possível copiar o link.');
+        }
+      });
+      if (titleEl) titleEl.textContent = 'Gerar novo QR Code';
+      if (subEl) subEl.textContent = 'Cria outra sessão e salva de novo no banco';
+    }
+
+    async function carregarQrAtivo() {
+      const div = document.getElementById('qrResult');
+      const titleEl = document.getElementById('qrHeroTitle');
+      const subEl = document.getElementById('qrHeroSub');
+      if (!div) return;
+      try {
+        const rows = await fetchAPI(
+          `/rest/v1/qr_codes?professional_id=eq.${encodeURIComponent(profId)}&select=id,token,url,expires_at,created_at&order=created_at.desc&limit=12`
+        );
+        const now = Date.now();
+        const active = (rows || []).find(q => !q.expires_at || new Date(q.expires_at).getTime() > now);
+        if (!active) {
+          div.innerHTML = '<p class="prof-qr-empty">Nenhum QR ativo. Toque no botão abaixo para gerar e salvar.</p>';
+          if (titleEl) titleEl.textContent = 'Gerar QR Code';
+          if (subEl) subEl.textContent = 'Toque para criar e salvar no banco';
+          return;
+        }
+        const url = active.url || (typeof RankingProQR !== 'undefined'
+          ? RankingProQR.buildProfileBuscaUrl('professional', profId, { token: active.token })
+          : '');
+        renderProfQrCanvas(url, active.expires_at);
+      } catch (e) {
+        console.warn('carregarQrAtivo:', e);
+        div.innerHTML = `<p class="prof-qr-empty">Não foi possível carregar o QR. ${escapeHtml(e.message)}</p>`;
+      }
+    }
+
+    window.gerarQRCode = async function() {
+      const div = document.getElementById('qrResult');
+      div.innerHTML = '<div class="loading">Gerando e salvando QR...</div>';
+      try {
+        let url;
+        let expiresAt;
+        if (typeof RankingProQR !== 'undefined' && typeof RankingProQR.createSession === 'function') {
+          const result = await RankingProQR.createSession(profId, 30 * 24);
+          if (result.status !== 'success') throw new Error(result.message || 'Falha ao criar sessão QR');
+          url = result.url;
+          expiresAt = result.expires_at;
+        } else {
+          const token = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+          url = RankingProQR.buildProfileBuscaUrl('professional', profId, { token });
+          const saved = await fetchAPI('/rest/v1/qr_codes', 'POST', {
+            professional_id: profId,
+            token: token,
+            url: url,
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          });
+          expiresAt = saved?.[0]?.expires_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        }
+        renderProfQrCanvas(url, expiresAt);
+        await showAlert('✅ QR salvo!', 'QR Code gerado e gravado em qr_codes. Válido por 30 dias.');
+      } catch (e) {
+        div.innerHTML = `<p class="prof-qr-empty prof-qr-empty--error">Erro: ${escapeHtml(e.message)}</p>`;
+        await showAlert('❌ Erro', 'Erro ao gerar QR Code: ' + e.message);
+      }
+    };
+
+    // ===== SAIR =====
+    async function sairModo() {
+      const confirmado = await showConfirm({
+        title: 'Sair do perfil?',
+        message: 'Você será desconectado.',
+        confirmText: 'Sair',
+        cancelText: 'Ficar',
+        danger: false
+      });
+      if (confirmado) {
+        if (typeof resetSessionAndGoHome === 'function') {
+          resetSessionAndGoHome();
+        } else {
+          clearSession();
+          window.location.replace('index.html');
+        }
+      }
+    }
+    window.sairModo = sairModo;
+
+    // ===== EVENTOS =====
+    document.getElementById('editToggleBtn').addEventListener('click', () => {
+      toggleEditMode(true);
+      const panel = document.getElementById('profEditPanel');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    if (typeof hasMultipleProfileRoles === 'function' && hasMultipleProfileRoles(getSession())) {
+      const alt = document.getElementById('btnAlternarPerfil');
+      if (alt) alt.style.display = 'inline-flex';
+    }
+    document.getElementById('saveBtn').addEventListener('click', salvarEdicao);
+    document.getElementById('cancelBtn').addEventListener('click', cancelarEdicao);
+    document.getElementById('saveBtnBottom').addEventListener('click', salvarEdicao);
+    document.getElementById('cancelBtnBottom').addEventListener('click', cancelarEdicao);
+
+    edit.autonomo.addEventListener('change', function() {
+      edit.establishment.disabled = this.checked;
+      if (this.checked) {
+        edit.establishment.value = '';
+      }
+    });
+
+    if (typeof bindRegistrationFormatting === 'function') {
+      bindRegistrationFormatting({
+        name: edit.name,
+        specialty: edit.specialty,
+        bio: edit.bio,
+        street: edit.street,
+        city: edit.city,
+        state: edit.state
+      });
+    }
+
+    function initSharkProfDashboard() {
+      if (!(typeof isSharkMode === 'function' ? isSharkMode() : (typeof SHARK_MODE !== 'undefined' && SHARK_MODE))) return;
+      document.querySelectorAll('.shark-frozen-ui').forEach(el => { el.style.display = 'none'; });
+      const careerHub = document.getElementById('careerHubSection');
+      if (careerHub) careerHub.style.display = '';
+    }
+
+    function updateProfPublicUrl() {
+      const rel = `./p/?id=${encodeURIComponent(profId)}`;
+      const url = `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, '')}p/?id=${encodeURIComponent(profId)}`;
+      const input = document.getElementById('profPublicUrl');
+      const open = document.getElementById('profPublicUrlOpen');
+      if (input) input.value = url;
+      if (open) open.href = rel;
+    }
+
+    window.copiarLinkReputacao = async function() {
+      const url = document.getElementById('profPublicUrl')?.value || '';
+      try {
+        await navigator.clipboard.writeText(url);
+        await showAlert('✅ Copiado!', 'Link da página de reputação copiado.');
+      } catch {
+        await showAlert('❌ Erro', 'Não foi possível copiar o link.');
+      }
+    };
+
+    // ===== INICIALIZAR =====
+    async function initProfDashboard() {
+      initSharkProfDashboard();
+      if (uploadBtn) uploadBtn.style.display = 'none';
+      updateProfPublicUrl();
+      await carregarEstabelecimentosSelect();
+      await carregarDados();
+      updateProfPublicUrl();
+      toggleEditMode(false);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => initProfDashboard());
+    } else {
+      initProfDashboard();
+    }
+}
+
+if (window.RANKING_PRO_SCRIPTS_READY || window.PROOFLY_SCRIPTS_READY) bootDashboardProfissional();
+else document.addEventListener('scriptsLoaded', bootDashboardProfissional, { once: true });

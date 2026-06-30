@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Favoritos</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+  <style>
+    @media (min-width: 769px) { body { padding-left: 80px; padding-right: 20px; } }
+    .favoritos-page { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+    .favoritos-hero {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 28px;
+    }
+    .favoritos-hero h1 { font-size: 28px; font-weight: 800; color: #0f172a; margin: 6px 0 4px; letter-spacing: -0.4px; }
+    .favoritos-hero p { color: #64748b; margin: 0; font-size: 15px; }
+    .favoritos-eyebrow { font-size: 13px; font-weight: 600; color: #6366f1; }
+    .favoritos-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 18px; border-radius: 999px; border: 1.5px solid #e2e8f0;
+      background: #fff; color: #475569; font-weight: 600; font-size: 14px;
+      text-decoration: none; transition: 0.2s;
+    }
+    .favoritos-back:hover { border-color: #6366f1; color: #6366f1; }
+    .favoritos-section { margin-bottom: 36px; }
+    .favoritos-section-title {
+      font-size: 16px; font-weight: 700; color: #0f172a;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .favoritos-empty {
+      text-align: center; padding: 48px 24px;
+      background: #f8fafc; border-radius: 20px; border: 1px dashed #e2e8f0;
+    }
+    .favoritos-empty .icon { font-size: 48px; margin-bottom: 12px; }
+    .favoritos-empty h2 { font-size: 20px; color: #0f172a; margin: 0 0 8px; }
+    .favoritos-empty p { color: #64748b; margin: 0 0 20px; font-size: 15px; }
+    .favoritos-empty a {
+      display: inline-block; padding: 12px 24px; border-radius: 999px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+      font-weight: 600; text-decoration: none;
+    }
+    .favoritos-count {
+      font-size: 13px; color: #94a3b8; font-weight: 500; margin-left: 4px;
+    }
+  </style>
+</head>
+<body class="cliente-page">
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <main class="favoritos-page">
+    <header class="favoritos-hero">
+      <div>
+        <span class="favoritos-eyebrow">🏆 Ranking Pro</span>
+        <h1>Meus favoritos</h1>
+        <p>Perfis que você salvou para consultar depois.</p>
+      </div>
+      <a href="./cliente.html" class="favoritos-back">← Voltar à busca</a>
+    </header>
+
+    <div id="favoritosContent">
+      <div class="loading" style="padding:48px;text-align:center;">Carregando favoritos...</div>
+    </div>
+  </main>
+
+  <script src="./loader.js"></script>
+  <script>
+    const PROF_SELECT = 'id,name,specialty,avatar_url,avg_rating,total_reviews,gallery_urls,music_tags,visual_tags,personality_tags,lifestyle_tags,work_tags,price_range,current_establishment:establishments!professionals_current_establishment_id_fkey(id,name),profile:professional_profiles(specialty)';
+    const EST_SELECT = 'id,name,type,city,avatar_url,avg_rating,total_reviews,gallery_urls,infra_tags,music_tags,positioning_tags,audience_tags,vibe_tags';
+
+    function emptyStateHTML() {
+      return `
+        <div class="favoritos-empty">
+          <div class="icon">🤍</div>
+          <h2>Nenhum favorito ainda</h2>
+          <p>Na busca, toque no coração nos cards para salvar profissionais e estabelecimentos.</p>
+          <a href="./cliente.html">Explorar perfis</a>
+        </div>
+      `;
+    }
+
+    async function loadFavoritos() {
+      const container = document.getElementById('favoritosContent');
+      const favs = typeof getStoredFavorites === 'function' ? getStoredFavorites() : [];
+
+      if (!favs.length) {
+        container.innerHTML = emptyStateHTML();
+        return;
+      }
+
+      const profIds = [...new Set(favs.filter(f => f.type === 'prof').map(f => f.id))];
+      const estIds = [...new Set(favs.filter(f => f.type === 'est').map(f => f.id))];
+
+      let profs = [];
+      let ests = [];
+
+      try {
+        if (profIds.length) {
+          profs = await fetchAPI(
+            `/rest/v1/professionals?id=in.(${profIds.join(',')})&select=${encodeURIComponent(PROF_SELECT)}`
+          );
+        }
+        if (estIds.length) {
+          ests = await fetchAPI(
+            `/rest/v1/establishments?id=in.(${estIds.join(',')})&select=${encodeURIComponent(EST_SELECT)}`
+          );
+        }
+      } catch (e) {
+        container.innerHTML = `<div class="favoritos-empty"><p style="color:#ef4444;">Erro ao carregar: ${escapeHtml(e.message)}</p></div>`;
+        return;
+      }
+
+      const profMap = Object.fromEntries(profs.map(p => [String(p.id), p]));
+      const estMap = Object.fromEntries(ests.map(e => [String(e.id), e]));
+
+      const orderedProf = [];
+      const orderedEst = [];
+      const missing = [];
+      const seen = new Set();
+
+      favs.forEach(f => {
+        const key = `${f.type}:${f.id}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        const item = f.type === 'prof' ? profMap[String(f.id)] : estMap[String(f.id)];
+        if (!item) {
+          missing.push(f);
+          return;
+        }
+        if (f.type === 'prof') orderedProf.push(item);
+        else orderedEst.push(item);
+      });
+
+      if (!orderedProf.length && !orderedEst.length) {
+        container.innerHTML = emptyStateHTML();
+        return;
+      }
+
+      let html = '';
+      if (missing.length) {
+        html += `<p style="color:#94a3b8;font-size:13px;margin-bottom:16px;">${missing.length} favorito(s) não encontrado(s) — perfis podem ter sido removidos.</p>`;
+      }
+
+      if (orderedProf.length) {
+        html += `
+          <section class="favoritos-section">
+            <h2 class="favoritos-section-title">👤 Profissionais <span class="favoritos-count">(${orderedProf.length})</span></h2>
+            <div class="result-list tinder-results">${orderedProf.map(p => ProfileCard.renderResultCard(p, 'prof')).join('')}</div>
+          </section>
+        `;
+      }
+
+      if (orderedEst.length) {
+        html += `
+          <section class="favoritos-section">
+            <h2 class="favoritos-section-title">🏢 Estabelecimentos <span class="favoritos-count">(${orderedEst.length})</span></h2>
+            <div class="result-list tinder-results">${orderedEst.map(e => ProfileCard.renderResultCard(e, 'est')).join('')}</div>
+          </section>
+        `;
+      }
+
+      container.innerHTML = html;
+
+      container.querySelectorAll('.tinder-fav-btn').forEach(btn => {
+        btn.addEventListener('click', async (ev) => {
+          ev.stopPropagation();
+          const card = btn.closest('.tinder-card');
+          const onclick = card?.getAttribute('onclick') || '';
+          const match = onclick.match(/(?:openProfile|abrirDrawer)\('(?:profissional|estabelecimento)','([^']+)'\)/);
+          if (!match) return;
+          const id = match[1];
+          const type = card.classList.contains('est') ? 'est' : 'prof';
+          if (typeof removeStoredFavorite === 'function') removeStoredFavorite(type, id);
+          else if (typeof ProfileCard !== 'undefined') ProfileCard.toggleFavorite(type, id, '', btn);
+          await loadFavoritos();
+        });
+      });
+    }
+
+    let favoritosReady = false;
+    function onReady() {
+      if (favoritosReady) return;
+      if (typeof getSession !== 'function') return;
+      favoritosReady = true;
+
+      if (typeof ProfileCard === 'undefined') {
+        const pc = document.createElement('script');
+        pc.src = './components/profile-card.js';
+        pc.onload = () => loadFavoritos();
+        document.body.appendChild(pc);
+      } else {
+        loadFavoritos();
+      }
+    }
+
+    document.addEventListener('scriptsLoaded', onReady, { once: true });
+    if (typeof getSession === 'function') onReady();
+  </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Avaliar</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-page">
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="loading-logo">🏆</div>
+      <div class="loading-text">Carregando Ranking Pro...</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="loading-percent" id="loadingPercent">0%</div>
+    </div>
+  </div>
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <header class="cliente-hero ios-app-header glass-surface" id="clienteHeroHeader">
+    <div class="cliente-hero-inner">
+      <div class="cliente-hero-top">
+        <div class="cliente-hero-text">
+          <span class="cliente-eyebrow">🏆 Ranking Pro</span>
+          <h1>Encontre quem <span class="hero-title-break">combina com você</span></h1>
+          <p>Descubra profissionais e lugares com match personalizado.</p>
+        </div>
+        <div class="cliente-hero-actions">
+          <div class="avalie-header-left" id="avalieHeaderLeft" hidden>
+            <h1 class="avalie-header-title" id="avalieHeaderTitle">
+              <span class="avalie-header-plain">Avalie quem</span><span class="avalie-header-accent"> te atendeu</span>
+            </h1>
+            <a href="./meu-perfil.html" class="avalie-client-chip avalie-client-chip--avatar-only" id="avalieClientChip" aria-label="Seu perfil">
+              <span class="avalie-client-avatar" id="avalieClientAvatar">
+                <img id="avalieClientAvatarImg" class="avalie-client-avatar-img" alt="" hidden />
+                <span class="avalie-client-avatar-fallback" id="avalieClientAvatarFallback">?</span>
+              </span>
+              <span class="avalie-client-tooltip" id="avalieClientTooltip" role="tooltip">—</span>
+            </a>
+          </div>
+          <button type="button" id="clientLocationChip" class="client-location-chip" style="display:none;" title="Toque para atualizar localização" onclick="retryClientLocation()"></button>
+          <div id="userGreeting" class="cliente-greeting"></div>
+          <div class="cliente-hero-pills" id="clienteHeroPills">
+            <a href="./favoritos.html" class="btn-ios-pill btn-ios-pill-ghost" style="text-decoration:none;" aria-label="Favoritos">
+              <span>❤️</span><span>Favoritos</span>
+            </a>
+            <button type="button" class="btn-ios-pill btn-ios-pill-primary" onclick="abrirScannerQR()">
+              <span>📷</span><span>QR</span>
+            </button>
+            <a href="./dev-simulation.html" id="devControlPill" class="btn-ios-pill btn-ios-pill-dev" style="display:none;text-decoration:none;" title="Control Center DEV">⚙️ DEV</a>
+          </div>
+        </div>
+      </div>
+      <div id="clientStyleBar" class="client-style-bar client-style-bar--in-hero" style="display:none;" aria-live="polite">
+        <div class="client-style-bar-inner">
+          <div class="client-style-bar-text">
+            <span class="client-style-label">🎯 Baseado no seu estilo</span>
+            <div id="clientStyleChips" class="client-style-chips"></div>
+          </div>
+          <button type="button" class="btn-style-edit" onclick="abrirOnboardingEstilo()">Editar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="cliente-main">
+
+    <div id="clienteSearchTopZone" class="cliente-search-top-zone">
+    <section class="cliente-avalie-home" id="clienteAvalieHome" hidden aria-label="Avaliar com QR">
+      <button type="button" class="qr-hero-card" onclick="abrirScannerQR()" aria-label="Escanear QR Code para avaliar">
+        <span class="qr-hero-shine" aria-hidden="true"></span>
+        <span class="qr-hero-icon" aria-hidden="true">📷</span>
+        <span class="qr-hero-title">Escanear QR Code</span>
+        <span class="qr-hero-sub">Avalie o profissional ou estabelecimento onde você está</span>
+      </button>
+
+    </section>
+
+    <button type="button" class="avalie-filters-toggle" id="toggleDiscoverySearch" hidden aria-expanded="false" aria-controls="glassDiscoveryShell">
+      <span>🔍 Procurar profissionais e lugares</span>
+      <span class="avalie-filters-chevron" aria-hidden="true">›</span>
+    </button>
+
+    <div class="glass-discovery-shell avalie-filters-panel" id="glassDiscoveryShell">
+      <nav class="cliente-tabs glass-tabs" role="tablist">
+        <button class="cliente-tab active" role="tab" aria-selected="true" data-tab="prof" id="tab-prof" type="button">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">Profissionais</span>
+        </button>
+        <button class="cliente-tab" role="tab" aria-selected="false" data-tab="est" id="tab-est" type="button">
+          <span class="tab-icon">🏢</span>
+          <span class="tab-label">Estabelecimentos</span>
+        </button>
+      </nav>
+
+      <div class="glass-search-zone active" id="searchZoneProf" data-zone="prof">
+        <div id="selectedPillsProf" class="pills-container active-pills-bar"></div>
+        <div class="search-input-wrap glass-input-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="searchProfInput" placeholder="Nome ou especialidade..." autocomplete="off" />
+          <button type="button" class="btn-search-close" id="btnCloseSearchProf" hidden aria-label="Fechar pesquisa">✕</button>
+          <button class="btn btn-search" type="button" id="btnBuscarProf">Buscar</button>
+        </div>
+        <div class="search-actions">
+          <button class="btn btn-outline btn-small" type="button" id="btnListarProf" onclick="toggleListarProfissionais()">📋 Listar todos</button>
+          <a href="./minhas-avaliacoes.html" class="avalie-historico-link" id="avalieHistoricoProf" hidden>📋 Histórico</a>
+        </div>
+        <div class="sort-toolbar" id="sortToolbarProf"></div>
+      </div>
+
+      <div class="glass-search-zone" id="searchZoneEst" data-zone="est">
+        <div id="selectedPillsEst" class="pills-container active-pills-bar"></div>
+        <div class="search-input-wrap glass-input-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="searchEstabInput" placeholder="Nome do estabelecimento..." autocomplete="off" />
+          <button type="button" class="btn-search-close" id="btnCloseSearchEst" hidden aria-label="Fechar pesquisa">✕</button>
+          <button class="btn btn-search" type="button" id="btnBuscarEst">Buscar</button>
+        </div>
+        <div class="search-actions">
+          <button class="btn btn-outline btn-small" type="button" id="btnListarEst" onclick="toggleListarEstabelecimentos()">📋 Listar todos</button>
+          <a href="./minhas-avaliacoes.html" class="avalie-historico-link" id="avalieHistoricoEst" hidden>📋 Histórico</a>
+        </div>
+        <div class="sort-toolbar" id="sortToolbarEst"></div>
+      </div>
+    </div>
+    </div>
+
+    <section class="cliente-qr-upload-card glass-surface" id="clienteQrUploadCard" aria-label="Enviar QR Code para avaliar">
+      <div class="cliente-qr-upload-head">
+        <p class="cliente-qr-upload-eyebrow">📲 Avaliação verificada no local</p>
+        <h2 class="cliente-qr-upload-title">Enviar QR Code</h2>
+        <p class="cliente-qr-upload-sub">Envie a foto do QR e confirme para avaliar</p>
+      </div>
+      <div class="qr-upload-panel" id="qrUploadPanel">
+        <p class="qr-upload-hint" id="qrUploadHint">Toque abaixo e escolha a imagem do barcode</p>
+        <input type="file" id="qrUploadInput" accept="image/*" hidden />
+        <button type="button" class="qr-upload-btn" id="qrUploadBtn">
+          <span class="qr-upload-btn-icon" aria-hidden="true">🖼️</span>
+          <span>Enviar imagem do QR</span>
+        </button>
+        <img id="qrUploadPreview" class="qr-upload-preview" alt="Preview do QR" hidden />
+        <button type="button" class="qr-upload-go-btn" id="qrGoBtn" hidden>Ir — ver link do QR</button>
+        <div id="qrDecodePanel" class="qr-decode-panel" hidden>
+          <p class="qr-decode-panel-title">Informação do QR Code</p>
+          <div class="qr-decode-block">
+            <span class="qr-decode-kicker">Lido no barcode</span>
+            <code id="qrDecodeRaw" class="qr-decode-value">—</code>
+          </div>
+          <div class="qr-decode-block qr-decode-block--dest">
+            <span class="qr-decode-kicker">Link de destino</span>
+            <a id="qrDecodeTarget" class="qr-decode-link" href="#" target="_blank" rel="noopener noreferrer">—</a>
+          </div>
+          <div class="qr-decode-actions">
+            <button type="button" class="qr-decode-open-btn" id="qrConfirmOpenBtn">Abrir link</button>
+            <button type="button" class="qr-decode-cancel-btn" id="qrDecodeCloseBtn" type="button">Fechar</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="cliente-qr-upload-camera" onclick="abrirScannerQR()">📷 Prefere usar a câmera?</button>
+    </section>
+
+    <div id="clientStyleBarSlot" class="client-style-bar-slot client-style-bar-slot--main"></div>
+
+    <section class="reco-carousel-wrap active" id="recoWrapProf" aria-label="Top profissionais">
+      <div class="reco-carousel-head">
+        <div class="reco-carousel-head-text">
+          <h2 class="reco-carousel-title">🔥 Top profissionais</h2>
+          <p class="reco-carousel-sub">Melhor reputação e match com o seu estilo</p>
+        </div>
+        <div class="reco-carousel-arrows">
+          <button type="button" class="reco-arrow" data-target="recoTrackProf" data-dir="-1" aria-label="Anterior">‹</button>
+          <button type="button" class="reco-arrow" data-target="recoTrackProf" data-dir="1" aria-label="Próximo">›</button>
+        </div>
+      </div>
+      <div class="reco-carousel-track" id="recoTrackProf">
+        <div class="reco-carousel-loading">Carregando recomendações...</div>
+      </div>
+    </section>
+
+    <section class="reco-carousel-wrap" id="recoWrapEst" aria-label="Top estabelecimentos">
+      <div class="reco-carousel-head">
+        <div class="reco-carousel-head-text">
+          <h2 class="reco-carousel-title">⭐ Top estabelecimentos</h2>
+          <p class="reco-carousel-sub">Lugares mais bem avaliados perto de você</p>
+        </div>
+        <div class="reco-carousel-arrows">
+          <button type="button" class="reco-arrow" data-target="recoTrackEst" data-dir="-1" aria-label="Anterior">‹</button>
+          <button type="button" class="reco-arrow" data-target="recoTrackEst" data-dir="1" aria-label="Próximo">›</button>
+        </div>
+      </div>
+      <div class="reco-carousel-track" id="recoTrackEst">
+        <div class="reco-carousel-loading">Carregando recomendações...</div>
+      </div>
+    </section>
+
+    <!-- ===== PROFISSIONAIS ===== -->
+    <section class="cliente-panel active" id="panel-prof" role="tabpanel">
+
+      <button type="button" class="avalie-filters-toggle" id="toggleFiltersProf" hidden aria-expanded="false" aria-controls="tinderFiltersProf">
+        <span>🎛️ Filtros avançados</span>
+        <span class="avalie-filters-chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="filters-card glass-surface avalie-filters-panel" id="tinderFiltersProf"></div>
+
+      <div class="cliente-view-toolbar" id="clienteViewToolbarProf" hidden aria-label="Modo de visualização">
+        <span class="filter-row-label">Visualização</span>
+        <div class="contratar-view-pills">
+          <button type="button" class="pill contratar-view-pill cliente-view-pill active" data-view="cards" data-target="prof" title="Cards visuais">🃏 Cards</button>
+          <button type="button" class="pill contratar-view-pill cliente-view-pill" data-view="lista" data-target="prof" title="Lista compacta">📋 Lista</button>
+          <button type="button" class="pill contratar-view-pill cliente-view-pill" data-view="grade" data-target="prof" title="Blocos de mini cards">🧩 Blocos</button>
+        </div>
+      </div>
+
+      <div id="profissionaisList" class="result-list tinder-results">
+        <div class="empty-state">
+          <div class="empty-state-icon">👤</div>
+          <p class="empty-state-title">Nenhum resultado ainda</p>
+          <p class="empty-state-desc">Toque nas pílulas abaixo ou clique em "Listar todos".</p>
+        </div>
+      </div>
+      <div id="profissionaisPagination" class="pagination"></div>
+    </section>
+
+    <!-- ===== ESTABELECIMENTOS ===== -->
+    <section class="cliente-panel" id="panel-est" role="tabpanel">
+
+      <button type="button" class="avalie-filters-toggle" id="toggleFiltersEst" hidden aria-expanded="false" aria-controls="tinderFiltersEst">
+        <span>🎛️ Filtros avançados</span>
+        <span class="avalie-filters-chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="filters-card glass-surface avalie-filters-panel" id="tinderFiltersEst"></div>
+
+      <div class="cliente-view-toolbar" id="clienteViewToolbarEst" hidden aria-label="Modo de visualização">
+        <span class="filter-row-label">Visualização</span>
+        <div class="contratar-view-pills">
+          <button type="button" class="pill contratar-view-pill cliente-view-pill active" data-view="cards" data-target="est" title="Cards visuais">🃏 Cards</button>
+          <button type="button" class="pill contratar-view-pill cliente-view-pill" data-view="lista" data-target="est" title="Lista compacta">📋 Lista</button>
+          <button type="button" class="pill contratar-view-pill cliente-view-pill" data-view="grade" data-target="est" title="Blocos de mini cards">🧩 Blocos</button>
+        </div>
+      </div>
+
+      <div id="estabelecimentosList" class="result-list tinder-results">
+        <div class="empty-state">
+          <div class="empty-state-icon">🏢</div>
+          <p class="empty-state-title">Nenhum resultado ainda</p>
+          <p class="empty-state-desc">Toque nas pílulas abaixo ou clique em "Listar todos".</p>
+        </div>
+      </div>
+      <div id="estabelecimentosPagination" class="pagination"></div>
+    </section>
+  </main>
+
+  <div class="drawer-overlay" id="drawerOverlay" onclick="fecharDrawer()"></div>
+  <div class="drawer drawer-tinder" id="drawer">
+    <div class="drawer-drag-handle" aria-hidden="true"></div>
+    <button type="button" class="drawer-close-floating" onclick="fecharDrawer()" aria-label="Fechar">✕</button>
+    <div class="drawer-body" id="drawerBody"><div class="loading">Carregando...</div></div>
+    <div id="drawerActions"></div>
+  </div>
+
+  <script src="./loader.js"></script>
+  <script src="./components/cliente-page-boot.js" data-app="./cliente.js"></script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Perfil Estabelecimento</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./profile-dashboard.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-page prof-dashboard-page est-dashboard-page">
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <header class="cliente-hero ios-app-header glass-surface prof-dash-topbar">
+    <div class="cliente-hero-inner">
+      <div class="cliente-hero-top">
+        <div class="cliente-hero-text">
+          <span class="cliente-eyebrow">🏢 Modo Estabelecimento</span>
+          <h1>Reputação do salão</h1>
+          <p>Nota verificada do local — gere QR e compartilhe o link público.</p>
+        </div>
+        <div class="cliente-hero-actions cliente-hero-pills action-bar" id="actionBar">
+          <a href="./selecionar-perfil.html?forceProfileSelect=true" class="btn-ios-pill btn-ios-pill-ghost" id="btnAlternarPerfil" style="display:none;text-decoration:none;">🔀 Trocar</a>
+          <button type="button" class="btn-ios-pill btn-ios-pill-primary btn-save" id="saveBtn" style="display:none;">💾 Salvar</button>
+          <button type="button" class="btn-ios-pill btn-ios-pill-ghost btn-cancel" id="cancelBtn" style="display:none;">Cancelar</button>
+          <button type="button" class="btn-ios-pill btn-ios-pill-ghost" onclick="sairModo()" id="sairBtn">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="cliente-main prof-dash-main">
+
+    <!-- 1 · HERO -->
+    <section class="glass-surface prof-dash-panel prof-dash-panel--hero">
+      <div class="prof-hero-grid">
+        <div class="prof-hero-reputation">
+          <p class="prof-hero-eyebrow">Raio-X da reputação</p>
+          <span class="prof-verified-badge" id="estVerifiedBadge" hidden>✓ Avaliações verificadas via QR</span>
+          <div class="profile-rating-block prof-hero-rating empty" id="estRatingBlock">
+            <span class="prof-hero-score" id="estRatingValue">—</span>
+            <div class="prof-hero-rating-meta">
+              <div class="rating-stars" id="estRatingStars">☆☆☆☆☆</div>
+              <span class="rating-count" id="estRatingCount">Sem avaliações verificadas</span>
+            </div>
+          </div>
+          <p class="prof-hero-workplace" id="estTeamMeta">Carregando equipe...</p>
+        </div>
+        <div class="prof-hero-identity">
+          <div class="profile-header prof-header prof-header--compact est-header">
+            <div class="avatar-wrapper">
+              <img id="estAvatar" class="avatar" src="" alt="Logo" style="display:none;" />
+              <div id="estAvatarPlaceholder" class="avatar">?</div>
+              <button class="avatar-upload-btn" id="uploadAvatarBtn" title="Alterar logo">📷</button>
+              <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" />
+            </div>
+            <div class="info">
+              <div class="name" id="estName">Carregando...</div>
+              <div class="username" id="estUsername"></div>
+              <div class="subtitle" id="estCity">-</div>
+              <div class="meta-line" id="estMeta"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="proofly-score-block empty shark-frozen-ui" id="estProoflyBlock" hidden>
+        <div class="proofly-score-ring" id="estProoflyRing" aria-label="Ranking Pro Score"></div>
+        <div class="proofly-score-detail">
+          <div class="title" id="estProoflyLabel">Ranking Pro Score</div>
+          <div class="breakdown" id="estProoflyBreakdown">Aguardando avaliações...</div>
+          <div class="proofly-dash-badges" id="estProoflyBadges"></div>
+          <div class="proofly-social-dash" id="estProoflySocial"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · 🔥 TOP EMPLOYEES — mercado de talentos -->
+    <section class="glass-surface prof-dash-panel talent-hub-section" id="rhHubSection">
+      <div class="section-title" style="margin-top:0;"><span class="icon">🔥</span> Top Employees <span class="hint">autônomos · match + reputação</span></div>
+      <div id="rhRecoGrid" class="rh-reco-grid"><p class="prof-dash-muted">Carregando recomendações...</p></div>
+      <div class="rh-hub-banner" style="margin-top:20px;">
+        <div>
+          <h3>👥 Centro RH</h3>
+          <p>Equipe atual e negociações de contratação.</p>
+        </div>
+        <a href="./buscar.html" class="btn btn-small" style="text-decoration:none;">🔍 Buscar profissionais</a>
+      </div>
+      <div class="section-title" style="margin-top:8px;"><span class="icon">👥</span> Equipe atual <span class="hint">já vinculados</span></div>
+      <div id="rhTeamGrid" class="rh-team-grid"><p class="prof-dash-muted">Carregando equipe...</p></div>
+      <div class="section-title" style="margin-top:24px;"><span class="icon">📥</span> Candidaturas recebidas</div>
+      <div id="rhApplicationsList"><p class="prof-dash-muted">Nenhuma candidatura ainda.</p></div>
+      <div class="section-title" style="margin-top:24px;"><span class="icon">📨</span> Propostas enviadas</div>
+      <div id="rhProposalsList"><p class="prof-dash-muted">Nenhuma proposta ainda.</p></div>
+    </section>
+
+    <!-- 2 · QR -->
+    <section class="glass-surface prof-dash-panel" id="estQrSection">
+      <button type="button" class="qr-hero-card prof-qr-hero" onclick="gerarQRCodeEstab()" aria-label="Gerar QR Code para avaliação verificada do local">
+        <span class="qr-hero-shine" aria-hidden="true"></span>
+        <span class="qr-hero-icon" aria-hidden="true">📲</span>
+        <span class="qr-hero-title">Gerar QR Code</span>
+        <span class="qr-hero-sub">Cliente escaneia no balcão — avaliação verificada no local</span>
+      </button>
+      <div id="qrResult" class="prof-qr-result"></div>
+    </section>
+
+    <!-- 3 · Página de reputação -->
+    <section class="glass-surface prof-dash-panel" id="estReputationPageBlock">
+      <div class="section-title"><span class="icon">🔗</span> Página de reputação</div>
+      <p class="prof-dash-lead">Link público para descrição, Instagram e cartão de visita.</p>
+      <input type="text" readonly id="estPublicUrl" class="glass-input prof-public-url-input" />
+      <div class="prof-action-row">
+        <button type="button" class="btn-ios-pill btn-ios-pill-primary" onclick="copiarLinkReputacaoEstab()">Copiar link</button>
+        <a href="#" id="estPublicUrlOpen" target="_blank" rel="noopener" class="btn-ios-pill btn-ios-pill-ghost" style="text-decoration:none;">Ver como cliente</a>
+      </div>
+      <div class="prof-visit-card">
+        <p class="prof-visit-card-label">Cartão de visita</p>
+        <p id="viewDescCard" class="prof-visit-bio">—</p>
+        <p id="viewInstagramCard" class="prof-visit-meta">—</p>
+        <p id="viewWhatsappCard" class="prof-visit-meta">—</p>
+      </div>
+    </section>
+
+    <!-- 4 · ALERTA -->
+    <section class="glass-surface prof-dash-panel prof-dash-panel--alert" id="estReviewAlert" hidden>
+      <p class="prof-alert-text" id="estReviewAlertText"></p>
+      <a href="#estReviewsSection" class="btn-ios-pill btn-ios-pill-primary" style="text-decoration:none;">Ver avaliações</a>
+    </section>
+
+    <!-- 5 · AVALIAÇÕES -->
+    <section class="glass-surface prof-dash-panel" id="estReviewsSection">
+      <div class="prof-card-head">
+        <h2 class="section-title" style="margin:0;"><span class="icon">⭐</span> Avaliações de clientes</h2>
+        <a href="./minhas-avaliacoes.html" class="prof-dash-link">Ver todas</a>
+      </div>
+      <div id="reviewsList"><p class="prof-dash-muted">Carregando...</p></div>
+      <details class="prof-dash-details shark-frozen-ui">
+        <summary>Avaliações de profissionais</summary>
+        <div id="profEstReviewsList"><p class="prof-dash-muted">Carregando...</p></div>
+      </details>
+    </section>
+
+    <!-- 6 · WIDGET -->
+    <section class="glass-surface prof-dash-panel" id="widgetSection">
+      <div class="section-title"><span class="icon">📣</span> Widget para seu site <span class="hint">prova social</span></div>
+      <p class="prof-dash-lead">Cole no site do estabelecimento para exibir nota e avaliações verificadas.</p>
+      <div class="form-group">
+        <label for="widgetModeSelect">Modo do widget</label>
+        <select id="widgetModeSelect" class="glass-input">
+          <option value="compact">Compacto (badge)</option>
+          <option value="medium" selected>Médio (3 avaliações)</option>
+          <option value="full">Completo (5 avaliações)</option>
+        </select>
+      </div>
+      <div id="widgetPreviewBox" class="est-widget-preview">
+        <div class="pw-loading">Carregando preview do widget...</div>
+      </div>
+      <pre id="widgetEmbedCode" class="est-widget-code">—</pre>
+      <div class="prof-action-row">
+        <button type="button" class="btn-ios-pill btn-ios-pill-primary" id="widgetCopyBtn">Copiar HTML</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost" id="widgetCopyIframeBtn">Copiar iframe</button>
+        <a href="./widget.html" class="btn-ios-pill btn-ios-pill-ghost" id="widgetOpenPage" style="text-decoration:none;" target="_blank" rel="noopener">Abrir widget</a>
+      </div>
+    </section>
+
+    <!-- IDs para JS (oculto) -->
+    <section class="prof-dash-card--sr shark-frozen-ui" id="estTodayHub" aria-hidden="true">
+      <span id="estHeroEyebrow"></span>
+      <span id="estTodayTitle"></span>
+      <p id="estTodaySub"></p>
+      <a href="./buscar.html" id="estCtaBuscar"></a>
+      <a href="./estabelecimento-marketplace.html" id="estCtaMarketplace"></a>
+      <span id="estTodayActiveProfs"></span>
+      <span id="estTodayAvgPerf"></span>
+      <span id="estTodayReviews"></span>
+      <span id="estTodayOpenSlots"></span>
+      <span id="estTodaySuggestions"></span>
+      <p id="estTodayHint"></p>
+      <div class="summary-grid" id="summaryGrid">
+        <div class="stat-box"><div class="number" id="profCount">0</div><div class="label">Profissionais</div></div>
+        <div class="stat-box"><div class="number" id="reviewCount">0</div><div class="label">Avaliações</div></div>
+        <div class="stat-box"><div class="number" id="avgRating">0.0</div><div class="label">Média</div></div>
+      </div>
+      <div id="talentAlertsWidget"></div>
+    </section>
+
+    <section class="glass-surface prof-dash-panel shark-plan-card" id="estPlanCard" hidden>
+      <div class="section-title"><span class="icon">💳</span> Plano / Assinatura</div>
+      <p class="prof-dash-lead">Em breve: assinatura para reputação verificada e QR ilimitado.</p>
+      <span class="mock-badge">Placeholder — sem integração de pagamento</span>
+    </section>
+
+    <!-- 8 · CTA EDITAR -->
+    <section class="glass-surface prof-dash-panel prof-dash-edit-cta" id="estEditCta">
+      <div class="section-title"><span class="icon">✏️</span> Perfil público completo</div>
+      <p class="prof-dash-lead">Logo, galeria, tags e endereço — o que o cliente vê na busca.</p>
+      <button type="button" class="btn-ios-pill btn-ios-pill-primary btn-edit" id="editToggleBtn">Editar perfil</button>
+    </section>
+
+    <!-- 9 · PAINEL EDIÇÃO -->
+    <section class="glass-surface prof-dash-panel prof-dash-editable" id="estEditPanel" hidden>
+      <div class="section-title"><span class="icon">✏️</span> Editando perfil público</div>
+
+      <!-- GALERIA -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📸</span> Galeria <span class="hint">Até 4 fotos</span></div>
+        <div class="view-mode">
+          <div id="estGalleryDash" style="display:flex;flex-wrap:wrap;gap:10px;"><p class="prof-dash-muted">Carregando...</p></div>
+        </div>
+        <div class="edit-mode-field">
+          <div class="gallery-upload-grid" id="estGalleryEdit"></div>
+          <input type="file" id="estGalleryInput" accept="image/*" multiple style="display:none;" />
+          <button type="button" class="btn-gallery-add" id="estGalleryAddBtn">📷 Adicionar fotos</button>
+          <span class="gallery-edit-hint">A primeira foto será a principal do perfil.</span>
+        </div>
+      </div>
+
+      <!-- IDENTIDADE -->
+      <div class="section-block" id="formInicio">
+        <div class="section-title"><span class="icon">🏷️</span> Identidade <span class="hint">Nome e tipo</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Nome</label><p id="viewName" class="prof-view-value prof-view-value--lg">-</p></div>
+          <div class="edit-mode-field"><label>Nome *</label><input type="text" id="editName" required /></div>
+        </div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tipo</label><p id="viewType" class="prof-view-value">-</p></div>
+          <div class="edit-mode-field"><label>Tipo</label><input type="text" id="editType" placeholder="Ex: Barbearia, Salão" /></div>
+        </div>
+      </div>
+
+      <!-- DESCRIÇÃO -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📝</span> Sobre <span class="hint">Descrição</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Descrição</label><p id="viewDescription" class="prof-view-value prof-view-value--bio">-</p></div>
+          <div class="edit-mode-field"><label>Descrição</label><textarea id="editDescription" rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <!-- LOCALIZAÇÃO -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📍</span> Localização <span class="hint">Endereço</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Endereço</label><p id="viewAddress" class="prof-view-value">-</p></div>
+          <div class="edit-mode-field"><label>Rua</label><input type="text" id="editStreet" /></div>
+        </div>
+        <div class="form-row edit-mode-field">
+          <div class="form-group"><label>Número</label><input type="text" id="editNumber" /></div>
+          <div class="form-group"><label>Bairro</label><input type="text" id="editNeighborhood" /></div>
+        </div>
+        <div class="form-row edit-mode-field">
+          <div class="form-group"><label>Cidade</label><input type="text" id="editCity" /></div>
+          <div class="form-group"><label>Estado</label><input type="text" id="editState" maxlength="2" /></div>
+        </div>
+        <div class="form-group edit-mode-field"><label>País</label><input type="text" id="editCountry" /></div>
+      </div>
+
+      <!-- CONTATO -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📞</span> Contato <span class="hint">Cartão de visita</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>WhatsApp</label><p id="viewPhone" class="prof-view-value">-</p></div>
+          <div class="edit-mode-field"><label>WhatsApp</label><input type="tel" id="editPhone" placeholder="(00) 00000-0000" oninput="formatarTelefone(this)" />
+            <span class="error-message">Telefone inválido</span></div>
+        </div>
+        <div class="form-group">
+          <div class="view-mode"><label>Instagram</label><p id="viewInstagram" class="prof-view-value">-</p></div>
+          <div class="edit-mode-field"><label>Instagram</label><input type="text" id="editInstagram" placeholder="@usuario" /></div>
+        </div>
+      </div>
+
+      <!-- TAGS -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🏗️</span> Infraestrutura <span class="hint">Estrutura</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewInfraTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editInfraTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="infraTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🎵</span> Música Ambiente <span class="hint">Estilo musical</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewMusicTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editMusicTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="musicTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title"><span class="icon">💎</span> Posicionamento <span class="hint">Posicionamento</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewPositioningTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editPositioningTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="positioningTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title"><span class="icon">👥</span> Público <span class="hint">Público-alvo</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewAudienceTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editAudienceTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="audienceTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🌟</span> Vibe <span class="hint">Atmosfera</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewVibeTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editVibeTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="vibeTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-actions-bottom">
+        <button type="button" class="btn-ios-pill btn-ios-pill-success btn-save" id="saveBtnBottom" style="display:none;">💾 Salvar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost btn-cancel" id="cancelBtnBottom" style="display:none;">❌ Cancelar</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="./site-paths.js"></script>
+  <script src="./loader.js"></script>
+  <script src="./screens/dashboard-estabelecimento.js"></script>
+</body>
+</html>

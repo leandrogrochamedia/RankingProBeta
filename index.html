@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Reputação verificada</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Ranking Pro" />
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+  <style>
+    body.home-splash {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18), transparent 55%),
+        radial-gradient(circle at 80% 90%, rgba(139, 92, 246, 0.08), transparent 50%),
+        #08080f;
+    }
+    .home-splash-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px 32px;
+    }
+    .home-splash-card {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    .home-splash-logo {
+      font-size: 52px;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .home-splash-card h1 {
+      font-size: clamp(30px, 6vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #f8fafc;
+      margin: 0 0 10px;
+      line-height: 1.15;
+    }
+    .home-splash-lead {
+      font-size: 16px;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin: 0 0 28px;
+    }
+    .home-splash-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .home-splash-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 17px;
+      font-weight: 700;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .home-splash-btn--primary {
+      color: #fff;
+      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      box-shadow: 0 12px 40px rgba(99, 102, 241, 0.35);
+    }
+    .home-splash-btn--primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 48px rgba(99, 102, 241, 0.45);
+    }
+    .home-splash-btn--secondary {
+      color: #e2e8f0;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .home-splash-btn--secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+    .home-splash-divider {
+      margin: 24px 0 16px;
+      font-size: 12px;
+      color: #64748b;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .home-splash-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .home-splash-link {
+      font-size: 14px;
+      color: #94a3b8;
+      text-decoration: none;
+    }
+    .home-splash-link:hover { color: #c4b5fd; }
+    .home-splash-footer {
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body class="home-splash">
+
+  <div class="qr-modal" id="qrScannerContainer">
+    <div class="qr-modal-backdrop" onclick="fecharScannerQR()"></div>
+    <div class="qr-modal-content">
+      <div class="qr-modal-header">
+        <h3>📷 Escanear QR Code</h3>
+        <button class="qr-modal-close" onclick="fecharScannerQR()">✕</button>
+      </div>
+      <div class="scanner-box"><div id="qr-reader"></div></div>
+      <p id="qrScannerStatus" class="qr-status">Iniciando câmera...</p>
+    </div>
+  </div>
+
+  <main class="home-splash-main">
+    <div class="home-splash-card">
+      <div class="home-splash-logo" aria-hidden="true">🏆</div>
+      <h1>Ranking Pro</h1>
+      <p class="home-splash-lead">
+        Reputação verificada por QR — avaliações reais de clientes que estiveram no seu atendimento.
+      </p>
+
+      <div class="home-splash-actions">
+        <a href="./login.html" class="home-splash-btn home-splash-btn--primary">
+          <span aria-hidden="true">🔐</span>
+          <span>Entrar</span>
+        </a>
+        <button type="button" class="home-splash-btn home-splash-btn--secondary" id="btnScanQr">
+          <span aria-hidden="true">📷</span>
+          <span>Escanear QR para avaliar</span>
+        </button>
+      </div>
+
+      <p class="home-splash-divider">ou continue sem conta</p>
+
+      <div class="home-splash-links">
+        <a href="./cliente.html" class="home-splash-link">Buscar profissionais e lugares →</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="home-splash-footer">
+    © 2026 Ranking Pro — Reputação verificada
+  </footer>
+
+  <script src="./index-qr.js"></script>
+  <script src="./loader.js"></script>
+
+</body>
+</html>

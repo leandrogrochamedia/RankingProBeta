@@ -1,0 +1,591 @@
+/* ============================================================
+   Ranking Pro — Overlay System (canonical)
+   Loading · Alert · Confirm · Sheet · QR · Toast
+   Uma linguagem visual glass dark em todas as “janelinhas”.
+   ============================================================ */
+
+:root {
+  --rp-overlay-backdrop: rgba(8, 8, 15, 0.78);
+  --rp-overlay-blur: blur(14px);
+  --rp-overlay-panel-bg: rgba(18, 18, 28, 0.92);
+  --rp-overlay-panel-border: rgba(255, 255, 255, 0.1);
+  --rp-overlay-panel-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --rp-overlay-radius: 22px;
+  --rp-overlay-radius-sheet: 24px;
+  --rp-overlay-title: #f8fafc;
+  --rp-overlay-text: #cbd5e1;
+  --rp-overlay-muted: #94a3b8;
+  --z-overlay-loading: 10000;
+  --z-overlay-dialog: 100050;
+  --z-overlay-sheet: 12000;
+  --z-overlay-qr: 9000;
+}
+
+/* ----- Backdrop + root overlay ----- */
+.rp-overlay,
+.loading-overlay,
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--rp-overlay-backdrop);
+  backdrop-filter: var(--rp-overlay-blur);
+  -webkit-backdrop-filter: var(--rp-overlay-blur);
+  z-index: var(--z-overlay-dialog);
+  animation: rpOverlayFadeIn 0.22s ease;
+}
+
+.rp-overlay--loading,
+.loading-overlay:not(.loading-overlay--dialog) {
+  z-index: var(--z-overlay-loading);
+  animation: none;
+}
+
+.rp-overlay--sheet,
+.hiring-modal,
+.style-onboarding-modal {
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px 16px 0;
+  z-index: var(--z-overlay-sheet);
+}
+
+.rp-overlay.closing,
+.loading-overlay.closing,
+.confirm-overlay.closing {
+  animation: rpOverlayFadeOut 0.22s ease forwards;
+  pointer-events: none;
+}
+
+.rp-overlay-backdrop,
+.hiring-modal-backdrop,
+.style-onboarding-backdrop,
+.qr-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  backdrop-filter: inherit;
+  -webkit-backdrop-filter: inherit;
+}
+
+.hiring-modal-backdrop,
+.style-onboarding-backdrop,
+.qr-modal-backdrop {
+  background: var(--rp-overlay-backdrop);
+  backdrop-filter: var(--rp-overlay-blur);
+  -webkit-backdrop-filter: var(--rp-overlay-blur);
+}
+
+/* ----- Center panel (alert / confirm / loading) ----- */
+.rp-overlay-panel,
+.loading-box,
+.confirm-box {
+  position: relative;
+  z-index: 1;
+  width: min(360px, 92vw);
+  max-width: 420px;
+  padding: 36px 32px 28px;
+  text-align: center;
+  border-radius: var(--rp-overlay-radius);
+  background: var(--rp-overlay-panel-bg);
+  border: 1px solid var(--rp-overlay-panel-border);
+  box-shadow: var(--rp-overlay-panel-shadow);
+  animation: rpOverlayZoomIn 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rp-overlay-panel.closing,
+.loading-box.closing,
+.confirm-box.closing {
+  animation: rpOverlayZoomOut 0.2s ease forwards;
+}
+
+.rp-overlay-icon,
+.loading-logo {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 14px;
+  animation: rpOverlayPulse 2s ease-in-out infinite;
+}
+
+.rp-overlay-title,
+.loading-text,
+.confirm-box h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--rp-overlay-title);
+  letter-spacing: -0.02em;
+}
+
+.rp-overlay-message,
+.loading-subtext,
+.confirm-box .confirm-message,
+.confirm-box p.confirm-message {
+  margin: 0 0 22px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--rp-overlay-text);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.rp-overlay-spacer,
+.loading-dialog-spacer {
+  height: 8px;
+  margin-bottom: 14px;
+}
+
+.rp-overlay-debug,
+.loading-dialog-debug,
+.confirm-debug {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  color: #cbd5e1;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow: auto;
+}
+
+/* ----- Actions ----- */
+.rp-overlay-actions,
+.loading-dialog-actions,
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rp-overlay-actions .btn,
+.rp-overlay-actions button,
+.loading-dialog-actions .btn,
+.confirm-actions button {
+  min-width: 120px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.rp-overlay-actions .btn-primary,
+.confirm-actions .btn-confirm,
+.confirm-actions .btn-ok {
+  background: var(--gradient-primary);
+  color: #fff;
+}
+
+.rp-overlay-actions .btn-primary:hover,
+.confirm-actions .btn-confirm:hover,
+.confirm-actions .btn-ok:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+}
+
+.rp-overlay-actions .btn-outline,
+.confirm-actions .btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--rp-overlay-title);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.rp-overlay-actions .btn-outline:hover,
+.confirm-actions .btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.rp-overlay-actions .btn-danger,
+.confirm-actions .btn-confirm.danger {
+  background: var(--gradient-red);
+  color: #fff;
+}
+
+.rp-overlay-actions .btn-danger:hover,
+.confirm-actions .btn-confirm.danger:hover {
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+}
+
+/* ----- Tones ----- */
+.rp-overlay-panel.is-success,
+.loading-box--dialog.is-success {
+  border-color: rgba(48, 209, 88, 0.32);
+  box-shadow: 0 24px 64px rgba(16, 185, 129, 0.12), var(--rp-overlay-panel-shadow);
+}
+
+.rp-overlay-panel.is-error,
+.loading-box--dialog.is-error {
+  border-color: rgba(255, 69, 58, 0.32);
+  box-shadow: 0 24px 64px rgba(255, 69, 58, 0.1), var(--rp-overlay-panel-shadow);
+}
+
+.rp-overlay-panel.is-warning {
+  border-color: rgba(245, 158, 11, 0.32);
+}
+
+/* ----- Loading specifics (boot de página — não é dialog) ----- */
+.loading-overlay:not(.loading-overlay--dialog) .loading-box {
+  animation: none;
+  width: 88%;
+  max-width: 360px;
+  padding: 40px 44px 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.loading-overlay:not(.loading-overlay--dialog) .loading-logo {
+  margin-bottom: 16px;
+}
+
+.loading-overlay:not(.loading-overlay--dialog) .loading-text {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+}
+
+.loading-overlay:not(.hidden) {
+  visibility: visible;
+}
+
+.loading-overlay--dialog {
+  z-index: var(--z-overlay-dialog);
+}
+
+.loading-box--dialog .loading-text {
+  margin-bottom: 12px;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--gradient-primary);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.loading-percent {
+  color: var(--rp-overlay-muted);
+  font-size: var(--font-size-sm, 12px);
+  margin-top: 12px;
+}
+
+/* ----- Bottom sheet ----- */
+.rp-overlay-sheet,
+.hiring-modal-sheet,
+.style-onboarding-sheet {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 24px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+  border-radius: var(--rp-overlay-radius-sheet) var(--rp-overlay-radius-sheet) 18px 18px;
+  background: var(--rp-overlay-panel-bg);
+  border: 1px solid var(--rp-overlay-panel-border);
+  border-bottom: none;
+  box-shadow: var(--rp-overlay-panel-shadow);
+  animation: rpOverlaySheetUp 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.rp-overlay-close,
+.hiring-modal-close,
+.style-onboarding-close,
+.qr-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--rp-overlay-title);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.rp-overlay-close:hover,
+.hiring-modal-close:hover,
+.style-onboarding-close:hover,
+.qr-modal-close:hover {
+  background: rgba(99, 102, 241, 0.35);
+  transform: scale(1.04);
+}
+
+.rp-overlay-sheet-title,
+.hiring-modal-title,
+.style-onboarding-sheet h2 {
+  margin: 0 0 8px;
+  padding-right: 40px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--rp-overlay-title);
+  letter-spacing: -0.03em;
+}
+
+.rp-overlay-sheet-sub,
+.hiring-modal-sub,
+.style-onboarding-sub {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--rp-overlay-muted);
+}
+
+/* ----- QR modal ----- */
+.qr-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay-qr);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.qr-modal.open {
+  display: flex;
+}
+
+.qr-modal-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  border-radius: var(--rp-overlay-radius);
+  background: var(--rp-overlay-panel-bg);
+  border: 1px solid var(--rp-overlay-panel-border);
+  box-shadow: var(--rp-overlay-panel-shadow);
+  animation: rpOverlayZoomIn 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qr-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-right: 44px;
+}
+
+.qr-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rp-overlay-title);
+}
+
+.qr-status,
+.qr-upload-hint {
+  color: var(--rp-overlay-muted);
+}
+
+/* ----- Inline page toast (#userMessage) ----- */
+.user-message,
+.rp-toast-inline {
+  display: none;
+  margin: 0 auto 16px;
+  max-width: 720px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid transparent;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.user-message.success,
+.rp-toast-inline--success {
+  background: rgba(16, 185, 129, 0.14);
+  color: #6ee7b7;
+  border-color: rgba(52, 211, 153, 0.28);
+}
+
+.user-message.error,
+.rp-toast-inline--error {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.28);
+}
+
+.user-message.warning,
+.rp-toast-inline--warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fcd34d;
+  border-color: rgba(251, 191, 36, 0.28);
+}
+
+/* ----- Hiring form inside sheet ----- */
+.hiring-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay-sheet);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+}
+
+.hiring-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.hiring-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hiring-field span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rp-overlay-muted);
+}
+
+.hiring-field input,
+.hiring-field select,
+.hiring-field textarea {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--rp-overlay-title);
+  font-family: inherit;
+}
+
+.hiring-field-wide { grid-column: 1 / -1; }
+
+.hiring-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ----- Style onboarding chips (glass) ----- */
+.style-onboarding-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay-loading);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.style-onboarding-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rp-overlay-title);
+  margin: 0 0 10px;
+}
+
+.style-onboarding-chip {
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--rp-overlay-text);
+  transition: 0.2s;
+  user-select: none;
+}
+
+.style-onboarding-chip:hover {
+  border-color: rgba(129, 140, 248, 0.45);
+  background: rgba(99, 102, 241, 0.18);
+}
+
+.style-onboarding-chip.active {
+  background: var(--gradient-primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+
+.style-onboarding-hint,
+.style-onboarding-skip {
+  color: var(--rp-overlay-muted);
+}
+
+/* ----- Animations ----- */
+@keyframes rpOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rpOverlayFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes rpOverlayZoomIn {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes rpOverlayZoomOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.94); }
+}
+
+@keyframes rpOverlaySheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes rpOverlayPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.88; }
+}
+
+@keyframes confirmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 520px) {
+  .hiring-form-grid { grid-template-columns: 1fr; }
+  .rp-overlay-panel,
+  .loading-box,
+  .confirm-box {
+    padding: 30px 22px 24px;
+  }
+}

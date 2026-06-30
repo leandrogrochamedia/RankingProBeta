@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#08080f">
+  <meta name="color-scheme" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Ranking Pro — QR</title>
+  <link rel="stylesheet" href="../base.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../proofly-glass.css">
+  <link rel="stylesheet" href="../nucleus.css">
+  <script src="../site-paths.js"></script>
+</head>
+<body class="cliente-page nucleus-page">
+  <div class="nucleus-shell">
+    <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact" id="state-loading">
+      <p class="nucleus-eyebrow">Sessão QR</p>
+      <h1 class="nucleus-title">Validando QR</h1>
+      <p class="nucleus-state">Aguarde enquanto verificamos o token…</p>
+    </div>
+    <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact nucleus-hidden" id="state-error">
+      <p class="nucleus-error-title" id="error-title">QR inválido</p>
+      <p class="nucleus-subtitle" id="error-message"></p>
+      <a href="../index.html" class="home-splash-btn home-splash-btn--secondary" style="margin-top:12px;">Voltar ao início</a>
+    </div>
+  </div>
+  <script src="../loader.js"></script>
+  <script>
+    document.addEventListener('scriptsLoaded', async function () {
+      const loading = document.getElementById('state-loading');
+      const errorBlock = document.getElementById('state-error');
+      const errorTitle = document.getElementById('error-title');
+      const errorMessage = document.getElementById('error-message');
+
+      function showError(title, message) {
+        loading.classList.add('nucleus-hidden');
+        errorBlock.classList.remove('nucleus-hidden');
+        errorTitle.textContent = title;
+        errorMessage.textContent = message || '';
+      }
+
+      if (typeof RankingProQrFlow === 'undefined') {
+        showError('Erro', 'Fluxo QR indisponível. Recarregue a página.');
+        return;
+      }
+
+      const result = await RankingProQrFlow.handleQrIndexPage();
+      if (result && result.error) {
+        const title = result.error === 'expired' ? 'QR expirado'
+          : result.error === 'used' ? 'Avaliação já registrada'
+          : result.error === 'invalid' ? 'QR inválido' : 'Erro';
+        showError(title, result.message || RankingProQrFlow.errorMessageForStatus(result.error));
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Ranking Pro — Local</title>
+  <link rel="stylesheet" href="./devtool.css" />
+  <link rel="stylesheet" href="./viewer.css" />
+</head>
+<body>
+  <div class="devtool-app viewer-app viewer-app--compact">
+    <div class="viewer-shell">
+      <section class="devtool-preview viewer-preview" aria-label="Preview do app">
+        <div class="viewer-toolbar viewer-toolbar--compact">
+          <div class="viewer-toolbar__source">
+            <div class="devtool-tabs viewer-source-tabs viewer-source-tabs--compact" role="tablist" aria-label="Fonte do preview">
+              <button type="button" class="devtool-tab is-active" id="tabLocal" role="tab" aria-selected="true">Local</button>
+              <button type="button" class="devtool-tab" id="tabOnline" role="tab" aria-selected="false">RankingProBeta</button>
+            </div>
+          </div>
+
+          <div class="viewer-toolbar__actions">
+            <div class="viewer-segment viewer-segment--compact" role="group" aria-label="Modo de visualização">
+              <button type="button" class="viewer-segment-btn is-active" id="btnDesktop" aria-pressed="false" title="Desktop">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M8 20h8M12 17v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button type="button" class="viewer-segment-btn" id="btnMobile" aria-pressed="false" title="iPhone 15 Pro Max">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="7" y="2" width="10" height="20" rx="2.5" stroke="currentColor" stroke-width="2"/>
+                  <path d="M11 5h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <button type="button" class="viewer-icon-btn viewer-icon-btn--compact" id="btnRefresh" title="Recarregar" aria-label="Recarregar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button type="button" class="viewer-icon-btn viewer-icon-btn--compact" id="btnOpenExternal" title="Abrir no navegador" aria-label="Abrir no navegador">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M14 3h7v7M10 14L21 3M21 14v7H3V3h7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="viewer-path-bar viewer-path-bar--top" aria-live="polite">
+          <span class="viewer-path-bar__label" id="previewPathLabel">Path</span>
+          <output class="viewer-path-bar__value" id="previewIframeUrl" title="Arquivo atual no preview">—</output>
+        </div>
+
+        <div class="devtool-preview-stage viewer-stage" id="previewStage">
+          <div class="devtool-frame-wrap viewer-frame-wrap" id="frameWrap">
+            <div class="viewer-empty" id="viewerEmpty" hidden aria-live="polite">
+              <div class="viewer-empty__card">
+                <div class="viewer-empty__icon" id="viewerEmptyIcon" aria-hidden="true">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <p class="viewer-empty__eyebrow" id="viewerEmptyEyebrow">Preview indisponível</p>
+                <h2 class="viewer-empty__title" id="viewerEmptyTitle">Não foi possível carregar o app</h2>
+                <p class="viewer-empty__text" id="viewerEmptyText"></p>
+                <div class="viewer-empty__actions">
+                  <button type="button" class="viewer-empty__btn viewer-empty__btn--primary" id="btnEmptyPrimary"></button>
+                  <button type="button" class="viewer-empty__btn viewer-empty__btn--secondary" id="btnEmptySecondary"></button>
+                  <button type="button" class="viewer-empty__btn viewer-empty__btn--ghost" id="btnEmptyTertiary"></button>
+                </div>
+              </div>
+            </div>
+            <div class="devtool-preview-viewport" id="previewViewport">
+              <div class="devtool-mobile-chrome" id="mobileChrome">
+                <span class="devtool-mobile-tag" id="mobileTag">iPhone 15 Pro Max · 430 × 932</span>
+                <div class="devtool-mobile-bezel" id="mobileBezel">
+                  <div class="devtool-frame-shell" id="frameShell">
+                    <div class="devtool-mobile-screen-chrome" aria-hidden="true">
+                      <div class="devtool-mobile-statusbar">
+                        <time class="devtool-mobile-time" id="mobileTime">9:41</time>
+                        <div class="devtool-mobile-status-icons">
+                          <svg class="devtool-icon-signal" viewBox="0 0 18 12" width="18" height="12" aria-hidden="true">
+                            <rect x="0" y="8" width="3" height="4" rx="0.5" fill="currentColor"/>
+                            <rect x="5" y="5" width="3" height="7" rx="0.5" fill="currentColor"/>
+                            <rect x="10" y="2" width="3" height="10" rx="0.5" fill="currentColor"/>
+                            <rect x="15" y="0" width="3" height="12" rx="0.5" fill="currentColor"/>
+                          </svg>
+                          <svg class="devtool-icon-wifi" viewBox="0 0 16 12" width="16" height="12" aria-hidden="true">
+                            <path d="M8 12c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z" fill="currentColor"/>
+                            <path d="M4.9 7.5a5.5 5.5 0 0 1 6.2 0" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                            <path d="M1.8 4.4a9.5 9.5 0 0 1 12.4 0" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                          </svg>
+                          <svg class="devtool-icon-battery" viewBox="0 0 27 13" width="27" height="13" aria-hidden="true">
+                            <rect x="0.5" y="0.5" width="22" height="12" rx="3" stroke="currentColor" fill="none"/>
+                            <rect x="2.5" y="2.5" width="17" height="8" rx="1.5" fill="currentColor"/>
+                            <path d="M24 4.5v4a2 2 0 0 0 0-4z" fill="currentColor"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="devtool-mobile-island"></div>
+                    </div>
+                    <div class="devtool-mobile-viewport" id="mobileViewport">
+                      <iframe
+                        id="previewFrame"
+                        class="devtool-frame"
+                        title="Preview Ranking Pro"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                      ></iframe>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="./url-path-utils.js"></script>
+  <script src="./viewer.js"></script>
+</body>
+</html>

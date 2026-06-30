@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Redirecionando…</title>
+  <script src="./config.js"></script>
+  <script src="./shark-mode.js"></script>
+  <script>
+    (function() {
+      var shark = typeof SHARK_MODE !== 'undefined' && SHARK_MODE;
+      var dev = (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) || (typeof PROOFLY_DEV_MENU !== 'undefined' && PROOFLY_DEV_MENU);
+      var target = (shark && !dev) ? './dashboard-estabelecimento.html' : './estabelecimento-marketplace.html';
+      location.replace(target);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecionando…</p>
+</body>
+</html>

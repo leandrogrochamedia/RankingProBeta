@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🏆 Ranking Pro — Perfil Profissional</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./profile-dashboard.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-page prof-dashboard-page">
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <main class="cliente-main prof-dash-main">
+
+    <!-- 1 · TOPO — card estilo Netflix -->
+    <div class="prof-netflix-toolbar">
+      <span class="prof-netflix-mode">💼 Profissional</span>
+      <div class="prof-netflix-toolbar-actions cliente-hero-pills action-bar" id="actionBar">
+        <a href="./selecionar-perfil.html?forceProfileSelect=true" class="btn-ios-pill btn-ios-pill-ghost" id="btnAlternarPerfil" style="display:none;text-decoration:none;">🔀 Trocar</a>
+        <button type="button" class="btn-ios-pill btn-ios-pill-primary btn-save" id="saveBtn" style="display:none;">💾 Salvar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost btn-cancel" id="cancelBtn" style="display:none;">Cancelar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost" onclick="sairModo()" id="sairBtn">Sair</button>
+      </div>
+    </div>
+
+    <article class="prof-netflix-card prof-dash-panel--hero" id="profDashHero" aria-label="Seu perfil">
+      <div class="prof-netflix-card-photo">
+        <img id="profAvatar" class="prof-netflix-backdrop-img" src="" alt="Foto do profissional" />
+        <div id="profAvatarPlaceholder" class="prof-netflix-photo-fallback">?</div>
+        <div class="prof-netflix-card-gradient" aria-hidden="true"></div>
+        <div class="prof-netflix-card-shine" aria-hidden="true"></div>
+        <button type="button" class="prof-netflix-photo-btn" id="uploadAvatarBtn" title="Alterar foto" style="display:none;">📷</button>
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" />
+        <div class="prof-netflix-rating-float">
+          <span class="prof-verified-badge prof-netflix-verified" id="profVerifiedBadge" hidden>✓ Verificado via QR</span>
+          <div class="prof-netflix-rating-chip profile-rating-block prof-hero-rating empty" id="profRatingBlock">
+            <span class="prof-hero-score prof-netflix-score" id="profRatingValue">—</span>
+            <div class="prof-hero-rating-meta">
+              <div class="rating-stars" id="profRatingStars">☆☆☆☆☆</div>
+              <span class="rating-count" id="profRatingCount">Sem avaliações verificadas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="prof-netflix-card-body">
+        <h1 class="prof-netflix-name" id="profName">Carregando...</h1>
+        <p class="prof-netflix-username" id="profUsername"></p>
+        <p class="prof-netflix-specialty" id="profSpecialty">—</p>
+        <p class="prof-netflix-meta" id="profMeta">Carregando contexto...</p>
+      </div>
+      <div class="proofly-score-block empty shark-frozen-ui" id="profProoflyBlock" hidden>
+        <div class="proofly-score-ring" id="profProoflyRing" aria-label="Ranking Pro Score"></div>
+        <div class="proofly-score-detail">
+          <div class="title" id="profProoflyLabel">Ranking Pro Score</div>
+          <div class="breakdown" id="profProoflyBreakdown">Aguardando avaliações...</div>
+          <div class="proofly-dash-badges" id="profProoflyBadges"></div>
+          <div class="proofly-social-dash" id="profProoflySocial"></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 2 · 🔥 TOP PLACES — mercado de talentos -->
+    <section class="glass-surface prof-dash-panel talent-hub-section" id="careerHubSection">
+      <div class="section-title" style="margin-top:0;"><span class="icon">🔥</span> Top Places <span class="hint">estabelecimentos recomendados</span></div>
+      <div id="profEstabRecoGrid" class="rh-reco-grid"><p class="prof-dash-muted">Carregando estabelecimentos...</p></div>
+      <div class="rh-hub-banner career-hub-banner" style="margin-top:20px;">
+        <div>
+          <h3>💼 Centro de Carreira</h3>
+          <p>Propostas, candidaturas e status de contratação.</p>
+        </div>
+      </div>
+      <div class="summary-grid" id="profCareerStats">
+        <div class="stat-box"><div class="number" id="profStatOffers">0</div><div class="label">Propostas</div></div>
+        <div class="stat-box"><div class="number" id="profStatApplications">0</div><div class="label">Candidaturas</div></div>
+        <div class="stat-box"><div class="number" id="profStatMatch">—</div><div class="label">Melhor match</div></div>
+        <div class="stat-box"><div class="number" id="profStatStatus">—</div><div class="label">Status</div></div>
+      </div>
+      <div class="section-title" style="margin-top:20px;"><span class="icon">📨</span> Propostas recebidas</div>
+      <div id="profHiringInbox"><p class="prof-dash-muted">Carregando...</p></div>
+      <div class="section-title" style="margin-top:20px;"><span class="icon">📤</span> Minhas candidaturas</div>
+      <div id="profApplicationsList"><p class="prof-dash-muted">Nenhuma candidatura ainda.</p></div>
+    </section>
+
+    <!-- 3 · AÇÃO PRINCIPAL — QR -->
+    <section class="glass-surface prof-dash-panel" id="sharkQrReputationSection">
+      <div class="section-title"><span class="icon">📲</span> QR de avaliação verificada</div>
+      <p class="prof-dash-lead">Fica salvo na sua conta — válido 30 dias. Cliente escaneia e abre seu perfil.</p>
+      <div id="qrResult" class="prof-qr-result">
+        <p class="prof-qr-empty">Carregando QR...</p>
+      </div>
+      <button type="button" class="qr-hero-card prof-qr-hero prof-qr-hero--action" onclick="gerarQRCode()" aria-label="Gerar QR Code para avaliação verificada">
+        <span class="qr-hero-shine" aria-hidden="true"></span>
+        <span class="qr-hero-icon" aria-hidden="true">📲</span>
+        <span class="qr-hero-title" id="qrHeroTitle">Gerar QR Code</span>
+        <span class="qr-hero-sub" id="qrHeroSub">Toque para criar e salvar no banco</span>
+      </button>
+    </section>
+
+    <!-- 3 · Página de reputação + cartão de visita -->
+    <section class="glass-surface prof-dash-panel" id="profReputationPageBlock">
+      <div class="section-title"><span class="icon">🔗</span> Página de reputação</div>
+      <p class="prof-dash-lead">Link público para bio, WhatsApp e cartão de visita.</p>
+      <input type="text" readonly id="profPublicUrl" class="glass-input prof-public-url-input" />
+      <div class="prof-action-row">
+        <button type="button" class="btn-ios-pill btn-ios-pill-primary" onclick="copiarLinkReputacao()">Copiar link</button>
+        <a href="#" id="profPublicUrlOpen" target="_blank" rel="noopener" class="btn-ios-pill btn-ios-pill-ghost" style="text-decoration:none;">Ver como cliente</a>
+      </div>
+      <div class="prof-visit-card">
+        <p class="prof-visit-card-label">Cartão de visita</p>
+        <p id="viewBioCard" class="prof-visit-bio">—</p>
+        <p id="viewInstagramCard" class="prof-visit-meta">—</p>
+        <p id="viewWhatsappCard" class="prof-visit-meta">—</p>
+      </div>
+    </section>
+
+    <!-- 4 · ALERTA -->
+    <section class="glass-surface prof-dash-panel prof-dash-panel--alert" id="profReviewAlert" hidden>
+      <p class="prof-alert-text" id="profReviewAlertText"></p>
+      <a href="#clientReviewsSection" class="btn-ios-pill btn-ios-pill-primary" style="text-decoration:none;">Responder agora</a>
+    </section>
+
+    <!-- 5 · AVALIAÇÕES -->
+    <section class="glass-surface prof-dash-panel" id="clientReviewsSection">
+      <div class="prof-card-head">
+        <h2 class="section-title" style="margin:0;"><span class="icon">⭐</span> Avaliações de clientes</h2>
+        <a href="./minhas-avaliacoes.html" class="prof-dash-link">Ver todas</a>
+      </div>
+      <div id="clientReviewsList"><p class="prof-dash-muted">Carregando...</p></div>
+      <details class="prof-dash-details shark-frozen-ui">
+        <summary>Avaliações de estabelecimentos</summary>
+        <div id="estabReviewsList"><p class="prof-dash-muted">Carregando...</p></div>
+      </details>
+    </section>
+
+    <!-- 6 · HISTÓRICO PORTÁTIL -->
+    <section class="glass-surface prof-dash-panel">
+      <div class="section-title"><span class="icon">💼</span> Onde você trabalhou</div>
+      <p class="prof-dash-lead">Histórico nunca some — reputação portátil, contexto de carreira visível.</p>
+      <div id="vinculosContainer" class="work-history-dash"><p class="prof-dash-muted">Carregando...</p></div>
+    </section>
+
+    <!-- Resumo (IDs para JS — oculto) -->
+    <section class="prof-dash-card--sr" id="profSummaryHidden" aria-hidden="true">
+      <div class="summary-grid" id="summaryGrid">
+        <div class="stat-box"><div class="number" id="avgDisplay">0.0</div><div class="label">Média</div></div>
+        <div class="stat-box"><div class="number" id="totalDisplay">0</div><div class="label">Avaliações</div></div>
+        <div class="stat-box shark-frozen-ui"><div class="number" id="igvDisplay">0</div><div class="label">IGV</div></div>
+        <div class="stat-box"><div class="number" id="estabDisplay">-</div><div class="label">Estabelecimento</div></div>
+      </div>
+      <p id="carteiraLabelLine"></p>
+      <div class="shark-frozen-ui" id="profWhySection"></div>
+    </section>
+
+    <!-- 7 · CTA editar (modo leitura) -->
+    <section class="glass-surface prof-dash-panel prof-dash-edit-cta" id="profEditCta">
+      <div class="section-title"><span class="icon">✏️</span> Perfil público completo</div>
+      <p class="prof-dash-lead">Foto, galeria, tags e dados — o que o cliente vê na busca e no drawer.</p>
+      <button type="button" class="btn-ios-pill btn-ios-pill-primary btn-edit" id="editToggleBtn">Editar perfil</button>
+    </section>
+
+    <!-- 8 · EDITAR PERFIL (só em modo edição) -->
+    <section class="glass-surface prof-dash-panel prof-dash-editable" id="profEditPanel" hidden>
+      <div class="section-title"><span class="icon">✏️</span> Editando perfil público</div>
+
+      <!-- ===== GALERIA ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📸</span> Galeria <span class="hint">Até 4 fotos</span></div>
+        <div class="view-mode">
+          <div id="profGalleryDash" style="display:flex;flex-wrap:wrap;gap:10px;"><p style="color:#94a3b8;">Carregando...</p></div>
+        </div>
+        <div class="edit-mode-field">
+          <div class="gallery-upload-grid" id="profGalleryEdit"></div>
+          <input type="file" id="profGalleryInput" accept="image/*" multiple style="display:none;" />
+          <button type="button" class="btn-gallery-add" id="profGalleryAddBtn">📷 Adicionar fotos</button>
+          <span class="gallery-edit-hint">A primeira foto será a principal do perfil.</span>
+        </div>
+      </div>
+
+      <!-- ===== IDENTIDADE ===== -->
+      <div class="section-block" id="formInicio">
+        <div class="section-title"><span class="icon">🧠</span> Identidade <span class="hint">Nome e especialidade</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Nome</label><p id="viewName" class="prof-view-value prof-view-value--lg">-</p></div>
+          <div class="edit-mode-field"><label>Nome completo *</label><input type="text" id="editName" required /></div>
+        </div>
+        <div class="form-group">
+          <div class="view-mode"><label>Especialidade</label><p id="viewSpecialty" class="prof-view-value">-</p></div>
+          <div class="edit-mode-field"><label>Especialidade</label><input type="text" id="editSpecialty" /></div>
+        </div>
+      </div>
+
+      <!-- ===== BIO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🧾</span> Sobre você <span class="hint">Bio profissional</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Bio</label><p id="viewBio" class="prof-view-value prof-view-value--bio">-</p></div>
+          <div class="edit-mode-field"><label>Bio</label><textarea id="editBio" rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <!-- ===== MÚSICA ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🎵</span> Música <span class="hint">Estilo musical</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewMusicTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editMusicTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="musicTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== VISUAL ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">👕</span> Visual <span class="hint">Estilo visual</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewVisualTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editVisualTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="visualTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PERSONALIDADE ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🧠</span> Personalidade <span class="hint">Traços</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewPersonalityTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editPersonalityTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="personalityTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ESTILO DE VIDA ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🌿</span> Estilo de Vida <span class="hint">Hábitos</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewLifestyleTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editLifestyleTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="lifestyleTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TRABALHO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">💼</span> Trabalho <span class="hint">Perfil profissional</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewWorkTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editWorkTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="workTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CONTATO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📞</span> Contato <span class="hint">Cartão de visita e email</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="view-mode"><label>Instagram</label><p id="viewInstagram" class="prof-view-value">-</p></div>
+            <div class="edit-mode-field"><label for="editInstagram">Instagram</label><input type="text" id="editInstagram" placeholder="@seuusuario" /></div>
+          </div>
+          <div class="form-group">
+            <div class="view-mode"><label>WhatsApp</label><p id="viewPhone" class="prof-view-value">-</p></div>
+            <div class="edit-mode-field"><label for="editPhone">WhatsApp</label><input type="tel" id="editPhone" placeholder="(00) 00000-0000" oninput="formatarTelefone(this)" />
+              <span class="error-message">Telefone inválido</span></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="view-mode"><label>Email</label><p id="viewEmail" class="prof-view-value">-</p></div>
+          <div class="edit-mode-field"><label for="editEmail">Email</label><input type="email" id="editEmail" placeholder="email@exemplo.com" /></div>
+        </div>
+      </div>
+
+      <!-- ===== ENDEREÇO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📍</span> Endereço <span class="hint">Onde você está</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Endereço</label><p id="viewEndereco" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Rua, número</label><input type="text" id="editStreet" placeholder="Rua, número" /></div>
+        </div>
+        <div class="form-row edit-mode-field">
+          <div class="form-group"><label>Cidade</label><input type="text" id="editCity" placeholder="Cidade" /></div>
+          <div class="form-group"><label>Estado</label><input type="text" id="editState" placeholder="UF" maxlength="2" /></div>
+        </div>
+      </div>
+
+      <!-- ===== VÍNCULO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🏢</span> Vínculo <span class="hint">Estabelecimento onde atua</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Estabelecimento</label><p id="viewEstab" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field">
+            <label>Estabelecimento</label>
+            <select id="editEstablishment"><option value="">Autônomo</option></select>
+            <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+              <label style="font-weight:400; font-size:14px; color:#64748b; cursor:pointer;">
+                <input type="checkbox" id="editAutonomo" style="width:auto; margin-right:6px;" />
+                Autônomo (ignora seleção acima)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== DADOS PRIVADOS ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🔒</span> Dados privados <span class="hint">Apenas para validação</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>CPF</label><p id="viewCpf" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>CPF</label><input type="text" id="editCpf" placeholder="000.000.000-00" oninput="formatarCPF(this)" />
+            <span class="error-message">CPF inválido</span></div>
+        </div>
+      </div>
+
+      <!-- ===== INFORMAÇÕES PARA CONTRATANTES ===== -->
+      <div class="section-block" id="profHiringInfoSection">
+        <div class="section-title"><span class="icon">📋</span> Informações para Contratantes <span class="hint">Visível para donos de barbearia</span></div>
+        <div class="view-mode" id="viewHiringSection"></div>
+        <div class="edit-mode-field">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editYearsExperience">Anos de profissão *</label>
+              <input type="number" id="editYearsExperience" min="0" max="50" />
+            </div>
+            <div class="form-group">
+              <label for="editAvgJobDuration">Permanência média (meses)</label>
+              <input type="number" id="editAvgJobDuration" min="1" max="120" placeholder="Ex: 18" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editSalaryExpectation">Pretensão salarial / comissão</label>
+              <select id="editSalaryExpectation">
+                <option value="">Prefiro não informar</option>
+                <option value="Comissão 30%">Comissão 30%</option>
+                <option value="Comissão 40%">Comissão 40%</option>
+                <option value="Comissão 50%">Comissão 50%</option>
+                <option value="Salário + comissão">Salário + comissão</option>
+                <option value="A combinar">A combinar</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editBirthDate">Data de nascimento <span style="font-weight:400;color:#94a3b8;">(opcional)</span></label>
+              <input type="date" id="editBirthDate" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Estilo de trabalho (até 3)</label>
+            <div id="editWorkStyleTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="workStyleTagsCounter">0 selecionadas</div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-inline" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
+              <input type="checkbox" id="editAvailableNow" style="width:auto;" />
+              Disponível agora para contratação
+            </label>
+            <label class="checkbox-inline" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="editSeekingWork" style="width:auto;" checked />
+              Aberto a novas oportunidades
+            </label>
+          </div>
+          <p style="font-size:13px;color:#64748b;margin:0;">Carteira e IGV são calculados automaticamente pelas avaliações.</p>
+        </div>
+      </div>
+
+      <!-- ===== BOTÕES INFERIORES ===== -->
+      <div class="edit-actions-bottom">
+        <button type="button" class="btn-ios-pill btn-ios-pill-success btn-save" id="saveBtnBottom" style="display:none;">💾 Salvar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost btn-cancel" id="cancelBtnBottom" style="display:none;">❌ Cancelar</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="./site-paths.js"></script>
+  <script src="./loader.js"></script>
+  <script src="./screens/dashboard-profissional.js"></script>
+</body>
+</html>

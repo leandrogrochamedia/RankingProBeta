@@ -1,0 +1,14 @@
+{
+  "appId": "com.rankingpro.app",
+  "appName": "Ranking Pro",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#08080f"
+    }
+  }
+}
