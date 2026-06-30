@@ -27,6 +27,8 @@ jobs:
           else
             sed -i "s/sua-anon-key-aqui/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5eXdkaGpzdHZobWFydnppamppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzODE4NTEsImV4cCI6MjA5Njk1Nzg1MX0.uLu4Xhazrrrmf9MCp7BzZFUYLBR1J8QHQmqp0f3E1Yg/" config.js
           fi
+          # peaceiris/actions-gh-pages respects .gitignore — allow config.js no artefato publicado
+          sed -i '/^config\.js$/d' .gitignore
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4

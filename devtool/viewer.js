@@ -40,7 +40,8 @@
   const DEVTOOL_PREVIEW = 'http://127.0.0.1:8790/app/index.html';
   const DEVTOOL_LAUNCHER = 'http://127.0.0.1:8789';
   const SANDBOX_LOCAL = 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals';
-  const SANDBOX_ONLINE = 'allow-scripts allow-forms allow-popups allow-modals';
+  // allow-same-origin: necessário para sessionStorage, service worker e config.js no preview remoto
+  const SANDBOX_ONLINE = 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals';
   const PREVIEW_NAV_MSG = 'ranking-pro-preview-nav';
 
   const MOBILE_DEVICE = {
