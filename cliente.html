@@ -24,20 +24,6 @@
 
   <div id="userMessage" class="user-message" style="display:none;"></div>
 
-  <div class="qr-modal qr-modal--cliente" id="qrScannerContainer">
-    <div class="qr-modal-backdrop" onclick="fecharScannerQR()"></div>
-    <div class="qr-modal-content">
-      <div class="qr-modal-header">
-        <h3>📷 Escanear QR Code</h3>
-        <button class="qr-modal-close" onclick="fecharScannerQR()">✕</button>
-      </div>
-      <div class="scanner-box" id="qrScannerBox">
-        <div id="qr-reader"></div>
-      </div>
-      <p id="qrScannerStatus" class="qr-status">Iniciando câmera...</p>
-    </div>
-  </div>
-
   <header class="cliente-hero ios-app-header glass-surface" id="clienteHeroHeader">
     <div class="cliente-hero-inner">
       <div class="cliente-hero-top">
@@ -83,26 +69,6 @@
       </div>
     </div>
   </header>
-
-  <div id="styleOnboardingModal" class="style-onboarding-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="styleOnboardingTitle">
-    <div class="style-onboarding-backdrop" onclick="fecharOnboardingEstilo()"></div>
-    <div class="style-onboarding-sheet">
-      <button type="button" class="style-onboarding-close" onclick="fecharOnboardingEstilo()" aria-label="Fechar">✕</button>
-      <h2 id="styleOnboardingTitle">O que combina com você?</h2>
-      <p class="style-onboarding-sub">Escolha até 5 preferências — o Ranking Pro personaliza seus matches e destaca quem tem afinidade com você.</p>
-      <div class="style-onboarding-section">
-        <h3>👤 Profissionais</h3>
-        <div id="onboardingProfChips" class="style-onboarding-chips"></div>
-      </div>
-      <div class="style-onboarding-section">
-        <h3>🏢 Lugares <span class="optional">(opcional, até 3)</span></h3>
-        <div id="onboardingEstChips" class="style-onboarding-chips"></div>
-      </div>
-      <p id="onboardingSelectionHint" class="style-onboarding-hint">0 selecionadas</p>
-      <button type="button" class="btn btn-tinder-primary btn-tinder-xl" id="btnSalvarEstilo" onclick="salvarOnboardingEstilo()">✨ Salvar e ver recomendações</button>
-      <button type="button" class="style-onboarding-skip" onclick="pularOnboardingEstilo()">Agora não</button>
-    </div>
-  </div>
 
   <main class="cliente-main">
 

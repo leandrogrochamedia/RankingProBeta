@@ -11,8 +11,19 @@ const PERSONA_FLOWS = {
     entry: './index.html',
     routes: {
       qr: './index.html',
+      qrValidate: './qr/',
+      avaliar: './avaliar/',
+      avaliarCanonical: './cliente.html',
       search: './cliente.html',
       login: './login.html'
+    },
+    routeMap: {
+      qr: '/',
+      qrValidate: '/qr/',
+      avaliar: '/avaliar',
+      avaliarCanonical: '/cliente',
+      search: '/cliente',
+      login: '/login'
     }
   },
   client: {
@@ -22,9 +33,11 @@ const PERSONA_FLOWS = {
     label: 'Cliente',
     intents: ['cliente', 'client'],
     homeLinked: './cliente.html',
+    route: '/cliente',
     homeUnlinked: './selecionar-cliente.html',
     onboarding: './cadastro-cliente.html',
     guards: ['cliente.html', 'favoritos.html', 'minhas-avaliacoes.html'],
+    // perfil-page.html herda dock do hub via menu.js getPersonaNavItems()
     dock: ['cliente.html', 'favoritos.html', 'perfil-page.html']
   },
   professional: {
@@ -34,6 +47,7 @@ const PERSONA_FLOWS = {
     label: 'Profissional',
     intents: ['professional', 'profissional', 'onboarding-profissional'],
     homeLinked: './dashboard-profissional.html',
+    route: '/dashboard/pro',
     homeUnlinked: './selecionar-profissional.html',
     onboarding: './onboarding-profissional.html',
     guards: ['dashboard-profissional.html', 'profissional.html'],
@@ -46,10 +60,12 @@ const PERSONA_FLOWS = {
     label: 'Estabelecimento',
     intents: ['establishment', 'estabelecimento', 'onboarding-estabelecimento'],
     homeLinked: './dashboard-estabelecimento.html',
+    route: '/dashboard/est',
     homeUnlinked: './selecionar-estabelecimento.html',
     onboarding: './onboarding-estabelecimento.html',
     /** Marketplace — DEV only quando SHARK_MODE ativo */
     marketplace: './estabelecimento-marketplace.html',
+    marketplaceRoute: '/marketplace',
     guardsShark: ['dashboard-estabelecimento.html'],
     guards: ['dashboard-estabelecimento.html', 'estabelecimento-marketplace.html'],
     dockShark: ['dashboard-estabelecimento.html', 'dashboard-estabelecimento.html', 'dashboard-estabelecimento.html'],
@@ -62,7 +78,14 @@ const LEGACY_REDIRECTS = {
   'profissional.html': './login.html?intent=professional',
   'estabelecimento.html': './login.html?intent=establishment',
   'cliente-home.html': './cliente.html',
-  'index copy.html': './index.html'
+  'cliente-avaliar.html': './cliente.html',
+  'cliente-area.html': './selecionar-cliente.html',
+  'index copy.html': './index.html',
+  '---perfil-publico.html': './perfil-page.html',
+  '---minhas-avaliacoes.html': './minhas-avaliacoes.html',
+  '----vincular-profissional.html': './selecionar-profissional.html?force=true',
+  '---onboarding-cliente.html': './cadastro-cliente.html',
+  'BASE DE DADOS COMPLETA.html': './base-de-dados-completa.html'
 };
 
 /** Shark — redirecionamentos de páginas legadas congeladas */

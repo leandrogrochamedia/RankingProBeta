@@ -264,9 +264,7 @@ function getReviewSourceBadge(review) {
 
 function getReviewVerifiedBadge(review) {
   if (!isReviewVerified(review)) return '';
-  const src = inferReviewSource(review);
-  const label = src === 'cliente' ? '✅ Cliente verificado' : '✅ Verificado';
-  return `<span class="review-badge review-badge-verified">${label}</span>`;
+  return '<span class="review-badge review-badge-verified">✓ Verificada</span>';
 }
 
 function getReviewContextAction(review, viewContext = {}) {

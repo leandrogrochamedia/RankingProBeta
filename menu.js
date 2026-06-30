@@ -87,6 +87,55 @@
     return estId ? 'dashboard-estabelecimento.html' : 'selecionar-estabelecimento.html';
   }
 
+  function getPersonaKey() {
+    if (activeType === 'client' || session?.role === 'cliente') return 'client';
+    if (activeType === 'professional' || session?.role === 'profissional') return 'professional';
+    if (activeType === 'establishment' || session?.role === 'estabelecimento') return 'establishment';
+    return 'guest';
+  }
+
+  /** Menu contextual — Regra de Ouro (2 itens cliente · 3 prof/est) */
+  function getPersonaNavItems() {
+    const persona = getPersonaKey();
+    if (persona === 'client') {
+      return [
+        { icon: '🏠', page: 'cliente.html', label: 'Início', showLabel: true },
+        { icon: '📋', page: 'minhas-avaliacoes.html', label: 'Histórico', showLabel: true }
+      ];
+    }
+    if (persona === 'professional') {
+      return [
+        { icon: '🔍', page: 'cliente.html', label: 'Buscar', showLabel: true },
+        {
+          icon: '💼',
+          page: profId ? `p/?id=${profId}` : 'selecionar-profissional.html',
+          label: 'Minha Reputação',
+          showLabel: true
+        },
+        { icon: '⚙️', page: profHub(), label: 'Menu', showLabel: true }
+      ];
+    }
+    if (persona === 'establishment') {
+      if (isSharkPublicMenu()) return sharkEstDockItems().map(i => ({ ...i, showLabel: true }));
+      return [
+        { icon: '🔍', page: 'estabelecimento-marketplace.html', label: 'Buscar', showLabel: true },
+        { icon: '👥', page: `${estHub()}#equipe`, label: 'Minha Equipe', showLabel: true },
+        { icon: '⚙️', page: `${estHub()}#perfil`, label: 'Menu', showLabel: true }
+      ];
+    }
+    return null;
+  }
+
+  const PERSONA_DOCK_PAGES = new Set([
+    'cliente.html',
+    'minhas-avaliacoes.html',
+    'perfil-page.html',
+    'dashboard-profissional.html',
+    'dashboard-estabelecimento.html',
+    'estabelecimento-marketplace.html',
+    'meu-perfil.html'
+  ]);
+
   function sharkEstDockItems() {
     if (typeof sharkEstablishmentDock === 'function') {
       return sharkEstablishmentDock(estId);
@@ -140,7 +189,9 @@
       'minhas-avaliacoes.html': () => (
         (activeType === 'professional' || session?.role === 'profissional') ? profHub() : clientHub()
       ),
-      'perfil-page.html': clientHub,
+      'perfil-page.html': () => (
+        typeof defaultSearchPageUrl === 'function' ? defaultSearchPageUrl() : clientHub()
+      ),
       'configuracoes-cliente.html': () => 'meu-perfil.html',
       'selecionar-perfil.html': () => (session?.userId ? clientHub() : 'index.html'),
       'selecionar-cliente.html': () => 'selecionar-perfil.html',
@@ -157,6 +208,7 @@
   }
 
   function buildDockItems(coreItems) {
+    if (PERSONA_DOCK_PAGES.has(currentPage) && getPersonaNavItems()) return coreItems;
     if (NAV_HUBS.has(currentPage)) return coreItems;
     let items = [...coreItems];
     const hasBack = items.some(item => item.dockClass?.includes('dock-item--back-nav'));
@@ -196,20 +248,9 @@
       { icon: '🔍', page: 'cliente.html', label: 'Buscar' },
       { icon: '🔐', page: 'login.html', label: 'Entrar' }
     ],
-    'cliente.html': () => [
-      {
-        icon: '',
-        page: '#',
-        label: 'Voltar ao topo',
-        action: 'scroll-to-search-top',
-        dockClass: 'dock-item--back-top is-hidden',
-        dockId: 'dockBackToSearch',
-        iconMarkup: BACK_ICON_UP
-      },
-      { icon: '🔍', page: 'cliente.html', label: 'Buscar' },
-      { icon: '📷', page: '#', label: 'QR', action: 'open-qr-scanner' },
-      { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' },
-      clientPerfilDockItem()
+    'cliente.html': () => getPersonaNavItems() || [
+      { icon: '🏠', page: 'cliente.html', label: 'Início', showLabel: true },
+      { icon: '📋', page: 'minhas-avaliacoes.html', label: 'Histórico', showLabel: true }
     ],
     'favoritos.html': () => [
       { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' },
@@ -221,42 +262,35 @@
       { icon: '👤', page: 'meu-perfil.html', label: 'Meu perfil' },
       { icon: '🔍', page: 'cliente.html', label: 'Buscar' }
     ],
-    'dashboard-profissional.html': () => [
-      { icon: '📊', page: 'dashboard-profissional.html', label: 'Dashboard' },
-      { icon: '📷', page: 'dev/gerar-qr.html', label: 'QR' },
-      { icon: '💬', page: 'minhas-avaliacoes.html', label: 'Avaliações' },
-      {
-        icon: '👤',
-        page: profId ? `p/?id=${profId}` : 'selecionar-profissional.html',
-        label: 'Perfil'
-      }
+    'dashboard-profissional.html': () => getPersonaNavItems() || [
+      { icon: '🔍', page: 'cliente.html', label: 'Buscar', showLabel: true },
+      { icon: '💼', page: profId ? `p/?id=${profId}` : 'selecionar-profissional.html', label: 'Minha Reputação', showLabel: true },
+      { icon: '⚙️', page: profHub(), label: 'Menu', showLabel: true }
     ],
     'profissional.html': [
       { icon: '📊', page: profId ? 'dashboard-profissional.html' : 'selecionar-profissional.html', label: 'Dashboard' },
       { icon: '💬', page: 'minhas-avaliacoes.html', label: 'Avaliações' },
       { icon: '🔍', page: 'cliente.html', label: 'Buscar' }
     ],
-    'dashboard-estabelecimento.html': () => (
-      isSharkPublicMenu() ? sharkEstDockItems() : [
-        { icon: '🏢', page: 'dashboard-estabelecimento.html', label: 'Meu negócio' },
-        { icon: '🔍', page: 'estabelecimento-marketplace.html', label: 'Encontrar profissionais' },
-        { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' }
-      ]
-    ),
-    'estabelecimento-marketplace.html': [
-      { icon: '🔍', page: 'estabelecimento-marketplace.html', label: 'Encontrar profissionais' },
-      { icon: '🏢', page: estId ? 'dashboard-estabelecimento.html' : 'selecionar-estabelecimento.html', label: 'Meu negócio' },
-      { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' }
+    'dashboard-estabelecimento.html': () => getPersonaNavItems() || [
+      { icon: '🔍', page: 'estabelecimento-marketplace.html', label: 'Buscar', showLabel: true },
+      { icon: '👥', page: `${estHub()}#equipe`, label: 'Minha Equipe', showLabel: true },
+      { icon: '⚙️', page: `${estHub()}#perfil`, label: 'Menu', showLabel: true }
+    ],
+    'estabelecimento-marketplace.html': () => getPersonaNavItems() || [
+      { icon: '🔍', page: 'estabelecimento-marketplace.html', label: 'Buscar', showLabel: true },
+      { icon: '👥', page: `${estHub()}#equipe`, label: 'Minha Equipe', showLabel: true },
+      { icon: '⚙️', page: `${estHub()}#perfil`, label: 'Menu', showLabel: true }
     ],
     'estabelecimento.html': [
       { icon: '🏢', page: estId ? 'dashboard-estabelecimento.html' : 'selecionar-estabelecimento.html', label: 'Meu negócio' },
       { icon: '🔍', page: 'estabelecimento-marketplace.html', label: 'Encontrar profissionais' },
       { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' }
     ],
-    'perfil-page.html': () => [
-      { icon: '🔍', page: 'cliente.html', label: 'Buscar' },
-      { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' },
-      thirdNavForRole()
+    'perfil-page.html': () => getPersonaNavItems() || [
+      { icon: '🏠', page: 'index.html', label: 'Início', showLabel: true },
+      { icon: '🔍', page: 'cliente.html', label: 'Buscar', showLabel: true },
+      { icon: '🔐', page: 'login.html', label: 'Entrar', showLabel: true }
     ],
     'meu-perfil.html': () => [
       { icon: '👤', page: 'meu-perfil.html', label: 'Meu perfil' },
@@ -307,10 +341,9 @@
       { icon: '🔍', page: 'cliente.html', label: 'Buscar' },
       { icon: '🏠', page: 'index.html', label: 'Início' }
     ],
-    'minhas-avaliacoes.html': () => [
-      { icon: '📋', page: 'minhas-avaliacoes.html', label: 'Histórico' },
-      { icon: '🔍', page: 'cliente.html', label: 'Buscar' },
-      thirdNavForRole()
+    'minhas-avaliacoes.html': () => getPersonaNavItems() || [
+      { icon: '🏠', page: 'cliente.html', label: 'Início', showLabel: true },
+      { icon: '📋', page: 'minhas-avaliacoes.html', label: 'Histórico', showLabel: true }
     ],
     'relatorio-contratante.html': () => [
       { icon: '📋', page: 'relatorio-contratante.html', label: 'Relatório' },
@@ -345,34 +378,8 @@
         { icon: '👤', page: 'selecionar-perfil.html', label: 'Definir perfil' }
       ];
     }
-    if (activeType === 'client' || session.role === 'cliente') {
-      return [
-        { icon: '🔍', page: 'cliente.html', label: 'Buscar' },
-        { icon: '📷', page: '#', label: 'QR', action: 'open-qr-scanner' },
-        { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' },
-        clientPerfilDockItem()
-      ];
-    }
-    if (activeType === 'professional' || session.role === 'profissional') {
-      return [
-        { icon: '📊', page: profId ? 'dashboard-profissional.html' : 'selecionar-profissional.html', label: 'Dashboard' },
-        { icon: '📷', page: 'dev/gerar-qr.html', label: 'QR' },
-        { icon: '💬', page: 'minhas-avaliacoes.html', label: 'Avaliações' },
-        {
-          icon: '👤',
-          page: profId ? `p/?id=${profId}` : 'selecionar-profissional.html',
-          label: 'Perfil'
-        }
-      ];
-    }
-    if (activeType === 'establishment' || session.role === 'estabelecimento') {
-      if (isSharkPublicMenu()) return sharkEstDockItems();
-      return [
-        { icon: '🏢', page: estId ? 'dashboard-estabelecimento.html' : 'selecionar-estabelecimento.html', label: 'Meu negócio' },
-        { icon: '🔍', page: estId ? 'estabelecimento-marketplace.html' : 'selecionar-estabelecimento.html', label: 'Encontrar profissionais' },
-        { icon: '❤️', page: 'favoritos.html', label: 'Favoritos' }
-      ];
-    }
+    const personaItems = getPersonaNavItems();
+    if (personaItems) return personaItems;
     return [
       { icon: '🔍', page: 'cliente.html', label: 'Buscar' },
       { icon: '📊', page: 'admin.html', label: 'Admin' }
@@ -391,7 +398,11 @@
     ];
   }
 
-  const DOCK_SLOT_COUNT = 5;
+  const personaNavItems = getPersonaNavItems();
+  const personaKey = getPersonaKey();
+  const DOCK_SLOT_COUNT = personaNavItems
+    ? (personaKey === 'client' ? 2 : 3)
+    : 5;
   const DOCK_OVERFLOW_ACTIONS = new Set([
     'simular-cliente',
     'simular-profissional',
@@ -403,7 +414,7 @@
     return item.label === 'Alternar perfil';
   }
 
-  if (session?.userId) {
+  if (session?.userId && !(personaNavItems && PERSONA_DOCK_PAGES.has(currentPage))) {
     const hasLogout = items.some(item => item.action === 'logout' || item.label === 'Sair');
     if (!hasLogout) items.push(logoutItem());
   }
@@ -463,8 +474,11 @@
   }
 
   function renderDockItem(item) {
-    const pageBase = item.page.split('?')[0].replace('./', '');
-    const active = (pageBase === currentPage) ? ' active' : '';
+    const pageParts = item.page.split('#');
+    const pageBase = pageParts[0].split('?')[0].replace('./', '');
+    const itemHash = pageParts[1] ? `#${pageParts[1]}` : '';
+    const hashOk = !itemHash || (window.location.hash === itemHash);
+    const active = (pageBase === currentPage && hashOk) ? ' active' : '';
     let clickAttr = '';
     if (item.action) {
       const fn = ACTION_HANDLERS[item.action];
@@ -473,9 +487,15 @@
     const extraClass = item.dockClass ? ` ${item.dockClass}` : '';
     const extraId = item.dockId ? ` id="${item.dockId}"` : '';
     const iconInner = renderDockIcon(item);
+    const labelHtml = item.showLabel
+      ? `<span class="dock-label">${item.label}</span>`
+      : '';
+    const navAttr = (!item.action && item.page && item.page !== '#')
+      ? ' data-dock-nav="1"'
+      : '';
     return `
-      <a href="${item.page}" class="dock-item${active}${extraClass}"${extraId} data-tooltip="${item.label}" aria-label="${item.label}"${clickAttr}>
-        ${iconInner}
+      <a href="${item.page}" class="dock-item${active}${extraClass}"${extraId}${navAttr} data-tooltip="${item.label}" aria-label="${item.label}"${clickAttr}>
+        ${iconInner}${labelHtml}
       </a>
     `;
   }
@@ -502,12 +522,14 @@
     });
   }
 
-  const trackClass = dockLayout.hasNavEdges
-    ? 'floating-menu-track floating-menu-track--nav'
-    : 'floating-menu-track';
+  const trackClass = personaNavItems
+    ? 'floating-menu-track floating-menu-track--persona'
+    : (dockLayout.hasNavEdges
+      ? 'floating-menu-track floating-menu-track--nav'
+      : 'floating-menu-track');
 
   const html = `
-    <div class="floating-menu-shell" id="floatingMenuShell" data-dock-build="${DOCK_BUILD}" data-item-count="${DOCK_SLOT_COUNT}" data-nav-edges="${dockLayout.hasNavEdges ? '1' : '0'}">
+    <div class="floating-menu-shell" id="floatingMenuShell" data-dock-build="${DOCK_BUILD}" data-item-count="${DOCK_SLOT_COUNT}" data-nav-edges="${dockLayout.hasNavEdges ? '1' : '0'}" data-persona="${personaKey}">
       <nav class="floating-menu" id="floatingMenuNav" aria-label="Menu do usuário">
         <div class="${trackClass}" id="floatingMenuTrack">${itemsHtml}</div>
       </nav>
@@ -515,6 +537,12 @@
   `;
 
   document.body.insertAdjacentHTML('afterbegin', html);
+  document.body.classList.add('rp-dock-mounted');
+  const perfilBackBtn = document.getElementById('perfilBackBtn');
+  if (perfilBackBtn) {
+    perfilBackBtn.hidden = true;
+    perfilBackBtn.setAttribute('aria-hidden', 'true');
+  }
 
   const dockNav = document.getElementById('floatingMenuNav');
   if (dockNav) {
@@ -522,7 +550,25 @@
       const link = event.target.closest('.dock-item');
       if (!link || link.classList.contains('is-hidden')) return;
       lightHaptic();
-    }, { passive: true });
+
+      if (link.dataset.dockNav === '1') {
+        event.preventDefault();
+        const href = link.getAttribute('href') || '';
+        const target = href.startsWith('./') ? href : `./${href.replace(/^\//, '')}`;
+        const current = `${window.location.pathname.split('/').pop() || ''}${window.location.search || ''}${window.location.hash || ''}`;
+        const normalizedTarget = target.replace(/^\.\//, '');
+        if (current === normalizedTarget || current.split('?')[0] === normalizedTarget.split('#')[0].split('?')[0] && !target.includes('#')) {
+          return;
+        }
+        if (typeof window.RankingProRouter?.navigate === 'function') {
+          window.RankingProRouter.navigate(target);
+        } else if (typeof window.navigateWithTransition === 'function') {
+          window.navigateWithTransition(target);
+        } else {
+          window.location.href = target;
+        }
+      }
+    });
   }
 
   const CLIENT_NO_SWIPE_PAGES = new Set([

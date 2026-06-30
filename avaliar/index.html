@@ -15,119 +15,19 @@
 <body class="cliente-page nucleus-page">
   <div class="nucleus-shell">
     <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact" id="state-loading">
-      <p class="nucleus-state">Carregando…</p>
-    </div>
-    <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact nucleus-hidden" id="state-error">
-      <p class="nucleus-error-title" id="error-title">QR inválido</p>
-      <p class="nucleus-subtitle" id="error-message"></p>
-    </div>
-    <div class="glass-discovery-shell nucleus-glass nucleus-hidden" id="state-form">
-      <p class="nucleus-eyebrow">Avaliação verificada</p>
-      <h1 class="nucleus-title">Como foi o atendimento?</h1>
-      <p class="nucleus-prof-name" id="prof-name"></p>
-      <p class="nucleus-prof-specialty" id="prof-specialty"></p>
-      <div class="glass-review-card review-card-cliente">
-        <label class="nucleus-form-label">Nota</label>
-        <div class="stars-input" id="stars-input" role="group" aria-label="Nota de 1 a 5">
-          <button type="button" class="star-input" data-rating="1" aria-label="1 estrela">★</button>
-          <button type="button" class="star-input" data-rating="2" aria-label="2 estrelas">★</button>
-          <button type="button" class="star-input" data-rating="3" aria-label="3 estrelas">★</button>
-          <button type="button" class="star-input" data-rating="4" aria-label="4 estrelas">★</button>
-          <button type="button" class="star-input" data-rating="5" aria-label="5 estrelas">★</button>
-        </div>
-        <label class="nucleus-form-label" for="comment">Comentário (opcional)</label>
-        <textarea id="comment" class="nucleus-textarea" maxlength="500" placeholder="Conte como foi sua experiência…" rows="4"></textarea>
-        <p class="nucleus-char-count"><span id="char-count">0</span>/500</p>
-        <button type="button" class="home-splash-btn home-splash-btn--primary" id="btn-submit" disabled>Enviar avaliação</button>
-        <p class="nucleus-meta" id="form-error" style="color:#fca5a5;margin-top:10px;"></p>
-      </div>
-    </div>
-    <div class="glass-discovery-shell nucleus-glass nucleus-hidden" id="state-success">
-      <p class="nucleus-success-title">Obrigado!</p>
-      <p class="nucleus-subtitle">Sua avaliação verificada foi registrada.</p>
-      <a class="home-splash-btn home-splash-btn--secondary" id="profile-link" href="#" style="margin-top:12px;">Ver perfil do profissional</a>
+      <p class="nucleus-state">Redirecionando para avaliação…</p>
     </div>
   </div>
-  <script src="../config.js"></script>
-  <script src="../api.js"></script>
-  <script src="../confirm-modal.js"></script>
-  <script src="../qr-service.js"></script>
-  <script src="../qr-reviews-service.js"></script>
+  <script src="../loader.js"></script>
   <script>
-    (async function () {
-      const loading = document.getElementById('state-loading');
-      const errorBlock = document.getElementById('state-error');
-      const formBlock = document.getElementById('state-form');
-      const successBlock = document.getElementById('state-success');
-      const errorTitle = document.getElementById('error-title');
-      const errorMessage = document.getElementById('error-message');
-      const profName = document.getElementById('prof-name');
-      const profSpecialty = document.getElementById('prof-specialty');
-      const starsInput = document.getElementById('stars-input');
-      const commentEl = document.getElementById('comment');
-      const charCount = document.getElementById('char-count');
-      const btnSubmit = document.getElementById('btn-submit');
-      const formError = document.getElementById('form-error');
-      const profileLink = document.getElementById('profile-link');
-      let selectedRating = 0;
-      const token = RankingProQR.getTokenFromUrl();
-      function hideAll() {
-        [loading, errorBlock, formBlock, successBlock].forEach(function (el) { el.classList.add('nucleus-hidden'); });
+    document.addEventListener('scriptsLoaded', function () {
+      if (typeof RankingProQrFlow !== 'undefined') {
+        RankingProQrFlow.handleAvaliarIndexRedirect();
+        return;
       }
-      function showError(title, message) {
-        hideAll(); errorBlock.classList.remove('nucleus-hidden');
-        errorTitle.textContent = title; errorMessage.textContent = message || '';
-      }
-      function showForm(data) {
-        hideAll(); formBlock.classList.remove('nucleus-hidden');
-        profName.textContent = data.professional_name || '';
-        profSpecialty.textContent = data.professional_specialty || '';
-        profSpecialty.style.display = data.professional_specialty ? 'block' : 'none';
-        profileLink.href = RankingProQR.buildProfileUrl(RankingProQR.getProfessionalIdFromRpc(data));
-      }
-      function showSuccess(data) {
-        hideAll(); successBlock.classList.remove('nucleus-hidden');
-        profileLink.href = RankingProQR.buildProfileUrl(RankingProQR.getProfessionalIdFromRpc(data));
-      }
-      function updateStars() {
-        starsInput.querySelectorAll('.star-input').forEach(function (btn) {
-          btn.classList.toggle('active', Number(btn.dataset.rating) <= selectedRating);
-        });
-        btnSubmit.disabled = selectedRating < 1;
-      }
-      starsInput.addEventListener('click', function (e) {
-        const btn = e.target.closest('button[data-rating]');
-        if (!btn) return;
-        selectedRating = Number(btn.dataset.rating);
-        updateStars();
-      });
-      commentEl.addEventListener('input', function () { charCount.textContent = String(commentEl.value.length); });
-      if (!token) { showError('QR inválido', 'Este link não contém um código válido.'); return; }
-      try {
-        const result = await RankingProQR.validateToken(token);
-        if (result.status === 'expired') { showError('QR expirado', 'Este QR expirou. Peça um novo ao profissional.'); return; }
-        if (result.status === 'used') { showError('Avaliação já registrada', 'Esta avaliação já foi registrada.'); return; }
-        if (result.status !== 'valid') { showError('QR inválido', 'Este link não é válido.'); return; }
-        showForm(result);
-      } catch (err) { console.error(err); showError('Erro', 'Não foi possível carregar a avaliação.'); }
-      btnSubmit.addEventListener('click', async function () {
-        if (selectedRating < 1 || btnSubmit.disabled) return;
-        btnSubmit.disabled = true; formError.textContent = '';
-        try {
-          const result = await RankingProReviews.submitQrReview(token, selectedRating, commentEl.value.trim());
-          if (result.status === 'success') { showSuccess(result); return; }
-          if (result.status === 'used') { showError('Avaliação já registrada', 'Esta avaliação já foi registrada.'); return; }
-          if (result.status === 'expired') { showError('QR expirado', 'Este QR expirou.'); return; }
-          if (result.status === 'invalid') { showError('QR inválido', 'Este link não é mais válido.'); return; }
-          formError.textContent = result.message || 'Não foi possível enviar.';
-          btnSubmit.disabled = false;
-        } catch (err) {
-          console.error(err);
-          formError.textContent = 'Erro ao enviar. Verifique sua conexão.';
-          btnSubmit.disabled = false;
-        }
-      });
-    })();
+      const qs = window.location.search || '';
+      window.location.replace('../cliente.html' + qs);
+    });
   </script>
 </body>
 </html>

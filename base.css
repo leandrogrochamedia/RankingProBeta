@@ -3,6 +3,7 @@
    ============================================ */
 
 @import url('./overlay-system.css');
+@import url('./css/components/floating-menu.css');
 
 :root {
   /* ===== CORES ===== */

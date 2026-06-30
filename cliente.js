@@ -574,18 +574,14 @@ window.abrirOnboardingEstilo = function() {
   const prefs = typeof getStoredClientPrefs === 'function' ? getStoredClientPrefs() : {};
   onboardingProfSelection = [...(prefs.profTags || [])];
   onboardingEstSelection = [...(prefs.estTags || [])];
-  renderOnboardingChips();
-  const modal = document.getElementById('styleOnboardingModal');
-  if (modal) modal.style.display = 'flex';
-};
-
-window.fecharOnboardingEstilo = function() {
-  const modal = document.getElementById('styleOnboardingModal');
-  if (modal) modal.style.display = 'none';
+  const open = typeof openStyleOnboarding === 'function'
+    ? openStyleOnboarding
+    : (window.RankingProOverlay?.styleOnboarding || function () {});
+  open({ onOpen: renderOnboardingChips });
 };
 
 window.pularOnboardingEstilo = function() {
-  fecharOnboardingEstilo();
+  if (typeof fecharOnboardingEstilo === 'function') fecharOnboardingEstilo();
 };
 
 window.salvarOnboardingEstilo = function() {
@@ -1295,44 +1291,48 @@ function initClientePage() {
   loadRecommendations();
 
   const urlParams = new URLSearchParams(window.location.search);
-  const professionalId = urlParams.get('professionalId');
-  const establishmentId = urlParams.get('establishmentId');
-  if (professionalId) {
-    const qrFlow = typeof isQrReviewSession === 'function' && isQrReviewSession();
-    setTimeout(() => {
-      switchTab('prof');
-      abrirDrawer('profissional', professionalId);
-      if (qrFlow) {
-        setTimeout(() => {
-          if (typeof abrirAvaliacaoDrawer === 'function') abrirAvaliacaoDrawer(professionalId);
-        }, 900);
-      }
-      if (window.history?.replaceState) {
-        const newUrl = window.location.pathname + window.location.search
-          .replace(/[?&]professionalId=[^&]*/, '')
-          .replace(/[?&]token=[^&]*/, '')
-          .replace(/[?&]qr=[^&]*/, '')
-          .replace(/[?&]verified=[^&]*/, '');
-        window.history.replaceState({}, document.title, newUrl);
-      }
-    }, 400);
-  } else if (establishmentId) {
-    setTimeout(() => {
-      switchTab('est');
-      abrirDrawer('estabelecimento', establishmentId);
-      if (window.history?.replaceState) {
-        const newUrl = window.location.pathname + window.location.search
-          .replace(/[?&]establishmentId=[^&]*/, '')
-          .replace(/[?&]token=[^&]*/, '');
-        window.history.replaceState({}, document.title, newUrl);
-      }
-    }, 400);
+
+  if (typeof RankingProQrFlow !== 'undefined' && RankingProQrFlow.handleClienteDeepLink()) {
+    /* deep link QR / perfil tratado por services/qr-flow.js */
   } else {
-    initClientStyleFlow().then(() => {
-      if (urlParams.get('openStyle') === '1' && isClienteLogadoEntry()) {
-        setTimeout(() => abrirOnboardingEstilo(), 500);
-      }
-    });
+    const professionalId = urlParams.get('professionalId');
+    const establishmentId = urlParams.get('establishmentId');
+    if (professionalId) {
+      const qrFlow = typeof isQrReviewSession === 'function' && isQrReviewSession();
+      setTimeout(() => {
+        if (qrFlow && typeof RankingProQrFlow?.openAvaliacaoDrawer === 'function') {
+          RankingProQrFlow.openAvaliacaoDrawer(professionalId, { token: urlParams.get('token') });
+        } else if (typeof openProfile === 'function') {
+          openProfile('profissional', professionalId);
+        }
+        if (window.history?.replaceState) {
+          const newUrl = window.location.pathname + window.location.search
+            .replace(/[?&]professionalId=[^&]*/, '')
+            .replace(/[?&]token=[^&]*/, '')
+            .replace(/[?&]qr=[^&]*/, '')
+            .replace(/[?&]verified=[^&]*/, '');
+          window.history.replaceState({}, document.title, newUrl);
+        }
+      }, 400);
+    } else if (establishmentId) {
+      setTimeout(() => {
+        if (typeof openProfile === 'function') {
+          openProfile('estabelecimento', establishmentId);
+        }
+        if (window.history?.replaceState) {
+          const newUrl = window.location.pathname + window.location.search
+            .replace(/[?&]establishmentId=[^&]*/, '')
+            .replace(/[?&]token=[^&]*/, '');
+          window.history.replaceState({}, document.title, newUrl);
+        }
+      }, 400);
+    } else {
+      initClientStyleFlow().then(() => {
+        if (urlParams.get('openStyle') === '1' && isClienteLogadoEntry()) {
+          setTimeout(() => abrirOnboardingEstilo(), 500);
+        }
+      });
+    }
   }
 
   if (urlParams.get('scanQr') === '1') {
@@ -1849,29 +1849,24 @@ function renderEstabelecimentos(data, pagina, options = {}) {
 // DRAWER E PERFIS
 // ========================================
 window.abrirDrawer = function(tipo, id) {
-  drawerTipo = tipo;
-  drawerId = id;
-  drawerAberto = true;
-  DOM.drawer.classList.add('open');
-  DOM.drawerOverlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-  DOM.drawerBody.innerHTML = '<div class="loading" style="padding:48px 24px;text-align:center;">Carregando perfil...</div>';
-  setDrawerActions('');
-  if (typeof incrementProfileView === 'function') {
-    incrementProfileView(id, tipo === 'profissional' ? 'prof' : 'est');
+  if (typeof openProfile === 'function') {
+    openProfile(tipo, id);
+    return;
   }
-  if (tipo === 'profissional') {
-    carregarPerfilProfissional(id);
-  } else {
-    currentPageEstReviews = 0;
-    carregarPerfilEstabelecimento(id);
+  if (typeof window.RankingProRouter?.openProfile === 'function') {
+    window.RankingProRouter.openProfile(tipo, id, { forcePage: true });
+    return;
   }
+  window.location.href = typeof profilePageUrl === 'function'
+    ? profilePageUrl(tipo, id)
+    : `./perfil-page.html?tipo=${encodeURIComponent(tipo)}&id=${encodeURIComponent(id)}`;
 };
 
 window.fecharDrawer = function() {
   drawerAberto = false;
-  DOM.drawer.classList.remove('open');
-  DOM.drawerOverlay.classList.remove('active');
+  DOM.drawer.classList.remove('open', 'profile-entering', 'profile-open');
+  DOM.drawerOverlay.classList.remove('active', 'profile-overlay-enter');
+  document.body.classList.remove('profile-view-open');
   document.body.style.overflow = '';
   setDrawerActions('');
   const form = document.getElementById('avaliarDrawerForm');
@@ -1939,7 +1934,7 @@ async function carregarPerfilProfissional(id) {
 
     const heroLines = [];
     if (prof.current_establishment?.name) {
-      heroLines.push(`📍 <span class="estab-link" style="cursor:pointer;" onclick="fecharDrawer(); setTimeout(()=>abrirDrawer('estabelecimento','${prof.current_establishment.id}'),300)">${escapeHtml(prof.current_establishment.name)}</span>`);
+      heroLines.push(`📍 <span class="estab-link" style="cursor:pointer;" onclick="openProfile('estabelecimento','${prof.current_establishment.id}')">${escapeHtml(prof.current_establishment.name)}</span>`);
     } else {
       heroLines.push('📍 Autônomo');
     }
@@ -2127,7 +2122,7 @@ window.irPaginaEstReviews = function(page) {
 // ========================================
 // AVALIAÇÃO NO DRAWER (PROFISSIONAL)
 // ========================================
-function abrirAvaliacaoDrawer(id) {
+window.abrirAvaliacaoDrawer = function abrirAvaliacaoDrawer(id) {
   const session = getSession();
   if (!session || !session.userId) {
     localStorage.setItem('avaliarProfId', id);
@@ -2363,65 +2358,25 @@ async function enviarAvaliacaoEstabDrawer() {
 }
 
 // ========================================
-// QR CODE SCANNER
+// QR CODE SCANNER (dinâmico via overlay.js)
 // ========================================
-let qrScanner = null;
-
 function abrirScannerQR() {
-  const container = document.getElementById('qrScannerContainer');
-  container.classList.add('open');
-  document.body.style.overflow = 'hidden';
-  const status = document.getElementById('qrScannerStatus');
-  if (status) status.textContent = 'Iniciando câmera...';
-  if (typeof Html5Qrcode === 'undefined') {
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-    script.onload = () => { iniciarScanner(); };
-    document.head.appendChild(script);
-  } else {
-    iniciarScanner();
+  if (typeof openQrScanner === 'function') {
+    openQrScanner();
+    return;
   }
-}
-
-function iniciarScanner() {
-  const status = document.getElementById('qrScannerStatus');
-  if (qrScanner) { qrScanner.clear(); qrScanner = null; }
-  qrScanner = new Html5Qrcode("qr-reader");
-  const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
-  qrScanner.start({ facingMode: "environment" }, config,
-    function(decodedText) {
-      status.textContent = '✅ QR Code lido! Redirecionando...';
-      fecharScannerQR();
-      const norm = typeof window.normalizarUrlQr === 'function'
-        ? window.normalizarUrlQr(decodedText)
-        : decodedText;
-      if (norm) window.location.href = norm;
-    },
-    function(err) {}
-  ).then(() => {
-    status.textContent = '✅ Câmera ativa. Aponte para o QR Code.';
-  }).catch(err => {
-    status.textContent = '❌ Erro ao acessar câmera: ' + err;
-    console.error(err);
-  });
-}
-
-function fecharScannerQR() {
-  const container = document.getElementById('qrScannerContainer');
-  container.classList.remove('open');
-  document.body.style.overflow = '';
-  if (qrScanner) {
-    qrScanner.stop().then(() => { qrScanner.clear(); qrScanner = null; }).catch(err => { console.warn('Erro ao parar scanner:', err); });
+  if (window.RankingProOverlay?.qrScanner) {
+    window.RankingProOverlay.qrScanner();
+    return;
   }
+  if (typeof showAlert === 'function') showAlert('⚠️', 'Scanner QR indisponível nesta página.');
 }
 
 window.abrirScannerQR = abrirScannerQR;
-window.fecharScannerQR = fecharScannerQR;
 
 // ========================================
 // EXPOR FUNÇÕES GLOBAIS
 // ========================================
-window.abrirDrawer = abrirDrawer;
 window.fecharDrawer = fecharDrawer;
 window.buscarProfissionais = buscarProfissionais;
 window.buscarEstabelecimentos = buscarEstabelecimentos;

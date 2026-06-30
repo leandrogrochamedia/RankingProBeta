@@ -1,7 +1,5 @@
 // ============================================================
-// Ranking Pro — LOADER CANÔNICO (raiz · Opção A · Fase 2+)
-// Subpastas qr/avaliar/p usam scripts ../ diretos.
-// js/loader.js está DEPRECATED — use ./loader.js na raiz.
+// Ranking Pro — LOADER CANÔNICO (raiz + subpastas via site-paths.js)
 // ============================================================
 
 (function () {
@@ -59,32 +57,65 @@
     }
   })();
 
-  const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  function getPageKey() {
+    const parts = (location.pathname || '').split('/').filter(Boolean);
+    const file = (parts.pop() || 'index.html').toLowerCase();
+    // Rotas de pasta (/p/, /e/, /qr/) — servidor entrega index.html mas o path não inclui o arquivo
+    if (!/\.html?$/.test(file)) {
+      const dir = parts.length ? parts.join('/') + '/' + file : file;
+      return dir + '/index.html';
+    }
+    if (file === 'index.html' && parts.length) {
+      return parts.join('/') + '/index.html';
+    }
+    if (parts.length) {
+      return parts.join('/') + '/' + file;
+    }
+    return file;
+  }
+
+  const root = (typeof RankingProPaths !== 'undefined' && RankingProPaths.prefix)
+    ? RankingProPaths.prefix()
+    : './';
+
+  function rp(path) {
+    return root + String(path || '').replace(/^\.\//, '');
+  }
+
+  const pageKey = getPageKey();
+  const page = pageKey.includes('/') ? pageKey.split('/').pop() : pageKey;
   const isClienteDiscovery = page === 'cliente.html';
   const isCliente = page.includes('cliente');
-  const skipFloatingMenu = /^(apendice|widget|sql-log|base-de-dados)/.test(page);
+  const isPublicLanding = /^(p|e)\/index\.html$/.test(pageKey);
+  const skipFloatingMenu = /^(apendice|widget|sql-log|base-de-dados)/.test(page)
+    || /^(qr|avaliar|p|e)\/index\.html$/.test(pageKey)
+    || pageKey === 'dev/gerar-qr.html';
 
   const CORE = [
-    './config.js',
-    './shark-mode.js',
-    './utils.js',
-    './api.js',
-    './session.js',
-    './flow-registry.js',
-    './profile-selector.js',
-    './confirm-modal.js',
-    './user-greeting.js',
-    './menu-lateral.js',
-    './dev-role-simulation.js'
+    rp('pwa-register.js'),
+    rp('config.js'),
+    rp('shark-mode.js'),
+    rp('utils.js'),
+    rp('api.js'),
+    rp('session.js'),
+    rp('flow-registry.js'),
+    rp('profile-selector.js'),
+    rp('confirm-modal.js'),
+    rp('overlay.js'),
+    rp('user-greeting.js')
   ];
 
-  // menu.js: dock em cliente, meu-perfil, perfil-page, favoritos, dashboards, etc.
-  if (!skipFloatingMenu) CORE.push('./menu.js');
+  if (!isPublicLanding) {
+    CORE.push(rp('menu-lateral.js'), rp('dev-role-simulation.js'));
+  }
+
+  if (!skipFloatingMenu) CORE.push(rp('menu.js'));
 
   const OPTIONAL = [];
   const needsUser = /^(login|cadastro-cliente|meu-perfil|admin|selecionar-perfil|minhas-avaliacoes)/.test(page)
     || isCliente || page.startsWith('onboarding-') || page.startsWith('selecionar-')
-    || /^dashboard-(profissional|estabelecimento)/.test(page);
+    || /^dashboard-(profissional|estabelecimento)/.test(page)
+    || pageKey === 'widget.html';
   const isDashboard = /^dashboard-(profissional|estabelecimento)/.test(page);
   const needsReviews = isClienteDiscovery || /^(perfil-page|minhas-avaliacoes|meu-perfil)/.test(page) || isDashboard;
   const sharkOn = typeof SHARK_MODE !== 'undefined' && SHARK_MODE;
@@ -94,34 +125,80 @@
   );
   const needsMarketplace = !sharkOn || sharkDev;
 
-  if (needsUser) OPTIONAL.push('./user-service.js');
-  if (page === 'meu-perfil.html') OPTIONAL.push('./meu-perfil.js');
-  if (needsReviews) OPTIONAL.push('./reviews-service.js');
+  if (needsUser) OPTIONAL.push(rp('user-service.js'));
+  if (page === 'meu-perfil.html') OPTIONAL.push(rp('meu-perfil.js'));
+  if (needsReviews) OPTIONAL.push(rp('reviews-service.js'));
   if (needsMarketplace && /^(estabelecimento-marketplace|relatorio-contratante|admin)/.test(page)) {
-    OPTIONAL.push('./talent-market.js', './hiring-service.js');
+    OPTIONAL.push(rp('talent-market.js'), rp('hiring-service.js'));
   }
   if (needsMarketplace && /^(estabelecimento-marketplace|perfil-page|dashboard-estabelecimento|dashboard-profissional)/.test(page)) {
-    if (!OPTIONAL.includes('./hiring-service.js')) OPTIONAL.push('./hiring-service.js');
+    if (!OPTIONAL.includes(rp('hiring-service.js'))) OPTIONAL.push(rp('hiring-service.js'));
   }
   if (!sharkOn || sharkDev) {
-    if (isClienteDiscovery && !OPTIONAL.includes('./talent-market.js')) OPTIONAL.push('./talent-market.js');
+    if (isClienteDiscovery && !OPTIONAL.includes(rp('talent-market.js'))) OPTIONAL.push(rp('talent-market.js'));
   }
   if (isDashboard) {
-    OPTIONAL.push('./router.js', './components/profile-card.js', './talent-market.js', './hiring-service.js');
+    OPTIONAL.push(rp('router.js'), rp('components/profile-card.js'), rp('talent-market.js'), rp('hiring-service.js'));
   }
   if (page === 'dashboard-estabelecimento.html') {
-    OPTIONAL.push('./widget-utils.js', './widget-embed.js');
+    OPTIONAL.push(rp('widget-utils.js'), rp('widget-embed.js'));
   }
-  if (page === 'buscar.html') OPTIONAL.push('./buscar.js');
-  if (isClienteDiscovery) OPTIONAL.push('./qr-upload-decode.js');
+  if (page === 'buscar.html') OPTIONAL.push(rp('buscar.js'));
+  if (isClienteDiscovery) {
+    OPTIONAL.push(rp('qr-upload-decode.js'), rp('qr-service.js'), rp('services/qr-flow.js'));
+  }
+  if (isDashboard && !OPTIONAL.includes(rp('qr-service.js'))) {
+    OPTIONAL.push(rp('qr-service.js'));
+  }
+
+  // F1 — páginas que carregavam scripts manualmente
+  if (page === 'onboarding-profissional.html') {
+    OPTIONAL.push(rp('seed-images.js'), rp('router.js'));
+  }
+  if (page === 'onboarding-estabelecimento.html') {
+    OPTIONAL.push(rp('seed-images.js'), rp('router.js'));
+  }
+  if (page === 'selecionar-profissional.html' || page === 'selecionar-estabelecimento.html') {
+    OPTIONAL.push(rp('router.js'));
+  }
+  if (pageKey === 'widget.html') {
+    OPTIONAL.push(rp('widget-utils.js'), rp('widget-embed.js'));
+  }
+  if (pageKey === 'sql-log.html' || pageKey === 'sql-run/027-establishment-owners.html') {
+    OPTIONAL.push(rp('sql-embedded.js'), rp('sql-runner.js'));
+  }
+  if (pageKey === 'dev-simulation.html') {
+    OPTIONAL.push(rp('proofly-debug.js'), rp('talent-market.js'), rp('base-de-dados-schema.js'), rp('dev-control-center.js'));
+  }
+  if (pageKey === 'base-de-dados-completa.html') {
+    OPTIONAL.push(rp('base-de-dados-schema.js'), rp('base-de-dados-app.js'));
+  }
+  if (pageKey === 'qr/index.html' || pageKey === 'avaliar/index.html') {
+    OPTIONAL.push(rp('qr-service.js'), rp('services/qr-flow.js'));
+  }
+  if (pageKey === 'p/index.html' || pageKey === 'e/index.html') {
+    OPTIONAL.push(rp('profile-service.js'), rp('components/perfil-premium.js'), rp('passaporte-landing.js'));
+  }
+  if (pageKey === 'dev/gerar-qr.html') {
+    OPTIONAL.push(rp('qr-service.js'), rp('site-nav.js'));
+  }
+  if (page === 'index.html') {
+    OPTIONAL.push(rp('app/screens-registry.js'), rp('app/router.js'));
+  }
+
+  // P0 — router em discovery + perfil-page (openProfile default = página)
+  if (/^(cliente|favoritos|perfil-page|estabelecimento-marketplace)\.html$/.test(page) || isClienteDiscovery) {
+    if (!OPTIONAL.includes(rp('router.js'))) OPTIONAL.push(rp('router.js'));
+  }
 
   const scripts = CORE.concat(OPTIONAL);
-  const CACHE_BUST = '20260628-qr-decode-panel';
+  const CACHE_BUST = '20260630-f7-vite-pwa';
   let loaded = 0;
 
   function loadNext() {
     if (loaded >= scripts.length) {
-      window.PROOFLY_SCRIPTS_READY = true;
+      window.RANKING_PRO_SCRIPTS_READY = true;
+      window.PROOFLY_SCRIPTS_READY = true; // deprecated alias — remover após 1 sprint
       document.dispatchEvent(new Event('scriptsLoaded'));
       return;
     }

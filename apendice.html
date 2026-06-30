@@ -65,9 +65,9 @@
     </section>
   </div>
 
-  <script src="./config.js"></script>
-  <script src="./menu-lateral.js"></script>
+  <script src="./loader.js"></script>
   <script>
+    document.addEventListener('scriptsLoaded', function () {
     const PAGES = {
       main: [
         { href: './index.html', title: 'Início', desc: 'Landing e entrada no app', tag: 'prod' },
@@ -94,22 +94,19 @@
         { href: './selecionar-cliente.html?force=true', title: 'Selecionar cliente', desc: 'Modo dev — escolher cliente', tag: 'dev' },
         { href: './selecionar-profissional.html?force=true', title: 'Selecionar profissional', desc: 'Modo dev — escolher prof', tag: 'dev' },
         { href: './selecionar-estabelecimento.html', title: 'Selecionar estabelecimento', desc: 'Modo dev — escolher local', tag: 'dev' },
-        { href: './cliente-area.html', title: 'Área cliente (landing)', desc: 'Links cadastro/login', tag: 'dev' },
+        { href: './selecionar-cliente.html', title: 'Selecionar cliente', desc: 'Escolher perfil cliente', tag: 'dev' },
         { href: './profissional.html', title: 'Área profissional (landing)', desc: 'Links onboarding prof', tag: 'dev' },
         { href: './estabelecimento.html', title: 'Área estabelecimento (landing)', desc: 'Links onboarding est', tag: 'dev' }
       ],
       variants: [
-        { href: './cliente-exp.html', title: 'Cliente EXP', desc: 'Variante experimental da busca', tag: 'dev' },
-        { href: './cliente-bak.html', title: 'Cliente BAK', desc: 'Backup da página cliente', tag: 'legacy' },
-        { href: './cliente-home.html', title: 'Cliente Home', desc: 'Home alternativa', tag: 'legacy' },
+        { href: './cliente-home.html', title: 'Cliente Home', desc: 'Redirect → cliente.html', tag: 'legacy' },
         { href: './---dashboard-profissional 2.html', title: 'Dashboard prof (backup)', desc: 'Cópia antiga', tag: 'legacy' }
       ],
       legacy: [
-        { href: './---perfil-publico.html?id=20000000-0000-4000-8000-000000000001', title: 'Perfil público (legado)', desc: 'Redireciona → perfil-page.html', tag: 'legacy' },
-        { href: './---minhas-avaliacoes.html', title: 'Minhas avaliações (legado)', desc: 'Redireciona → minhas-avaliacoes.html', tag: 'legacy' },
-        { href: './----vincular-profissional.html', title: 'Vincular profissional (legado)', desc: 'Redireciona → selecionar-profissional', tag: 'legacy' },
-        { href: './---onboarding-cliente.html', title: 'Onboarding cliente (legado)', desc: 'Redireciona → cadastro-cliente', tag: 'legacy' },
-        { href: './BASE DE DADOS COMPLETA.html', title: 'BASE DE DADOS (Downloads)', desc: 'Cópia com nome antigo', tag: 'legacy' }
+        { href: './profissional.html', title: 'Profissional (legado)', desc: 'Redirect → login intent=professional', tag: 'legacy' },
+        { href: './estabelecimento.html', title: 'Estabelecimento (legado)', desc: 'Redirect → login intent=establishment', tag: 'legacy' },
+        { href: './contratar.html', title: 'Contratar (legado)', desc: 'Redirect → marketplace ou dashboard', tag: 'legacy' },
+        { href: './cliente-avaliar.html', title: 'Cliente avaliar (legado)', desc: 'Redirect → cliente.html', tag: 'legacy' }
       ]
     };
 
@@ -132,6 +129,7 @@
     render('listTools', PAGES.tools);
     render('listVariants', PAGES.variants);
     render('listLegacy', PAGES.legacy);
+    });
   </script>
 </body>
 </html>

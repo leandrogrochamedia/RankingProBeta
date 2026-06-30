@@ -48,17 +48,39 @@
     if (idx >= 0) {
       favs.splice(idx, 1);
       if (btn) {
-        btn.classList.remove('active');
-        btn.innerHTML = btn.dataset.labelOff || '🤍 Favoritar';
+        btn.classList.remove('active', 'is-active');
+        if (btn.classList.contains('perfil-action-icon')) {
+          btn.innerHTML = actionBarHeartSvg(false);
+        } else {
+          btn.innerHTML = btn.dataset.labelOff || '🤍 Favoritar';
+        }
       }
     } else {
       favs.push({ type, id, name, savedAt: Date.now() });
       if (btn) {
-        btn.classList.add('active');
-        btn.innerHTML = btn.dataset.labelOn || '❤️ Favoritado';
+        btn.classList.add('active', 'is-active');
+        if (btn.classList.contains('perfil-action-icon')) {
+          btn.innerHTML = actionBarHeartSvg(true);
+        } else {
+          btn.innerHTML = btn.dataset.labelOn || '❤️ Favoritado';
+        }
       }
     }
     localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  }
+
+  function toggleFavoriteIcon(type, id, name, btn) {
+    btn?.classList.add('perfil-action-icon--pulse');
+    toggleFavorite(type, id, name, btn);
+    window.setTimeout(() => btn?.classList.remove('perfil-action-icon--pulse'), 220);
+  }
+
+  const ACTION_BAR_HEART_OUTLINE = '<svg class="perfil-action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.65-7 10-7 10z"/></svg>';
+  const ACTION_BAR_HEART_FILL = '<svg class="perfil-action-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4.25 4.25 0 0 1 7-2.45A4.25 4.25 0 0 1 19 10c0 5.65-7 10-7 10z"/></svg>';
+  const ACTION_BAR_SHARE = '<svg class="perfil-action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>';
+
+  function actionBarHeartSvg(active) {
+    return active ? ACTION_BAR_HEART_FILL : ACTION_BAR_HEART_OUTLINE;
   }
 
   function mockDistance(id) {
@@ -350,7 +372,7 @@
       : {
           authorName: r.user?.name || 'Avaliador',
           authorHtml: `<strong class="review-author-name">${esc(r.user?.name || 'Avaliador')}</strong>`,
-          verifiedBadge: r.verified ? '<span class="review-badge review-badge-verified">✅ Verificado</span>' : '',
+          verifiedBadge: r.verified ? '<span class="review-badge review-badge-verified">✓ Verificada</span>' : '',
           sourceBadge: '👤 Cliente',
           contextText: '',
           workplaceHtml: ''
@@ -368,7 +390,7 @@
           ${d.verifiedBadge || ''}
           <span class="review-badge review-badge-source">${esc(d.sourceBadge || '👤 Cliente')}</span>
         </div>
-        ${d.contextText ? `<div class="review-context-line"><span class="review-context-action">${esc(d.contextText)}</span></div>` : ''}
+        ${!viewContext.publicProfile && d.contextText ? `<div class="review-context-line"><span class="review-context-action">${esc(d.contextText)}</span></div>` : ''}
         ${d.workplaceHtml || ''}
         <div class="text">${r.comment ? esc(r.comment) : '<span class="muted">Sem comentário</span>'}</div>
       </div>
@@ -472,18 +494,118 @@
     return html;
   }
 
+  function renderProfileStatLine(opts = {}) {
+    const avg = Number(opts.avg) || 0;
+    const verifiedCount = Number(opts.verifiedCount) || 0;
+    const teamCount = Number(opts.teamCount) || 0;
+    const parts = [];
+    if (avg > 0) parts.push(`★ ${avg.toFixed(1)}`);
+    if (verifiedCount > 0) parts.push(`${verifiedCount} verificada${verifiedCount === 1 ? '' : 's'}`);
+    if (teamCount > 0) parts.push(`${teamCount} na equipe`);
+    if (!parts.length) return '';
+    return `<p class="profile-stat-line">${parts.join(' · ')}</p>`;
+  }
+
+  function renderTeamRail(profissionais) {
+    const list = profissionais || [];
+    const count = list.length;
+    const sub = count === 1 ? '1 profissional neste local' : `${count} profissionais neste local`;
+
+    if (!count) {
+      return `
+        <section class="profile-team-section glass-surface">
+          <h2 class="tinder-section-title">Equipe</h2>
+          <p class="profile-team-sub profile-team-empty">Nenhum profissional vinculado ainda</p>
+        </section>`;
+    }
+
+    const cards = list.map(p => {
+      const pid = p.id;
+      const name = esc(p.name || 'Profissional');
+      const specialty = esc(p.profile?.specialty || p.specialty || 'Profissional');
+      const avg = Number(p.avg_rating) || 0;
+      const reviews = Number(p.total_reviews) || 0;
+      const ratingLine = avg > 0
+        ? `★ ${avg.toFixed(1)} · ${reviews}`
+        : (reviews ? `${reviews} aval.` : 'Sem nota');
+      const img = avatarSrc(p.avatar_url, p);
+      const initial = (p.name || '?').charAt(0).toUpperCase();
+      const openFn = typeof openProfile === 'function'
+        ? `openProfile('profissional','${pid}')`
+        : `navigateToProfile('profissional','${pid}')`;
+      return `
+        <article class="profile-team-card" role="listitem" tabindex="0"
+          onclick="${openFn}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${openFn}}">
+          <img class="profile-team-avatar" src="${img}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          <span class="profile-team-avatar-fallback" style="display:none;">${initial}</span>
+          <span class="profile-team-name">${name}</span>
+          <span class="profile-team-role">${specialty}</span>
+          <span class="profile-team-rating">${ratingLine}</span>
+          <span class="profile-team-chevron" aria-hidden="true">›</span>
+        </article>`;
+    }).join('');
+
+    return `
+      <section class="profile-team-section glass-surface">
+        <h2 class="tinder-section-title">Equipe</h2>
+        <p class="profile-team-sub">${sub}</p>
+        <div class="profile-team-rail" role="list">${cards}</div>
+      </section>`;
+  }
+
+  function renderReputationCompact(opts = {}) {
+    const local = opts.local || {};
+    const team = opts.team || {};
+    const verifiedPct = Number(opts.verifiedPct) || 0;
+    const localAvg = Number(local.avg) || 0;
+    const localTotal = Number(local.total) || 0;
+    const teamAvg = Number(team.avg) || 0;
+    const teamTotal = Number(team.total) || 0;
+    const localValue = localAvg > 0 ? `${localAvg.toFixed(1)} ★` : '—';
+    const localMeta = localTotal
+      ? `${localTotal} avaliação${localTotal === 1 ? '' : 'ões'}`
+      : 'Sem avaliações';
+    const teamValue = teamAvg > 0 ? `${teamAvg.toFixed(1)} ★` : '—';
+    const teamMeta = teamTotal
+      ? `${teamTotal} avaliação${teamTotal === 1 ? '' : 'ões'}`
+      : 'Sem avaliações';
+    const verifiedChip = verifiedPct > 0
+      ? `<div class="reputation-verified-chip">${verifiedPct}% verificadas via QR</div>`
+      : '';
+
+    return `
+      <div class="profile-reputation-section">
+        <h2 class="tinder-section-title profile-reputation-heading">Reputação verificável</h2>
+        <div class="profile-reputation-pills glass-surface">
+          <div class="reputation-pill reputation-pill-local">
+            <span class="reputation-pill-label">Lugar</span>
+            <span class="reputation-pill-value">${localValue}</span>
+            <span class="reputation-pill-meta">${localMeta}</span>
+          </div>
+          <div class="reputation-pill reputation-pill-team">
+            <span class="reputation-pill-label">Equipe</span>
+            <span class="reputation-pill-value">${teamValue}</span>
+            <span class="reputation-pill-meta">${teamMeta}</span>
+          </div>
+          ${verifiedChip}
+        </div>
+      </div>`;
+  }
+
   function buildEstablishmentProfileBody(opts) {
     const {
-      estab, matchInsight, prooflyData, allReviews, avgRating, totalReviews,
-      strengths, estReviewCtx, tagCategories, paginationHtml
+      estab, matchInsight, allReviews, avgRating, totalReviews,
+      strengths, estReviewCtx, tagCategories, paginationHtml,
+      teamMembers, teamStats, verifiedPct
     } = opts;
-    const cred = buildCredibilityMeta(allReviews, prooflyData, null, avgRating, totalReviews);
     const shared = matchInsight?.sharedTags || [];
+    const localStats = { avg: avgRating, total: totalReviews };
+    const team = teamStats || { avg: 0, total: 0 };
 
     let html = '<div class="tinder-profile-content">';
     html += '<div class="profile-decision-stack">';
-    html += renderCredibilityStrip({ ...cred, type: 'est', estabTotal: 0 });
-    html += renderReputationOverview({ ...cred, type: 'est', estabTotal: 0 });
+    html += renderTeamRail(teamMembers || []);
+    html += renderReputationCompact({ local: localStats, team, verifiedPct: verifiedPct ?? 0 });
     html += renderQuickStyleTags(estab, 'est', shared);
     html += renderTagCategories(tagCategories, shared);
     if (estab.description) {
@@ -868,7 +990,7 @@
         : {
             authorName: r.user?.name || 'Avaliador',
             authorHtml: `<strong class="review-author-name">${esc(r.user?.name || 'Avaliador')}</strong>`,
-            verifiedBadge: r.verified ? '<span class="review-badge review-badge-verified">✅ Verificado</span>' : '',
+            verifiedBadge: r.verified ? '<span class="review-badge review-badge-verified">✓ Verificada</span>' : '',
             sourceBadge: r.sourceBadge || '',
             contextText: r.reviewContext || r.context || '',
             reviewContext: r.reviewContext || r.context || '',
@@ -885,7 +1007,7 @@
           ${d.verifiedBadge || ''}
           ${d.sourceBadge ? `<span class="review-badge review-badge-source">${esc(d.sourceBadge)}</span>` : ''}
         </div>
-        ${d.contextText || d.reviewContext ? `<div class="review-context-line"><span class="review-context-action">${esc(d.contextText || d.reviewContext)}</span></div>` : ''}
+        ${!viewContext.publicProfile && (d.contextText || d.reviewContext) ? `<div class="review-context-line"><span class="review-context-action">${esc(d.contextText || d.reviewContext)}</span></div>` : ''}
         ${d.workplaceHtml || ''}
         <div class="text">${r.comment ? esc(r.comment) : '<span class="muted">Sem comentário</span>'}</div>
       </div>
@@ -927,6 +1049,50 @@
     `;
   }
 
+  /** Action Bar minimalista — perfil-page (Instagram/Airbnb style) */
+  function renderActionBar(opts) {
+    const options = opts || {};
+    const favType = options.favType || 'prof';
+    const favId = options.favId;
+    const favName = options.favName || '';
+    const fav = favId ? isFavorite(favType, favId) : false;
+    const safeName = esc(favName).replace(/'/g, "\\'");
+    const shareOnclick = options.shareOnclick || 'ProfilePageView.shareProfile()';
+    const reviewsCount = Number(options.reviewsCount) || 0;
+
+    let ctaHtml = '';
+    if (options.contactHref) {
+      const label = options.contactLabel || 'WhatsApp';
+      ctaHtml = `<a href="${options.contactHref}" class="perfil-action-cta${options.contactVariant === 'hire' ? ' perfil-action-cta--accent' : ' perfil-action-cta--wa'}" target="_blank" rel="noopener">${label}</a>`;
+    } else if (options.contactOnclick) {
+      ctaHtml = `<button type="button" class="perfil-action-cta perfil-action-cta--accent" onclick="${options.contactOnclick}">${options.contactLabel || 'Contato'}</button>`;
+    } else {
+      ctaHtml = `<button type="button" class="perfil-action-cta perfil-action-cta--muted" onclick="typeof showAlert==='function'&&showAlert('📞 Contato','Contato indisponível neste perfil.')">Contato</button>`;
+    }
+
+    const favBtn = favId
+      ? `<button type="button" class="perfil-action-icon${fav ? ' is-active' : ''}" aria-label="Salvar nos favoritos" aria-pressed="${fav ? 'true' : 'false'}" onclick="ProfileCard.toggleFavoriteIcon('${favType}','${favId}','${safeName}',this)">${actionBarHeartSvg(fav)}</button>`
+      : '';
+
+    const reviewsLink = reviewsCount > 5
+      ? '<button type="button" class="perfil-reviews-link" onclick="scrollDrawerToReviews()">Ver histórico completo</button>'
+      : '';
+
+    return `
+      <div class="perfil-action-bar-wrap">
+        ${options.trustNoteHtml ? `<p class="perfil-qr-trust-note">${options.trustNoteHtml}</p>` : ''}
+        <div class="perfil-action-bar" role="toolbar" aria-label="Ações do perfil">
+          <div class="perfil-action-icons">
+            ${favBtn}
+            <button type="button" class="perfil-action-icon" aria-label="Compartilhar" onclick="${shareOnclick}">${ACTION_BAR_SHARE}</button>
+          </div>
+          ${ctaHtml}
+        </div>
+        ${reviewsLink}
+      </div>
+    `;
+  }
+
   global.ProfileCard = {
     renderResultCard,
     renderHero,
@@ -936,10 +1102,15 @@
     renderReviewsGrouped,
     renderCredibilityStrip,
     renderReputationOverview,
+    renderProfileStatLine,
+    renderTeamRail,
+    renderReputationCompact,
     renderQuickStyleTags,
     buildProfessionalProfileBody,
     buildEstablishmentProfileBody,
     renderDrawerActions,
+    renderActionBar,
+    toggleFavoriteIcon,
     renderProoflyScoreBadge,
     renderProoflyScoreGauge,
     renderProoflyLevelBar,

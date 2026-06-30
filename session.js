@@ -5,9 +5,20 @@
 // activeProfile — 'client' | 'professional' | 'establishment'
 // =====================================================
 
-function getSession() {
+function migrateLegacySession() {
   try {
-    const raw = sessionStorage.getItem('proofly_session');
+    const legacy = sessionStorage.getItem('proofly_session');
+    if (legacy && !sessionStorage.getItem('ranking_pro_session')) {
+      sessionStorage.setItem('ranking_pro_session', legacy);
+    }
+  } catch { /* noop */ }
+}
+
+function getSession() {
+  migrateLegacySession();
+  try {
+    const raw = sessionStorage.getItem('ranking_pro_session')
+      || sessionStorage.getItem('proofly_session');
     if (!raw) return null;
     return JSON.parse(raw);
   } catch (e) {
@@ -18,7 +29,8 @@ function getSession() {
 
 function setSession(data) {
   try {
-    sessionStorage.setItem('proofly_session', JSON.stringify(data));
+    sessionStorage.setItem('ranking_pro_session', JSON.stringify(data));
+    sessionStorage.removeItem('proofly_session');
     console.log('✅ Sessão salva (temporária):', data);
   } catch (e) {
     console.warn('Erro ao salvar sessão:', e);
@@ -27,6 +39,7 @@ function setSession(data) {
 
 function clearSession() {
   try {
+    sessionStorage.removeItem('ranking_pro_session');
     sessionStorage.removeItem('proofly_session');
     console.log('🗑️ Sessão removida');
   } catch (e) {

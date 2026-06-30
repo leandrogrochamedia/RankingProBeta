@@ -422,28 +422,35 @@
     `;
   }
 
-  function ensureModalShell() {
-    if (document.getElementById('hiringProposalModal')) return;
-    document.body.insertAdjacentHTML('beforeend', `
-      <div id="hiringProposalModal" class="hiring-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="hiringModalTitle">
-        <div class="hiring-modal-backdrop" onclick="HiringFlow.closeModal()"></div>
-        <div class="hiring-modal-sheet glass-surface">
-          <button type="button" class="hiring-modal-close" onclick="HiringFlow.closeModal()" aria-label="Fechar">✕</button>
-          <h2 id="hiringModalTitle" class="hiring-modal-title">Propor contratação</h2>
-          <p id="hiringModalSub" class="hiring-modal-sub"></p>
-          <div id="hiringModalBody"></div>
-        </div>
-      </div>
-    `);
-  }
-
+  let activeHiringSheet = null;
   let modalContext = null;
 
   function closeModal() {
-    const el = document.getElementById('hiringProposalModal');
-    if (el) el.style.display = 'none';
-    document.body.style.overflow = '';
+    if (activeHiringSheet?.close) activeHiringSheet.close();
+    activeHiringSheet = null;
     modalContext = null;
+  }
+
+  function setHiringModalContent(title, subHtml, bodyHtml) {
+    if (!activeHiringSheet) {
+      if (typeof global.RankingProOverlay?.sheet !== 'function') return;
+      activeHiringSheet = global.RankingProOverlay.sheet('', {
+        title: title || 'Propor contratação',
+        onClose: function () {
+          activeHiringSheet = null;
+          modalContext = null;
+        }
+      });
+    } else {
+      const titleEl = activeHiringSheet.el?.querySelector('.rp-overlay-title');
+      if (titleEl) titleEl.textContent = title || 'Propor contratação';
+    }
+    if (activeHiringSheet?.body) {
+      activeHiringSheet.body.innerHTML = [
+        subHtml ? `<p id="hiringModalSub" class="hiring-modal-sub">${subHtml}</p>` : '<p id="hiringModalSub" class="hiring-modal-sub"></p>',
+        `<div id="hiringModalBody">${bodyHtml || ''}</div>`
+      ].join('');
+    }
   }
 
   function openProposalModal(professionalId, options) {
@@ -453,7 +460,6 @@
       showAlert?.('⚠️', 'Selecione o perfil de estabelecimento para contratar.');
       return;
     }
-    ensureModalShell();
     modalContext = { professionalId, prof: opts.prof || null, establishment: opts.establishment || null };
 
     if (!modalContext.prof && global._hiringDrawerProf?.id === professionalId) {
@@ -486,15 +492,13 @@
       const match = enriched._contratanteMatch;
       const roi = enriched._roiEstimado;
 
-      document.getElementById('hiringModalTitle').textContent = existing
-        ? `Proposta · ${prof.name}`
-        : `Contratar ${prof.name}`;
-      document.getElementById('hiringModalSub').innerHTML = match
+      const title = existing ? `Proposta · ${prof.name}` : `Contratar ${prof.name}`;
+      const sub = match
         ? `Match <strong>${match.percent}%</strong>${roi ? ` · ROI estimado <strong>${roi.index}</strong>` : ''} com ${escapeHtml(est?.name || session.establishmentName || 'seu negócio')}`
         : `Envie uma proposta para ${escapeHtml(prof.name)}`;
 
       if (existing) {
-        document.getElementById('hiringModalBody').innerHTML = `
+        setHiringModalContent(title, sub, `
           <div class="hiring-existing-block">
             ${renderStatusPill(existing.status)}
             <p><strong>Modelo:</strong> ${escapeHtml(COMP_MODELS.find(c => c.id === existing.compensationModel)?.label || existing.compensationModel)}</p>
@@ -508,26 +512,20 @@
               ? `<button type="button" class="btn" onclick="HiringFlow.cancelProposal('${existing.id}', true)">Cancelar proposta</button>`
               : ''}
           </div>
-        `;
+        `);
+      } else if (prof.current_establishment_id === session.establishmentId) {
+        setHiringModalContent(title, sub, `
+          <p>Este profissional já faz parte da sua equipe.</p>
+          <div class="hiring-modal-actions"><button type="button" class="btn" onclick="HiringFlow.closeModal()">OK</button></div>
+        `);
+      } else if (prof.current_establishment_id && prof.seeking_work === false) {
+        setHiringModalContent(title, sub, `
+          <p>Profissional vinculado a outro estabelecimento no momento. Você ainda pode enviar uma proposta de negociação.</p>
+          ${buildProposalFormHtml(prof)}
+        `);
       } else {
-        if (prof.current_establishment_id === session.establishmentId) {
-          document.getElementById('hiringModalBody').innerHTML = `
-            <p>Este profissional já faz parte da sua equipe.</p>
-            <div class="hiring-modal-actions"><button type="button" class="btn" onclick="HiringFlow.closeModal()">OK</button></div>
-          `;
-        } else if (prof.current_establishment_id && prof.seeking_work === false) {
-          document.getElementById('hiringModalBody').innerHTML = `
-            <p>Profissional vinculado a outro estabelecimento no momento. Você ainda pode enviar uma proposta de negociação.</p>
-            ${buildProposalFormHtml(prof)}
-          `;
-        } else {
-          document.getElementById('hiringModalBody').innerHTML = buildProposalFormHtml(prof);
-        }
+        setHiringModalContent(title, sub, buildProposalFormHtml(prof));
       }
-
-      const modal = document.getElementById('hiringProposalModal');
-      modal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
     }).catch(e => {
       showAlert?.('❌', e.message || 'Erro ao abrir proposta.');
     });
@@ -662,7 +660,6 @@
       showAlert?.('⚠️', 'Selecione o perfil de profissional para candidatar-se.');
       return;
     }
-    ensureModalShell();
     modalContext = {
       establishmentId,
       professionalId: session.professionalId,
@@ -692,22 +689,22 @@
       const enriched = typeof enrichProfForContratante === 'function' ? enrichProfForContratante(prof || {}, est) : {};
       const match = enriched._contratanteMatch;
 
-      document.getElementById('hiringModalTitle').textContent = existing?.initiatedBy === 'professional'
+      const title = existing?.initiatedBy === 'professional'
         ? `Candidatura · ${est.name}`
         : existing
           ? `Proposta de ${est.name}`
           : `Pedir emprego em ${est.name}`;
-      document.getElementById('hiringModalSub').innerHTML = match
+      const sub = match
         ? `Seu match com este local: <strong>${match.percent}%</strong>${match.headline ? ` · ${escapeHtml(match.headline)}` : ''}`
         : `Envie sua candidatura para ${escapeHtml(est.name)}`;
 
       if (prof?.current_establishment_id === establishmentId) {
-        document.getElementById('hiringModalBody').innerHTML = `
+        setHiringModalContent(title, sub, `
           <p>Você já faz parte da equipe de <strong>${escapeHtml(est.name)}</strong>.</p>
           <div class="hiring-modal-actions"><button type="button" class="btn" onclick="HiringFlow.closeModal()">OK</button></div>
-        `;
+        `);
       } else if (existing?.initiatedBy === 'establishment') {
-        document.getElementById('hiringModalBody').innerHTML = `
+        setHiringModalContent(title, sub, `
           <div class="hiring-existing-block">
             ${renderStatusPill(existing.status)}
             <p>Este estabelecimento já enviou uma proposta para você.</p>
@@ -718,9 +715,9 @@
             <button type="button" class="btn btn-outline" onclick="HiringFlow.closeModal()">Fechar</button>
             ${existing.status === 'proposed' ? `<button type="button" class="btn" onclick="HiringFlow.respondProposal('${existing.id}','accepted');HiringFlow.closeModal();">✅ Aceitar</button>` : ''}
           </div>
-        `;
+        `);
       } else if (existing?.initiatedBy === 'professional') {
-        document.getElementById('hiringModalBody').innerHTML = `
+        setHiringModalContent(title, sub, `
           <div class="hiring-existing-block">
             ${renderStatusPill(existing.status)}
             ${existing.message ? `<p><strong>Sua mensagem:</strong> ${escapeHtml(existing.message)}</p>` : ''}
@@ -733,18 +730,15 @@
               ? `<button type="button" class="btn" onclick="HiringFlow.cancelApplication('${existing.id}', true)">Cancelar candidatura</button>`
               : ''}
           </div>
-        `;
+        `);
       } else if (prof?.current_establishment_id && prof.seeking_work === false) {
-        document.getElementById('hiringModalBody').innerHTML = `
+        setHiringModalContent(title, sub, `
           <p>Você está vinculado a outro estabelecimento. Marque-se como <strong>aberto a oportunidades</strong> no perfil para candidatar-se.</p>
           <div class="hiring-modal-actions"><button type="button" class="btn" onclick="HiringFlow.closeModal()">OK</button></div>
-        `;
+        `);
       } else {
-        document.getElementById('hiringModalBody').innerHTML = buildApplicationFormHtml(est);
+        setHiringModalContent(title, sub, buildApplicationFormHtml(est));
       }
-
-      document.getElementById('hiringProposalModal').style.display = 'flex';
-      document.body.style.overflow = 'hidden';
     }).catch(e => showAlert?.('❌', e.message || 'Erro ao abrir candidatura.'));
   }
 

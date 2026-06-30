@@ -105,15 +105,9 @@
     </section>
   </div>
 
-  <script src="./config.js"></script>
-  <script src="./utils.js"></script>
-  <script src="./api.js"></script>
-  <script src="./session.js"></script>
-  <script src="./user-service.js"></script>
-  <script src="./widget-utils.js"></script>
-  <script src="./widget-embed.js"></script>
+  <script src="./loader.js"></script>
   <script>
-    (function() {
+    document.addEventListener('scriptsLoaded', function () {
       const params = new URLSearchParams(location.search);
       const embedMode = params.get('embed') === '1';
       if (embedMode) document.documentElement.classList.add('wg-embed-only');
@@ -197,17 +191,8 @@
         alert(ok ? '✅ Código iframe copiado!' : 'Não foi possível copiar.');
       });
 
-      if (!embedMode) {
-        const devScripts = ['./menu-lateral.js'];
-        devScripts.forEach(src => {
-          const s = document.createElement('script');
-          s.src = src;
-          document.body.appendChild(s);
-        });
-      }
-
       loadEstablishments();
-    })();
+    });
   </script>
 </body>
 </html>

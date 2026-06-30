@@ -45,11 +45,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script src="../config.js"></script>
-  <script src="../api.js"></script>
-  <script src="../qr-service.js"></script>
+  <script src="../loader.js"></script>
   <script>
-    (async function () {
+    document.addEventListener('scriptsLoaded', async function () {
       const loading = document.getElementById('state-loading');
       const formBlock = document.getElementById('state-form');
       const resultBlock = document.getElementById('state-result');
@@ -132,7 +130,7 @@
         resultBlock.classList.add('nucleus-hidden');
         formBlock.classList.remove('nucleus-hidden');
       });
-    })();
+    });
   </script>
 </body>
 </html>

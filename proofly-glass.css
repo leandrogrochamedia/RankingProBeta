@@ -1246,10 +1246,26 @@ body {
    Regra: texto sempre contrasta com o fundo do container
    ============================================================ */
 
-/* --- Tema escuro: cliente, drawer, perfil-page --- */
+/* --- Tema escuro: cliente, drawer --- */
 .cliente-page,
-.cliente-page .drawer-tinder,
-.cliente-page .perfil-page-content {
+.cliente-page .drawer-tinder {
+  --surface-bg: rgba(255, 255, 255, 0.06);
+  --surface-elevated: rgba(255, 255, 255, 0.1);
+  --surface-border: rgba(255, 255, 255, 0.1);
+  --text-on-surface: #eaeaea;
+  --text-on-surface-secondary: rgba(234, 234, 234, 0.78);
+  --text-on-surface-muted: rgba(234, 234, 234, 0.55);
+  --text-on-surface-faint: rgba(234, 234, 234, 0.42);
+  --review-card-bg: rgba(255, 255, 255, 0.08);
+  --review-card-text: rgba(234, 234, 234, 0.88);
+  --chip-bg: rgba(99, 102, 241, 0.22);
+  --chip-text: #c7d2fe;
+  --chip-border: rgba(129, 140, 248, 0.4);
+}
+
+/* --- Tema escuro: perfil público (espelho meu-perfil-page) --- */
+.perfil-page,
+.perfil-page .perfil-page-content {
   --surface-bg: rgba(255, 255, 255, 0.06);
   --surface-elevated: rgba(255, 255, 255, 0.1);
   --surface-border: rgba(255, 255, 255, 0.1);
@@ -1306,39 +1322,29 @@ body {
   color: var(--text-on-surface-secondary) !important;
 }
 
-/* Drawer / perfil — reviews e seções */
+/* Drawer — reviews */
 .cliente-page .drawer-tinder .tinder-review-card,
-.cliente-page .perfil-page-content .tinder-review-card,
-.cliente-page .drawer-tinder .glass-review-card,
-.cliente-page .perfil-page-content .glass-review-card {
+.cliente-page .drawer-tinder .glass-review-card {
   background: var(--review-card-bg) !important;
   border-color: var(--surface-border) !important;
   box-shadow: inset 0 1px 0 var(--glass-stroke-inner) !important;
 }
 .cliente-page .drawer-tinder .tinder-review-card .text,
-.cliente-page .perfil-page-content .tinder-review-card .text,
-.cliente-page .drawer-tinder .glass-review-card .text,
-.cliente-page .perfil-page-content .glass-review-card .text {
+.cliente-page .drawer-tinder .glass-review-card .text {
   color: var(--review-card-text) !important;
 }
-.cliente-page .drawer-tinder .tinder-review-card .date,
-.cliente-page .perfil-page-content .tinder-review-card .date {
+.cliente-page .drawer-tinder .tinder-review-card .date {
   color: var(--text-on-surface-faint) !important;
 }
 .cliente-page .drawer-tinder .tinder-review-card .review-context-line,
-.cliente-page .perfil-page-content .tinder-review-card .review-context-line,
-.cliente-page .drawer-tinder .tinder-review-card .review-context-action,
-.cliente-page .perfil-page-content .tinder-review-card .review-context-action {
+.cliente-page .drawer-tinder .tinder-review-card .review-context-action {
   color: var(--text-on-surface-muted) !important;
 }
 .cliente-page .drawer-tinder .tinder-review-card .review-author-name,
-.cliente-page .perfil-page-content .tinder-review-card .review-author-name,
-.cliente-page .drawer-tinder .tinder-review-card .review-author-link,
-.cliente-page .perfil-page-content .tinder-review-card .review-author-link {
+.cliente-page .drawer-tinder .tinder-review-card .review-author-link {
   color: #a5b4fc !important;
 }
-.cliente-page .drawer-tinder .tinder-review-card .text .muted,
-.cliente-page .perfil-page-content .tinder-review-card .text .muted {
+.cliente-page .drawer-tinder .tinder-review-card .text .muted {
   color: var(--text-on-surface-faint) !important;
 }
 
@@ -1401,14 +1407,14 @@ body {
 }
 
 /* Formulários de avaliação no drawer (tema escuro) */
-.cliente-page .perfil-avaliar-form textarea,
+.perfil-page .perfil-avaliar-form textarea,
 .cliente-page #avaliarDrawerForm textarea,
 .cliente-page #avaliarEstabDrawerForm textarea {
   background: rgba(255, 255, 255, 0.08) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: var(--text-glass-primary) !important;
 }
-.cliente-page .perfil-avaliar-form h4,
+.perfil-page .perfil-avaliar-form h4,
 .cliente-page #avaliarDrawerForm h4,
 .cliente-page #avaliarEstabDrawerForm h4 {
   color: var(--text-glass-primary) !important;
@@ -5167,6 +5173,282 @@ body {
   flex-wrap: wrap;
 }
 
+/* Perfil público — profissional / estabelecimento (mesmo paradigma meu-perfil-page) */
+.perfil-page {
+  min-height: 100vh;
+  background: var(--bg-dark, #08080f);
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+.perfil-page-shell {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 32px;
+}
+
+.perfil-page-content {
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+}
+
+.perfil-page .tinder-section-bio,
+.perfil-page .proofly-why-list,
+.perfil-page .proofly-why-list li {
+  color: var(--text-on-surface-secondary) !important;
+}
+
+.perfil-page .tinder-empty-msg,
+.perfil-page .tinder-section p.text-glass-muted,
+.perfil-page p.text-glass-muted {
+  color: var(--text-on-surface-muted) !important;
+}
+
+.perfil-page .tags-shared-hint {
+  color: var(--text-on-surface-faint) !important;
+}
+
+.perfil-page .tinder-gallery-label {
+  color: var(--text-on-surface-muted) !important;
+}
+
+.perfil-page .match-insight-sub {
+  color: var(--text-on-surface-muted) !important;
+}
+
+.perfil-page .match-insight-headline {
+  color: var(--text-on-surface) !important;
+}
+
+.perfil-page .work-history-item .work-name,
+.perfil-page .work-history-item .work-rating {
+  color: var(--text-on-surface-secondary) !important;
+}
+
+.perfil-page .perfil-page-content .tinder-review-card,
+.perfil-page .perfil-page-content .glass-review-card {
+  background: var(--review-card-bg) !important;
+  border-color: var(--surface-border) !important;
+  box-shadow: inset 0 1px 0 var(--glass-stroke-inner) !important;
+}
+
+.perfil-page .perfil-page-content .tinder-review-card .text,
+.perfil-page .perfil-page-content .glass-review-card .text {
+  color: var(--review-card-text) !important;
+}
+
+.perfil-page .perfil-page-content .tinder-review-card .date {
+  color: var(--text-on-surface-faint) !important;
+}
+
+.perfil-page .perfil-page-content .tinder-review-card .review-author-name,
+.perfil-page .perfil-page-content .tinder-review-card .review-author-link {
+  color: #a5b4fc !important;
+}
+
+.perfil-page .perfil-page-content .tinder-review-card .text .muted {
+  color: var(--text-on-surface-faint) !important;
+}
+
+.perfil-page .pagination span {
+  color: var(--text-on-surface-muted) !important;
+}
+
+.perfil-page-actions:not(:empty) {
+  display: block;
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  max-width: 528px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  background: rgba(12, 12, 22, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+}
+
+.perfil-page-actions[hidden],
+.perfil-page-actions:empty {
+  display: none !important;
+}
+
+.perfil-page-actions .drawer-actions-sticky {
+  position: static;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.perfil-page-actions .btn-tinder-close {
+  display: none;
+}
+
+.perfil-action-bar-wrap {
+  margin: 0 0 12px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.perfil-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.perfil-action-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.perfil-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.perfil-action-icon:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+}
+
+.perfil-action-icon.is-active {
+  color: #f472b6;
+}
+
+.perfil-action-svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.perfil-action-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.perfil-action-cta--wa {
+  background: rgba(5, 150, 105, 0.35);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.perfil-action-cta--accent {
+  background: rgba(99, 102, 241, 0.45);
+  border: 1px solid rgba(129, 140, 248, 0.5);
+}
+
+.perfil-action-cta--muted {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+}
+
+.perfil-reviews-link {
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.perfil-qr-trust-note {
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #c4b5fd;
+  text-align: center;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(129, 140, 248, 0.22);
+}
+
+.perfil-avaliar-form {
+  margin-top: 20px;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 16px;
+}
+
+.perfil-avaliar-form h4 {
+  text-align: center;
+  color: #f1f5f9;
+  margin-bottom: 12px;
+}
+
+.perfil-avaliar-form .stars-input {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0 12px;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.perfil-avaliar-form textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+  font-family: inherit;
+  min-height: 72px;
+}
+
+.perfil-page .prof-verified-badge,
+.perfil-page .rating-verified-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
 /* =========================================================
    DOCK iOS v2 — overrides canônicos (proofly-glass por último)
    ========================================================= */
@@ -5218,5 +5500,204 @@ body {
   width: var(--dock-icon) !important;
   height: var(--dock-icon) !important;
   font-size: var(--dock-icon) !important;
+}
+
+/* =========================================================
+   P0.5 — Perfil estabelecimento premium (rail + pills)
+   ========================================================= */
+.profile-stat-line {
+  margin: 0 0 16px;
+  padding: 0 4px;
+  font-size: 14px;
+  color: var(--text-glass-secondary, rgba(226, 232, 240, 0.72));
+  letter-spacing: normal;
+  line-height: 1.45;
+}
+
+.profile-stat-line .star,
+.profile-team-rating,
+.reputation-pill-value {
+  color: var(--star-color, #f59e0b);
+}
+
+.profile-team-section {
+  margin-bottom: 14px;
+}
+
+.profile-team-sub {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--text-glass-muted, rgba(148, 163, 184, 0.85));
+}
+
+.profile-team-sub.profile-team-empty {
+  margin-bottom: 0;
+  font-style: italic;
+}
+
+.profile-team-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px 8px;
+  margin: 0 -2px;
+}
+
+.profile-team-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.profile-team-card {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 140px;
+  max-width: 160px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 12px 12px;
+  border-radius: var(--glass-radius-lg, 28px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.06));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.profile-team-card:hover,
+.profile-team-card:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+.profile-team-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.profile-team-avatar-fallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-glass-primary, #f8fafc);
+  background: rgba(99, 102, 241, 0.35);
+}
+
+.profile-team-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-glass-primary, #f8fafc);
+  text-align: center;
+  line-height: 1.25;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-team-role {
+  font-size: 11px;
+  color: var(--text-glass-muted, rgba(148, 163, 184, 0.85));
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-team-rating {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.profile-team-chevron {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 16px;
+  color: var(--color-primary, #6366f1);
+  opacity: 0.85;
+}
+
+.profile-reputation-section {
+  margin-bottom: 14px;
+}
+
+.profile-reputation-heading {
+  margin-bottom: 10px;
+}
+
+.profile-reputation-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+  padding: 14px;
+}
+
+.reputation-pill {
+  flex: 1 1 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.reputation-pill-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-glass-muted, rgba(148, 163, 184, 0.85));
+}
+
+.reputation-pill-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.reputation-pill-meta {
+  font-size: 12px;
+  color: var(--text-glass-secondary, rgba(226, 232, 240, 0.72));
+}
+
+.reputation-verified-chip {
+  flex: 1 1 100%;
+  margin-top: 2px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+@media (max-width: 400px) {
+  .profile-team-card {
+    min-width: 132px;
+  }
+
+  .profile-reputation-pills {
+    padding: 12px;
+  }
 }
 

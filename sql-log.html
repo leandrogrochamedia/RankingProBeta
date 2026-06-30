@@ -55,15 +55,10 @@
     </section>
   </div>
 
-  <script src="./config.js"></script>
-  <script src="./utils.js"></script>
-  <script src="./api.js"></script>
-  <script src="./confirm-modal.js"></script>
-  <script src="./sql-embedded.js?v=4"></script>
-  <script src="./sql-runner.js?v=4"></script>
-  <script src="./menu-lateral.js"></script>
+  <script src="./loader.js"></script>
 
   <script>
+    document.addEventListener('scriptsLoaded', function () {
     const esc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '');
 
     async function renderStatus() {
@@ -327,6 +322,7 @@
       }
       await refreshAll();
     })();
+    });
   </script>
 </body>
 </html>

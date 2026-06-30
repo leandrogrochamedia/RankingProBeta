@@ -625,17 +625,40 @@ function profilePageUrl(tipo, id) {
   return `./perfil-page.html?id=${encodeURIComponent(id)}&type=${type}&tipo=${legacyTipo}`;
 }
 
+/** Link público Shark — bio Instagram (passaporte verificável) */
+function publicProfPassportUrl(id) {
+  return `./p/?id=${encodeURIComponent(id)}`;
+}
+
+/** Link público Shark — vitrine de talentos do estabelecimento */
+function publicEstVitrineUrl(id) {
+  return `./e/?id=${encodeURIComponent(id)}`;
+}
+
 function openProfile(tipo, id) {
-  if (typeof window.abrirDrawer === 'function') {
-    window.abrirDrawer(tipo, id);
+  document.body.classList.add('rp-focus-fade-out');
+  if (typeof window.RankingProRouter?.openProfile === 'function') {
+    window.RankingProRouter.openProfile(tipo, id, { forcePage: true, forceFade: true });
     return;
   }
-  window.location.href = profilePageUrl(tipo, id);
+  if (typeof window.navigateWithTransition === 'function') {
+    window.navigateWithTransition(profilePageUrl(tipo, id), { forceFade: true });
+    return;
+  }
+  window.setTimeout(() => {
+    window.location.href = profilePageUrl(tipo, id);
+  }, 200);
 }
 
 function defaultSearchPageUrl() {
   const sess = typeof getSession === 'function' ? getSession() : null;
-  if (sess?.role === 'estabelecimento') return './dashboard-estabelecimento.html';
+  if (sess?.role === 'estabelecimento') {
+    const shark = typeof SHARK_MODE !== 'undefined' && SHARK_MODE;
+    const dev = (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE)
+      || (typeof PROOFLY_DEV_MENU !== 'undefined' && PROOFLY_DEV_MENU);
+    if (!shark || dev) return './estabelecimento-marketplace.html';
+    return './dashboard-estabelecimento.html';
+  }
   return './cliente.html';
 }
 
@@ -1248,6 +1271,8 @@ window.getMockSocialSignals = getMockSocialSignals;
 window.updateProoflyScoreBlock = updateProoflyScoreBlock;
 window.incrementProfileView = incrementProfileView;
 window.profilePageUrl = profilePageUrl;
+window.publicProfPassportUrl = publicProfPassportUrl;
+window.publicEstVitrineUrl = publicEstVitrineUrl;
 window.openProfile = openProfile;
 window.defaultSearchPageUrl = defaultSearchPageUrl;
 window.getProfilePhotos = getProfilePhotos;

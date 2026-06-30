@@ -25,41 +25,34 @@
       <a href="../index.html" class="home-splash-btn home-splash-btn--secondary" style="margin-top:12px;">Voltar ao início</a>
     </div>
   </div>
-  <script src="../config.js"></script>
-  <script src="../api.js"></script>
-  <script src="../qr-service.js"></script>
+  <script src="../loader.js"></script>
   <script>
-    (async function () {
+    document.addEventListener('scriptsLoaded', async function () {
       const loading = document.getElementById('state-loading');
       const errorBlock = document.getElementById('state-error');
       const errorTitle = document.getElementById('error-title');
       const errorMessage = document.getElementById('error-message');
+
       function showError(title, message) {
         loading.classList.add('nucleus-hidden');
         errorBlock.classList.remove('nucleus-hidden');
         errorTitle.textContent = title;
         errorMessage.textContent = message || '';
       }
-      const token = RankingProQR.getTokenFromUrl();
-      if (!token) { showError('QR inválido', 'Este link não contém um código válido.'); return; }
-      try {
-        const result = await RankingProQR.validateToken(token);
-        if (result.status === 'valid') {
-          const profId = result.professional_id;
-          const dest = profId
-            ? RankingProQR.buildProfileBuscaUrl('professional', profId, { token })
-            : RankingProQR.buildAvaliarUrl(token);
-          window.location.replace(dest);
-          return;
-        }
-        if (result.status === 'expired') { showError('QR expirado', 'Este QR expirou. Peça um novo ao profissional.'); return; }
-        if (result.status === 'used') { showError('Avaliação já registrada', 'Esta avaliação já foi registrada.'); return; }
-        showError('QR inválido', 'Este link não é válido ou já expirou.');
-      } catch (err) {
-        console.error(err);
-        showError('Erro', 'Não foi possível validar o QR. Tente novamente.');
+
+      if (typeof RankingProQrFlow === 'undefined') {
+        showError('Erro', 'Fluxo QR indisponível. Recarregue a página.');
+        return;
       }
-    })();
+
+      const result = await RankingProQrFlow.handleQrIndexPage();
+      if (result && result.error) {
+        const title = result.error === 'expired' ? 'QR expirado'
+          : result.error === 'used' ? 'Avaliação já registrada'
+          : result.error === 'invalid' ? 'QR inválido' : 'Erro';
+        showError(title, result.message || RankingProQrFlow.errorMessageForStatus(result.error));
+      }
+    });
   </script>
 </body>
 </html>

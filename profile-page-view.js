@@ -52,7 +52,51 @@
   }
 
   function setPageActions(html) {
-    if (els.actions) els.actions.innerHTML = html || '';
+    if (!els.actions) return;
+    const content = html || '';
+    els.actions.innerHTML = content;
+    if (content.trim()) {
+      els.actions.hidden = false;
+      els.actions.removeAttribute('aria-hidden');
+    } else {
+      els.actions.hidden = true;
+      els.actions.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function isSharkPublicProfile() {
+    return typeof isSharkMode === 'function'
+      ? isSharkMode()
+      : (typeof SHARK_MODE !== 'undefined' && !!SHARK_MODE);
+  }
+
+  function renderQrTrustNote(entity) {
+    const label = entity === 'estabelecimento' ? 'estabelecimento' : 'profissional';
+    return `Avaliações reais de quem foi atendido. Escaneie o QR Code do ${label} no local.`;
+  }
+
+  function resolveContactHref(entity, phone) {
+    const raw = phone || entity?.phone || entity?.profile?.whatsapp || entity?.profile?.phone || entity?.whatsapp;
+    if (!raw) return null;
+    if (typeof global.RankingProProfile?.whatsappUrl === 'function') {
+      return global.RankingProProfile.whatsappUrl(raw);
+    }
+    const digits = String(raw).replace(/\D/g, '');
+    return digits ? `https://wa.me/${digits}` : null;
+  }
+
+  async function shareProfile() {
+    const url = window.location.href;
+    const title = document.title || 'Ranking Pro';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+    await copyShareLink(url);
   }
 
   function tagCategoriesForDrawer(categories, sharedTags) {
@@ -86,6 +130,14 @@
   }
 
   global.navigateToProfile = function(tipo, id) {
+    if (typeof global.RankingProRouter?.openProfile === 'function') {
+      global.RankingProRouter.openProfile(tipo, id, { forcePage: true });
+      return;
+    }
+    if (typeof global.navigateWithTransition === 'function') {
+      global.navigateWithTransition(profilePageUrl(tipo, id));
+      return;
+    }
     global.location.href = profilePageUrl(tipo, id);
   };
 
@@ -176,80 +228,32 @@
         heroLines.push(`📷 <a href="https://instagram.com/${ig}" target="_blank" rel="noopener" style="color:#f9a8d4;">@${escapeHtml(ig)}</a>`);
       }
 
-      const atendimentosLabel = totalReviews >= 50 ? 'Mais de 50 clientes atendidos' :
-        totalReviews >= 20 ? 'Mais de 20 clientes atendidos' :
-        totalReviews >= 10 ? 'Mais de 10 clientes atendidos' :
-        totalReviews > 0 ? `${totalReviews} clientes atendidos` : 'Ainda sem atendimentos registrados';
-
-      const photos = getProfilePhotos(prof);
-      let html = ProfileCard.renderHero({
-        name: prof.name,
-        subtitle: prof.profile?.specialty || prof.specialty || 'Profissional',
-        lines: heroLines,
-        avatarUrl: prof.avatar_url,
-        photos,
-        entityId: prof.id,
-        matchPercent: matchInsight.percent,
-        matchInsight,
-        prooflyScore: prooflyData.score,
-        badges,
-        type: 'prof',
-        avgRating,
-        totalReviews
-      });
-
-      const estabReviewsRaw = typeof filterReviewsByType === 'function'
-        ? filterReviewsByType(allReviewsRaw, REVIEW_TYPES.ESTAB_TO_PROF).slice(0, 5)
-        : [];
-      const profReviewCtx = { entityType: 'prof', targetProfName: prof.name };
       const sharkOn = typeof isSharkMode === 'function' ? isSharkMode() : (typeof SHARK_MODE !== 'undefined' && !!SHARK_MODE);
-      if (!sharkOn && viewerEst && typeof renderContratanteMatchBlock === 'function') {
-        html += renderContratanteMatchBlock(prof, viewerEst);
-      }
-      html += ProfileCard.buildProfessionalProfileBody({
-        prof, matchInsight, prooflyData, allReviewsRaw, clientReviewsAll,
-        estabReviewsRaw, avgRating, totalReviews, strengths, workHistory, profReviewCtx,
-        hiringPrivate
+      const verifiedReviews = clientReviewsAll.filter(r =>
+        typeof isReviewVerified === 'function' ? isReviewVerified(r) : r.verified
+      );
+      const hasVerified = verifiedReviews.length > 0;
+      const reviewsForList = hasVerified ? verifiedReviews : clientReviewsAll;
+
+      const html = ProfilePremium.renderProfessional({
+        prof,
+        avgRating,
+        totalReviews,
+        prooflyScore: prooflyData.score,
+        clientReviews: reviewsForList,
+        hasVerified,
+        menuHref: typeof defaultSearchPageUrl === 'function' ? defaultSearchPageUrl() : './cliente.html',
+        sharkOn
       });
 
       els.content.innerHTML = html;
+      ProfilePremium.mountQr(els.content);
+      ProfilePremium.hideLoadingOverlay();
+      setPageActions('');
       document.title = `${prof.name} — Ranking Pro`;
-      const shareUrl = `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, '')}perfil-page.html?tipo=profissional&id=${prof.id}`;
-      const shareBlock = `
-        <div class="shark-reputation-share glass-surface" style="margin-bottom:14px;padding:16px;border-radius:16px;">
-          <div style="font-size:13px;font-weight:700;color:#eaeaea;margin-bottom:8px;">🔗 Página de reputação</div>
-          <p style="font-size:12px;color:#94a3b8;margin:0 0 10px;">Use na bio do Instagram, WhatsApp e cartão.</p>
-          <input type="text" readonly value="${shareUrl.replace(/"/g, '&quot;')}" id="profShareUrlInput" style="width:100%;font-size:11px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.2);color:#e2e8f0;margin-bottom:8px;" />
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="btn btn-small" onclick="ProfilePageView.copyShareLink()">📋 Copiar link</button>
-            <a href="./perfil-page.html?tipo=profissional&id=${prof.id}" target="_blank" rel="noopener" class="btn btn-outline btn-small" style="text-decoration:none;">↗ Abrir página</a>
-          </div>
-        </div>`;
-      if (!sharkOn && viewerEst && typeof HiringFlow !== 'undefined') {
-        window._hiringDrawerProf = prof;
-        window._hiringDrawerEst = viewerEst;
-        const existing = HiringFlow.getActiveProposal(viewerEst.id, prof.id);
-        const hireLabel = existing ? '📋 Ver proposta de contratação' : '🤝 Propor contratação';
-        setPageActions(`
-          <div class="drawer-actions-inner" style="display:flex;flex-direction:column;gap:10px;">
-            <button type="button" class="btn btn-tinder-primary btn-tinder-xl" onclick="HiringFlow.openProposalModal('${prof.id}')">${hireLabel}</button>
-            <button type="button" class="btn btn-outline btn-tinder-xl" onclick="ProfilePageView.abrirAvaliacaoProf('${prof.id}')">⭐ Avaliar profissional</button>
-          </div>
-        `);
-      } else {
-        setPageActions(shareBlock + ProfileCard.renderDrawerActions({
-          primaryLabel: sharkOn ? '🔗 Compartilhar' : '⭐ Avaliar este profissional',
-          primaryOnclick: sharkOn ? 'ProfilePageView.copyShareLink()' : `ProfilePageView.abrirAvaliacaoProf('${prof.id}')`,
-          likeType: 'prof',
-          likeId: prof.id,
-          favType: 'prof',
-          favId: prof.id,
-          favName: prof.name,
-          showReviewsBtn: true
-        }));
-      }
     } catch (e) {
-      els.content.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`;
+      ProfilePremium?.hideLoadingOverlay?.();
+      els.content.innerHTML = `<p class="pp-empty">Erro: ${escapeHtml(e.message)}</p>`;
       console.error(e);
     }
   }
@@ -294,75 +298,87 @@
         ? buildStrengthPoints(e, 'est', prooflyData.score, prooflyData.groups)
         : [];
 
+      let teamMembers = [];
+      try {
+        teamMembers = await fetchAPI(
+          `/rest/v1/professionals?current_establishment_id=eq.${id}&select=id,name,avatar_url,avg_rating,total_reviews,profile:professional_profiles(specialty)&order=avg_rating.desc`
+        );
+      } catch { teamMembers = []; }
+
+      const teamReviews = allReviewsRaw.filter(r => r.professional_id);
+      let teamStats = typeof computeRatingStats === 'function'
+        ? computeRatingStats(teamReviews)
+        : { avg: 0, total: 0 };
+      if (!teamStats.total && teamMembers.length) {
+        let weightedSum = 0;
+        let weightTotal = 0;
+        teamMembers.forEach(p => {
+          const tr = Number(p.total_reviews) || 0;
+          const ar = Number(p.avg_rating) || 0;
+          if (tr > 0) {
+            weightedSum += ar * tr;
+            weightTotal += tr;
+          }
+        });
+        teamStats = {
+          avg: weightTotal ? weightedSum / weightTotal : 0,
+          total: weightTotal
+        };
+      }
+
+      const verifiedCount = allReviews.filter(r =>
+        typeof isReviewVerified === 'function' ? isReviewVerified(r) : r.verified
+      ).length;
+      const verifiedPct = allReviews.length
+        ? Math.round((verifiedCount / allReviews.length) * 100)
+        : 0;
+
       const reviewOffset = currentPageEstReviews * EST_REVIEWS_PER_PAGE;
       const reviewsPage = allReviews.slice(reviewOffset, reviewOffset + EST_REVIEWS_PER_PAGE);
       const endereco = e.address || [e.street, e.number, e.neighborhood, e.city, e.state, e.country].filter(Boolean).join(', ');
-      const heroLines = [];
-      if (endereco) heroLines.push(`📍 ${escapeHtml(endereco)}`);
-      if (e.phone) heroLines.push(`📞 ${escapeHtml(e.phone)}`);
-      if (e.target_audience) heroLines.push(`🎯 ${escapeHtml(e.target_audience)}`);
-      if (e.instagram) {
-        const ig = e.instagram.replace('@', '');
-        heroLines.push(`📷 <a href="https://instagram.com/${ig}" target="_blank" rel="noopener" style="color:#f9a8d4;">@${escapeHtml(ig)}</a>`);
-      }
+      const mapsUrl = endereco
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`
+        : null;
 
-      const photos = getProfilePhotos(e);
-      let html = ProfileCard.renderHero({
-        name: e.name,
-        subtitle: e.type || 'Estabelecimento',
-        lines: heroLines,
-        avatarUrl: e.avatar_url,
-        photos,
-        entityId: e.id,
-        matchPercent: matchInsight.percent,
-        matchInsight,
-        prooflyScore: prooflyData.score,
-        badges,
-        type: 'est',
-        avgRating,
-        totalReviews
-      });
-
-      const estReviewCtx = { entityType: 'est', establishmentId: id, targetEstName: e.name };
+      const sharkEst = isSharkPublicProfile();
       let paginationHtml = '';
       if (totalReviews > EST_REVIEWS_PER_PAGE) {
         const totalPages = Math.ceil(totalReviews / EST_REVIEWS_PER_PAGE);
-        paginationHtml = '<div class="pagination" style="margin-top:12px;">';
+        paginationHtml = '<div class="pp-pagination">';
         if (currentPageEstReviews > 0) {
-          paginationHtml += `<button class="btn btn-outline btn-small" onclick="ProfilePageView.irPaginaEstReviews(${currentPageEstReviews - 1})">← Anterior</button>`;
+          paginationHtml += `<button type="button" onclick="ProfilePageView.irPaginaEstReviews(${currentPageEstReviews - 1})">← Anterior</button>`;
         }
-        paginationHtml += `<span class="text-glass-muted" style="font-size:13px;padding:0 8px;">${currentPageEstReviews + 1} / ${totalPages}</span>`;
+        paginationHtml += `<span style="font-size:13px;color:var(--text-muted);padding:0 8px;">${currentPageEstReviews + 1} / ${totalPages}</span>`;
         if (currentPageEstReviews < totalPages - 1) {
-          paginationHtml += `<button class="btn btn-outline btn-small" onclick="ProfilePageView.irPaginaEstReviews(${currentPageEstReviews + 1})">Próxima →</button>`;
+          paginationHtml += `<button type="button" onclick="ProfilePageView.irPaginaEstReviews(${currentPageEstReviews + 1})">Próxima →</button>`;
         }
         paginationHtml += '</div>';
       }
-      html += ProfileCard.buildEstablishmentProfileBody({
-        estab: e, matchInsight, prooflyData, allReviews: reviewsPage, avgRating, totalReviews,
-        strengths, estReviewCtx, paginationHtml,
-        tagCategories: [
-          { icon: '🏗️', label: 'Infraestrutura', tags: e.infra_tags },
-          { icon: '🎵', label: 'Música Ambiente', tags: e.music_tags },
-          { icon: '💎', label: 'Posicionamento', tags: e.positioning_tags },
-          { icon: '👥', label: 'Público', tags: e.audience_tags },
-          { icon: '🌟', label: 'Vibe', tags: e.vibe_tags }
-        ]
+
+      const html = ProfilePremium.renderEstablishment({
+        estab: e,
+        avgRating,
+        totalReviews,
+        prooflyScore: prooflyData.score,
+        teamMembers,
+        teamStats,
+        reviews: reviewsPage,
+        verifiedPct,
+        paginationHtml,
+        menuHref: typeof defaultSearchPageUrl === 'function' ? defaultSearchPageUrl() : './cliente.html',
+        sharkOn: sharkEst,
+        address: endereco,
+        mapsUrl
       });
 
       els.content.innerHTML = html;
+      ProfilePremium.mountQr(els.content);
+      ProfilePremium.hideLoadingOverlay();
+      setPageActions('');
       document.title = `${e.name} — Ranking Pro`;
-      setPageActions(ProfileCard.renderDrawerActions({
-        primaryLabel: '⭐ Avaliar este estabelecimento',
-        primaryOnclick: `ProfilePageView.abrirAvaliacaoEst('${e.id}')`,
-        likeType: 'est',
-        likeId: e.id,
-        favType: 'est',
-        favId: e.id,
-        favName: e.name,
-        showReviewsBtn: true
-      }));
     } catch (err) {
-      els.content.innerHTML = `<p style="color:red;">Erro: ${err.message}</p>`;
+      ProfilePremium?.hideLoadingOverlay?.();
+      els.content.innerHTML = `<p class="pp-empty">Erro: ${escapeHtml(err.message)}</p>`;
       console.error(err);
     }
   }
@@ -452,9 +468,9 @@
     loadEstablishmentProfile(avaliacaoEstabId);
   }
 
-  async function copyShareLink() {
+  async function copyShareLink(urlOverride) {
     const input = document.getElementById('profShareUrlInput');
-    const url = input?.value || window.location.href;
+    const url = urlOverride || input?.value || window.location.href;
     try {
       await navigator.clipboard.writeText(url);
       if (typeof showAlert === 'function') await showAlert('✅ Copiado!', 'Link da página de reputação copiado.');
@@ -465,6 +481,7 @@
 
   global.ProfilePageView = {
     copyShareLink,
+    shareProfile,
     init(contentId, actionsId) {
       els.content = document.getElementById(contentId);
       els.actions = document.getElementById(actionsId);
@@ -472,7 +489,7 @@
         document.getElementById('drawer-reviews-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
     },
-    loadFromUrl() {
+    async loadFromUrl() {
       const params = new URLSearchParams(global.location.search);
       let tipo = params.get('tipo');
       let id = params.get('id');
@@ -491,8 +508,14 @@
       if (typeof incrementProfileView === 'function') {
         incrementProfileView(id, tipo === 'profissional' ? 'prof' : 'est');
       }
-      if (tipo === 'profissional') loadProfessionalProfile(id);
-      else loadEstablishmentProfile(id);
+      if (tipo === 'profissional') {
+        await loadProfessionalProfile(id);
+        if (params.get('avaliar') === '1') {
+          setTimeout(() => abrirAvaliacaoProf(id), 500);
+        }
+      } else {
+        await loadEstablishmentProfile(id);
+      }
     },
     abrirAvaliacaoProf,
     abrirAvaliacaoEst,

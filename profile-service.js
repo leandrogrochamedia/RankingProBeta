@@ -9,11 +9,78 @@
     const rows = await API().select(
       'professionals',
       '?id=eq.' + encodeURIComponent(id) +
-        '&select=id,name,specialty,bio,phone,avatar_url,avg_rating,total_reviews,' +
+        '&select=id,name,specialty,bio,phone,avatar_url,avg_rating,total_reviews,gallery_urls,' +
         'profile:professional_profiles(bio,specialty,instagram),' +
-        'current_establishment:establishments!professionals_current_establishment_id_fkey(name,city)&limit=1'
+        'current_establishment:establishments!professionals_current_establishment_id_fkey(id,name,city)&limit=1'
     );
     return rows?.[0] || null;
+  }
+
+  async function getEstablishmentById(id) {
+    const rows = await API().select(
+      'establishments',
+      '?id=eq.' + encodeURIComponent(id) +
+        '&select=id,name,type,phone,address,street,number,neighborhood,city,state,country,' +
+        'avatar_url,avg_rating,total_reviews,gallery_urls&limit=1'
+    );
+    return rows?.[0] || null;
+  }
+
+  async function getTeamForEstablishment(establishmentId) {
+    return API().select(
+      'professionals',
+      '?current_establishment_id=eq.' + encodeURIComponent(establishmentId) +
+        '&select=id,name,avatar_url,avg_rating,total_reviews,' +
+        'profile:professional_profiles(specialty)&order=avg_rating.desc'
+    );
+  }
+
+  function formatEstablishmentAddress(est) {
+    if (!est) return '';
+    if (est.address) return String(est.address).trim();
+    return [
+      est.street,
+      est.number,
+      est.neighborhood,
+      est.city,
+      est.state,
+      est.country
+    ].filter(Boolean).join(', ');
+  }
+
+  function formatEstablishmentLocation(est) {
+    if (!est) return '';
+    const parts = [est.neighborhood, est.city].filter(Boolean);
+    return parts.join(', ');
+  }
+
+  function mapsUrlForEstablishment(est) {
+    const q = formatEstablishmentAddress(est);
+    if (!q) return null;
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+  }
+
+  function computeTeamStats(team) {
+    const list = team || [];
+    if (!list.length) return { avg: 0, totalReviews: 0 };
+    let weightedSum = 0;
+    let weightTotal = 0;
+    list.forEach(p => {
+      const tr = Number(p.total_reviews) || 0;
+      const ar = Number(p.avg_rating) || 0;
+      if (tr > 0) {
+        weightedSum += ar * tr;
+        weightTotal += tr;
+      }
+    });
+    if (weightTotal > 0) {
+      return { avg: weightedSum / weightTotal, totalReviews: weightTotal };
+    }
+    const rated = list.filter(p => Number(p.avg_rating) > 0);
+    const avg = rated.length
+      ? rated.reduce((s, p) => s + Number(p.avg_rating), 0) / rated.length
+      : 0;
+    return { avg, totalReviews: 0 };
   }
 
   function whatsappUrl(phone) {
@@ -35,6 +102,20 @@
         '&review_type=eq.client_to_professional' +
         '&select=rating,comment,verified,is_verified,created_at&order=created_at.desc'
     );
+  }
+
+  async function getReviewsForEstablishment(establishmentId) {
+    return API().select(
+      'reviews',
+      '?establishment_id=eq.' + encodeURIComponent(establishmentId) +
+        '&review_type=eq.client_to_establishment' +
+        '&select=rating,comment,verified,is_verified,created_at&order=created_at.desc'
+    );
+  }
+
+  function quickScoreFromAvg(avg) {
+    const n = Number(avg) || 0;
+    return n > 0 ? Math.round((n / 5) * 100) : 0;
   }
 
   function isReviewVerified(review) {
@@ -73,11 +154,19 @@
 
   global.RankingProProfile = {
     getProfessionalById,
+    getEstablishmentById,
+    getTeamForEstablishment,
     getReviewsForProfessional,
+    getReviewsForEstablishment,
+    quickScoreFromAvg,
     isReviewVerified,
     formatRelativeDate,
     renderStars,
     formatRatingDisplay,
+    formatEstablishmentAddress,
+    formatEstablishmentLocation,
+    mapsUrlForEstablishment,
+    computeTeamStats,
     whatsappUrl,
     instagramUrl
   };

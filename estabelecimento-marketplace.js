@@ -167,7 +167,7 @@
       const prof = alerts[i];
       if (!prof?.id) return;
       item.style.cursor = 'pointer';
-      item.addEventListener('click', () => window.abrirDrawer('profissional', prof.id));
+      item.addEventListener('click', () => window.openProfile('profissional', prof.id));
     });
   }
 
@@ -292,7 +292,7 @@
       const selected = allProfs.filter(p => selectedIds.has(p.id));
       chips.innerHTML = selected.map(p => {
         const m = p._contratanteMatch?.percent;
-        return `<button type="button" class="contratar-shortlist-chip" onclick="abrirDrawer('profissional','${p.id}')">
+        return `<button type="button" class="contratar-shortlist-chip" onclick="openProfile('profissional','${p.id}')">
           <span class="contratar-shortlist-name">${escapeHtml(p.name)}</span>
           ${m != null ? `<span class="contratar-shortlist-match">${m}%</span>` : ''}
           <span class="contratar-shortlist-remove" onclick="event.stopPropagation();contratarToggleSelect('${p.id}')" aria-label="Remover">✕</span>
@@ -564,8 +564,8 @@
 
     return `
       <article class="contratar-decision-row${selectedClass}" data-id="${id}" role="button" tabindex="0"
-        onclick="abrirDrawer('profissional','${id}')"
-        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirDrawer('profissional','${id}');}">
+        onclick="openProfile('profissional','${id}')"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfile('profissional','${id}');}">
         <label class="contratar-row-select" onclick="event.stopPropagation();" title="Incluir na shortlist / PDF">
           <input type="checkbox" class="contratar-select-cb" data-id="${id}" ${checked} aria-label="Selecionar para shortlist" />
           <span class="contratar-row-select-icon">📄</span>
@@ -587,7 +587,7 @@
         </div>
         <div class="contratar-row-actions" onclick="event.stopPropagation();">
           ${hireQuick}
-          <button type="button" class="contratar-row-open" onclick="abrirDrawer('profissional','${id}')" aria-label="Ver perfil">→</button>
+          <button type="button" class="contratar-row-open" onclick="openProfile('profissional','${id}')" aria-label="Ver perfil">→</button>
         </div>
         ${matchDbg}
       </article>
@@ -663,21 +663,13 @@
   };
 
   window.abrirDrawer = function(tipo, id) {
-    if (tipo !== 'profissional') {
-      window.location.href = `./perfil-page.html?tipo=${encodeURIComponent(tipo)}&id=${encodeURIComponent(id)}`;
+    if (typeof openProfile === 'function') {
+      openProfile(tipo, id);
       return;
     }
-    drawerId = id;
-    const drawer = document.getElementById('drawer');
-    const overlay = document.getElementById('drawerOverlay');
-    const body = document.getElementById('drawerBody');
-    drawer?.classList.add('open');
-    overlay?.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    body.innerHTML = '<div class="loading" style="padding:48px 24px;text-align:center;">Carregando perfil...</div>';
-    setDrawerActions('');
-    if (typeof incrementProfileView === 'function') incrementProfileView(id, 'prof');
-    carregarPerfilProfissional(id);
+    window.location.href = typeof profilePageUrl === 'function'
+      ? profilePageUrl(tipo, id)
+      : `./perfil-page.html?tipo=${encodeURIComponent(tipo)}&id=${encodeURIComponent(id)}`;
   };
 
   window.contratarToggleSelect = function(id) {
@@ -873,7 +865,7 @@
       const openId = sessionStorage.getItem('proofly_open_prof');
       if (openId) {
         sessionStorage.removeItem('proofly_open_prof');
-        setTimeout(() => window.abrirDrawer('profissional', openId), 400);
+        setTimeout(() => window.openProfile('profissional', openId), 400);
       }
     } catch { /* noop */ }
   }

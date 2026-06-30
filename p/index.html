@@ -5,193 +5,36 @@
   <meta name="theme-color" content="#08080f">
   <meta name="color-scheme" content="dark">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Ranking Pro — Perfil</title>
+  <meta name="description" content="Passaporte de reputação verificada — Ranking Pro">
+  <title>Ranking Pro — Passaporte</title>
   <link rel="stylesheet" href="../base.css">
-  <link rel="stylesheet" href="../style.css">
-  <link rel="stylesheet" href="../components/tinder-profile.css">
-  <link rel="stylesheet" href="../proofly-glass.css">
-  <link rel="stylesheet" href="../nucleus.css">
+  <link rel="stylesheet" href="../css/perfil-premium.css">
   <script src="../site-paths.js"></script>
 </head>
-<body class="cliente-page nucleus-page">
-  <div class="nucleus-shell nucleus-shell--wide">
-    <div id="rp-site-nav"></div>
-
-    <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact" id="state-loading">
-      <p class="nucleus-state">Carregando perfil…</p>
+<body class="perfil-premium-page pp-public">
+  <main class="perfil-page-shell" id="passaporte-root">
+    <div class="pp-state-error" id="state-loading">
+      <p>Carregando passaporte…</p>
     </div>
 
-    <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact nucleus-hidden" id="state-error">
-      <p class="nucleus-error-title">Perfil não encontrado</p>
-      <p class="nucleus-subtitle">Este profissional não existe ou o link está incorreto.</p>
-      <a href="../index.html" class="home-splash-btn home-splash-btn--secondary" style="margin-top:12px;">Voltar ao início</a>
+    <div class="passaporte-hidden" id="state-error">
+      <h1>Perfil não encontrado</h1>
+      <p>Este profissional não existe ou o link está incorreto.</p>
+      <a href="../index.html">Voltar ao início</a>
     </div>
 
-    <div class="nucleus-hidden" id="state-profile">
-      <div class="glass-discovery-shell nucleus-glass">
-        <div class="nucleus-avatar" id="prof-avatar"></div>
-        <h1 class="nucleus-prof-name" id="prof-name"></h1>
-        <p class="nucleus-prof-specialty" id="prof-specialty"></p>
-        <p class="nucleus-rating-big" id="rating-big">0.0</p>
-        <p class="nucleus-rating-meta" id="rating-meta">0 avaliações</p>
-        <p class="nucleus-prof-bio" id="prof-bio" hidden></p>
-        <p class="nucleus-prof-location" id="prof-location" hidden></p>
-        <div class="nucleus-social-links" id="social-links" hidden></div>
-        <p class="nucleus-qr-note">Para avaliar, escaneie o QR Code no local do atendimento.</p>
-      </div>
+    <div id="state-content" class="perfil-page-content passaporte-hidden"></div>
+  </main>
 
-      <div class="glass-discovery-shell nucleus-glass nucleus-glass--compact">
-        <p class="nucleus-eyebrow">Avaliações verificadas</p>
-        <ul class="nucleus-reviews" id="reviews-list"></ul>
-        <p class="nucleus-subtitle nucleus-hidden" id="reviews-empty">Ainda sem avaliações verificadas</p>
-      </div>
-    </div>
-  </div>
-
-  <script src="../config.js"></script>
-  <script src="../api.js"></script>
-  <script src="../profile-service.js"></script>
+  <script src="../loader.js"></script>
   <script>
-    (async function () {
-      const loading = document.getElementById('state-loading');
-      const errorBlock = document.getElementById('state-error');
-      const profileBlock = document.getElementById('state-profile');
-      const profAvatar = document.getElementById('prof-avatar');
-      const profName = document.getElementById('prof-name');
-      const profSpecialty = document.getElementById('prof-specialty');
-      const ratingBig = document.getElementById('rating-big');
-      const ratingMeta = document.getElementById('rating-meta');
-      const reviewsList = document.getElementById('reviews-list');
-      const reviewsEmpty = document.getElementById('reviews-empty');
-      const profBio = document.getElementById('prof-bio');
-      const profLocation = document.getElementById('prof-location');
-      const socialLinks = document.getElementById('social-links');
-
-      const profId = new URLSearchParams(window.location.search).get('id');
-
-      function hideAll() {
-        loading.classList.add('nucleus-hidden');
-        errorBlock.classList.add('nucleus-hidden');
-        profileBlock.classList.add('nucleus-hidden');
+    (function () {
+      function boot() {
+        const id = new URLSearchParams(window.location.search).get('id');
+        PassaporteLanding.bootProfessional(document.getElementById('passaporte-root'), id);
       }
-
-      function initials(name) {
-        return String(name || '?').split(/\s+/).slice(0, 2).map(function (w) {
-          return w[0] || '';
-        }).join('').toUpperCase();
-      }
-
-      function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
-      }
-
-      function escapeAttr(str) {
-        return escapeHtml(str).replace(/'/g, '&#39;');
-      }
-
-      if (!profId) {
-        hideAll();
-        errorBlock.classList.remove('nucleus-hidden');
-        return;
-      }
-
-      try {
-        const prof = await RankingProProfile.getProfessionalById(profId);
-        if (!prof) {
-          hideAll();
-          errorBlock.classList.remove('nucleus-hidden');
-          return;
-        }
-
-        const reviews = await RankingProProfile.getReviewsForProfessional(prof.id);
-        const verifiedReviews = (reviews || []).filter(RankingProProfile.isReviewVerified);
-
-        hideAll();
-        profileBlock.classList.remove('nucleus-hidden');
-
-        if (prof.avatar_url) {
-          profAvatar.innerHTML = '<img src="' + escapeAttr(prof.avatar_url) + '" alt="">';
-        } else {
-          profAvatar.textContent = initials(prof.name);
-        }
-
-        profName.textContent = prof.name;
-        profSpecialty.textContent = prof.specialty || '';
-        profSpecialty.style.display = prof.specialty ? 'block' : 'none';
-
-        const avg = Number(prof.avg_rating) || 0;
-        ratingBig.textContent = avg.toFixed(1);
-        ratingMeta.textContent = RankingProProfile.formatRatingDisplay(avg, prof.total_reviews);
-        document.title = prof.name + ' — Ranking Pro';
-
-        const bio = prof.profile?.bio || prof.bio || '';
-        if (bio && profBio) {
-          profBio.textContent = bio;
-          profBio.hidden = false;
-        } else if (profBio) {
-          profBio.hidden = true;
-        }
-
-        const locParts = [];
-        if (prof.current_establishment?.name) locParts.push(prof.current_establishment.name);
-        if (prof.current_establishment?.city) locParts.push(prof.current_establishment.city);
-        if (locParts.length && profLocation) {
-          profLocation.textContent = locParts.join(' · ');
-          profLocation.hidden = false;
-        } else if (profLocation) {
-          profLocation.hidden = true;
-        }
-
-        if (socialLinks) {
-          const links = [];
-          const wa = RankingProProfile.whatsappUrl(prof.phone);
-          const ig = RankingProProfile.instagramUrl(prof.profile?.instagram);
-          if (wa) {
-            links.push('<a href="' + escapeAttr(wa) + '" class="nucleus-social-btn nucleus-social-btn--wa" target="_blank" rel="noopener">WhatsApp</a>');
-          }
-          if (ig) {
-            links.push('<a href="' + escapeAttr(ig) + '" class="nucleus-social-btn nucleus-social-btn--ig" target="_blank" rel="noopener">Instagram</a>');
-          }
-          if (links.length) {
-            socialLinks.innerHTML = links.join('');
-            socialLinks.hidden = false;
-          } else {
-            socialLinks.hidden = true;
-          }
-        }
-
-        if (!verifiedReviews.length) {
-          reviewsEmpty.classList.remove('nucleus-hidden');
-          return;
-        }
-
-        reviewsEmpty.classList.add('nucleus-hidden');
-        reviewsList.innerHTML = verifiedReviews.map(function (r) {
-          const stars = RankingProProfile.renderStars(r.rating);
-          const comment = r.comment
-            ? '<p class="nucleus-review-comment">' + escapeHtml(r.comment) + '</p>'
-            : '';
-          const date = RankingProProfile.formatRelativeDate(r.created_at);
-
-          return (
-            '<li class="glass-review-card review-card-cliente">' +
-              '<div class="nucleus-review-stars">' + stars +
-                '<span class="nucleus-verified">Verificada</span>' +
-              '</div>' +
-              comment +
-              '<p class="nucleus-review-date">' + escapeHtml(date) + '</p>' +
-            '</li>'
-          );
-        }).join('');
-      } catch (err) {
-        console.error(err);
-        hideAll();
-        errorBlock.classList.remove('nucleus-hidden');
-      }
+      document.addEventListener('scriptsLoaded', boot);
+      if (window.RANKING_PRO_SCRIPTS_READY) boot();
     })();
   </script>
 </body>

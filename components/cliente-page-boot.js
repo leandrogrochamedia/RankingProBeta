@@ -1,4 +1,4 @@
-// Boot compartilhado: cliente.html / cliente-exp.html / cliente-bak.html
+// Boot compartilhado: cliente.html (discovery canônico)
 (function() {
   'use strict';
 
@@ -101,7 +101,8 @@
     }
   }
 
-  window.prooflyReady = onScriptsReady;
+  window.rankingProReady = onScriptsReady;
+  window.prooflyReady = onScriptsReady; // deprecated alias
   document.addEventListener('scriptsLoaded', () => {
     clearInterval(interval);
     onScriptsReady();

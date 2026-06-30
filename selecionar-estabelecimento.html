@@ -44,17 +44,10 @@
     </div>
   </div>
 
-  <script src="./config.js"></script>
-  <script src="./utils.js"></script>
-  <script src="./api.js"></script>
-  <script src="./session.js"></script>
-  <script src="./profile-selector.js"></script>
-  <script src="./user-service.js"></script>
-  <script src="./router.js"></script>
-  <script src="./menu.js"></script>
-  <script src="./menu-lateral.js"></script>
+  <script src="./loader.js"></script>
 
   <script>
+    document.addEventListener('scriptsLoaded', function () {
     // ============================================================
     // SELEÇÃO DE ESTABELECIMENTO — LISTA TODOS (MODO DEV)
     // ============================================================
@@ -151,7 +144,8 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', carregarEstabelecimentos);
+    carregarEstabelecimentos();
+    });
   </script>
 
 </body>
