@@ -1,0 +1,190 @@
+🏆 RP
+Problema
+Como funciona
+Regra
+Reputação
+Match
+QR Code
+MVP
+Receita
+🏆
+Ranking Pro
+Infraestrutura de reputação verificada para profissionais da beleza. Clientes avaliam via QR Code, profissionais constroem reputação portátil, estabelecimentos contratam com mais confiança.
+
+A reputação pertence ao profissional, não ao estabelecimento
+Problema
+Contratação baseada em achismo
+Hoje, contratar um profissional da beleza depende de indicação, Instagram ou conversa informal — tudo manipulável e sem histórico verificável.
+
+💬
+Indicação
+Vieses pessoais, alcance limitado, sem dados concretos sobre qualidade.
+
+📸
+Instagram
+Portfólio curado não reflete consistência. Fotos não provam habilidade real.
+
+📄
+Currículo
+Autodeclarado, sem verificação. Não mostra desempenho real em atendimentos.
+
+💡
+O Ranking Pro resolve isso
+Histórico verificável de desempenho baseado em atendimentos reais via QR Code.
+
+Como funciona
+Três papéis, um ecossistema
+Cada papel tem seu fluxo, mas todos compartilham a mesma base: reputação verificada.
+
+👤
+Cliente
+Recebe atendimento
+Escaneia o QR Code do profissional
+Faz uma avaliação
+A avaliação entra no histórico do profissional
+💼
+Profissional
+Cria perfil com especialidades e tags
+Recebe QR Code exclusivo
+Acumula avaliações verificadas
+Constrói reputação portátil ao longo do tempo
+Compartilha sua Página de Reputação
+Busca oportunidades em estabelecimentos
+🏢
+Estabelecimento
+Cria conta e assina o plano
+Pesquisa profissionais por reputação
+Analisa histórico e compatibilidade
+Contrata com segurança
+Regra fundamental
+🔐 Avaliação só existe via QR Code
+Sem QR Code não existe avaliação, não existe reputação, não existe ranking. Cada atendimento real gera um QR único e verificável.
+
+❌ Avaliação sem QR
+❌ Reputação fabricada
+❌ Ranking manipulável
+Reputação
+Sistema de Confiança
+As avaliações são verificadas, têm autor identificado e compõem um score ponderado que reflete a verdadeira qualidade do profissional.
+
+⭐
+Nota + Comentário
+Cada avaliação tem nota de 1 a 5 e comentário opcional do cliente
+
+✅
+Verificada via QR
+QR Code único por atendimento garante que a avaliação é legítima
+
+🆔
+Autor identificado
+Cliente é identificado, evitando perfis falsos e avaliações fraudulentas
+
+🧠
+Score ponderado
+Pesos diferentes por fonte: cliente, estabelecimento e rede social
+
+🔗
+Reputação portátil
+Profissional leva sua reputação para qualquer estabelecimento
+
+📊
+Histórico completo
+Todo atendimento fica registrado — visível e auditável
+
+Descoberta inteligente
+Match por afinidade
+O Ranking Pro não é apenas um diretório. Ele recomenda conexões baseadas em perfil comportamental, tags de personalidade, estilo e ambiente.
+
+🧩
+Tags de perfil
+Profissionais definem tags de personalidade, estilo musical, visual e lifestyle. Clientes indicam suas preferências.
+
+📊
+Score de compatibilidade
+Algoritmo calcula match entre perfil do profissional e preferências do cliente ou estabelecimento.
+
+🎯
+Recomendação contextual
+Estabelecimentos veem profissionais com perfil compatível. Clientes encontram profissionais com seu estilo.
+
+Verificação
+Fluxo do QR Code
+Cada profissional e estabelecimento possui um QR Code exclusivo que garante a veracidade da avaliação.
+
+1
+QR Code único
+Gerado por profissional ou estabelecimento
+
+2
+Cliente escaneia
+Vai direto para página de avaliação
+
+3
+Avalia com selo
+Avaliação ganha selo de verificação
+
+4
+Token consumido
+QR não pode ser reutilizado (used_at)
+
+MVP
+O que o MVP entrega
+✅
+Cadastro de profissional com perfil completo e tags
+
+✅
+Cadastro de estabelecimento com plano de assinatura
+
+✅
+QR Code individual por profissional
+
+✅
+Avaliação verificada via QR Code
+
+✅
+Perfil público (Página de Reputação)
+
+✅
+Histórico completo de avaliações
+
+✅
+Busca inteligente com match por afinidade
+
+✅
+Dashboard do estabelecimento
+
+✅
+Assinatura mensal para estabelecimentos
+
+✅
+Ranking por categoria e localidade
+
+Escopo
+O que NÃO é o produto
+Foco é reputação verificada. O que desvia disso fica de fora.
+
+✕Agenda
+✕CRM
+✕Rede social
+✕Marketplace
+✕LinkedIn da beleza
+✕Sistema financeiro
+✕Chat
+Modelo de negócio
+Como ganha dinheiro
+💳
+Assinatura mensal
+Estabelecimentos pagam para acessar a plataforma, pesquisar profissionais e gerenciar reputação.
+
+🚀
+Futuro
+Página de Reputação Premium
+Destaque de profissionais no ranking
+Selos e credenciais especiais
+Ferramentas avançadas de recrutamento
+Métrica mais importante
+Quantidade de avaliações verificadas por mês
+Sem avaliações verificadas não existe reputação — é o coração do produto.
+
+"Infraestrutura de reputação verificada onde clientes avaliam profissionais via QR Code, profissionais constroem reputação portátil e estabelecimentos contratam com mais confiança."
+Ranking Pro — Blueprint

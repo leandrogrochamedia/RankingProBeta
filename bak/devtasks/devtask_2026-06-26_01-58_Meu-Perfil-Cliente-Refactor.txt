@@ -1,0 +1,156 @@
+# DEVTASK — Meu Perfil (Cliente) — Refactor UX + Histórico de Reputação
+**Data:** 2026-06-26  
+**Prioridade:** P0  
+**Solicitante:** Supervisor PROOFLY  
+**Arquivos principais:** `meu-perfil.html`, `meu-perfil.js`, `proofly-glass.css`, `loader.js`, `reviews-service.js` (ajuste P0), opcional `utils.js`
+
+---
+
+## Contexto
+
+A tela `meu-perfil.html` é o hub do cliente no Ranking Pro. Precisa ficar mais limpa (sem barra superior redundante), com edição intuitiva no avatar, estilos corretos em view/edit, CEP sempre mascarado, salvamento confiável e — principalmente — **histórico de lugares e profissionais derivado de avaliações reais** (núcleo de reputação).
+
+**North Star:** cada dado exibido deve reforçar confiança e decisão melhor — não é formulário solto, é retrato verificável do cliente.
+
+---
+
+## P0 — Layout e edição
+
+### 1. Remover topbar com "Voltar para busca"
+- Remover o `<header class="meu-perfil-topbar">` de `meu-perfil.html` (link `← Voltar para busca` + botão editar no topo).
+- Navegação de volta fica pelo **menu lateral global** (`menu.js`) — não duplicar barra fixa no topo.
+- Ajustar padding do shell se necessário (sem sticky header).
+
+### 2. Pill "Editar" no canto inferior direito do círculo da foto
+- Posicionar botão **absolute** no `.meu-perfil-avatar-ring` (bottom-right, ~4–8px para fora do círculo).
+- Visual: pill/badge circular pequeno, DNA Apple — glass escuro, borda sutil, ícone ✏️ ou texto "Editar", sombra leve.
+- Estados:
+  - **View:** mostra "Editar" → entra em modo edição.
+  - **Edit:** pill pode virar "Ver" ou permanecer e alternar; manter **Salvar / Cancelar** no rodapé do form (já existe).
+- O botão **não** fica mais no header.
+
+### 3. Garantir que salvar perfil funciona de ponta a ponta
+Testar e corrigir se necessário:
+- `PATCH` em `client_profiles` via `fetchAPI` (já usa `Prefer: return=representation`).
+- Após salvar: `clientRecord` atualizado, `syncClientPrefsFromRecord`, `updateUser` + `setSession` para nome.
+- Feedback `showUserMessage` e volta para view mode com dados novos na tela.
+- Avatar base64, tags de estilo, endereço e CPF/telefones persistindo corretamente.
+- Tratar erro de API com mensagem clara (não deixar botão travado em "Salvando...").
+
+---
+
+## P0 — Estilos (profissional + estabelecimento)
+
+### 4. Duas seções distintas com títulos claros
+Substituir bloco único "Estilo" por:
+
+| Modo | Estilo de profissional | Estilo de estabelecimento |
+|------|------------------------|---------------------------|
+| **Visualizar** | Mostrar **somente** `prof_style_tags` salvos (pills read-only, não clicáveis) | Mostrar **somente** `est_style_tags` salvos; empty state se vazio |
+| **Editar** | Mostrar **todas** as opções de `PROF_STYLE_PICKS` como chips toggle (máx. 5) | Mostrar **todas** as opções de `EST_STYLE_PICKS` como chips toggle (máx. 3) |
+
+- Pills **só são alteráveis em modo edição** — em view, zero interação.
+- Extrair `PROF_STYLE_PICKS` e `EST_STYLE_PICKS` para constante compartilhada (`utils.js` ou `config.js`) — hoje duplicado em `cadastro-cliente.js` e `meu-perfil.js`. **DRY obrigatório.**
+
+### 5. Legibilidade das pills — label branco
+Corrigir contraste em `proofly-glass.css`:
+- `.meu-perfil-tag` e `.meu-perfil-tag .style-chip` → `color: #fff` (ou `#f8fafc`).
+- `.meu-perfil-style-chip` inativo → texto branco/claro legível sobre fundo escuro.
+- `.meu-perfil-style-chip.active` → manter gradiente roxo, label **branco** (`#fff`).
+- Validar com `renderTagWithEmoji` (emoji + texto branco).
+
+---
+
+## P0 — CEP sempre mascarado
+
+### 6. Máscara em toda exibição e digitação
+- Criar/usar `formatCepDisplay(zip)` → `00000-000` (espelhar `formatCpfDisplay`).
+- **View mode:** CEP no `<dd>` sempre mascarado.
+- **Edit mode:** ao renderizar input `#perfilCep`, valor inicial já mascarado; manter listener `formatarCEP` no `input`.
+- Ao salvar: continuar enviando só dígitos (`replace(/\D/g, '')`).
+
+---
+
+## P0 — Histórico derivado de avaliações
+
+### 7. Carregar `reviews-service.js` na página
+Em `loader.js`, incluir `meu-perfil` em `needsReviews` para ter `fetchReviews`, `formatReviewForDisplay`, `profilePageUrl`, etc.
+
+### 8. Seção "Lugares que você frequentou"
+- Fonte: reviews do usuário logado (`user_id=eq.{session.userId}`) com `review_type=client_to_establishment` (ou `establishment_id` presente).
+- Agrupar por `establishment_id` (únicos), ordenar por data da última avaliação.
+- Card/linha por estabelecimento: nome, data relativa, estrelas da última (ou média), link "Ver local" → `profilePageUrl('estabelecimento', id)`.
+- Empty state premium: *"Você ainda não avaliou nenhum lugar. Suas visitas aparecerão aqui."*
+
+### 9. Seção "Profissionais que te atenderam"
+- Fonte: reviews `client_to_professional` do mesmo `user_id`.
+- Agrupar por `professional_id` (ou listar cronológico — preferir **uma entrada por profissional** com última interação em destaque).
+
+**Linha de contexto obrigatória (reputação):**
+> *"Você foi atendido(a) por **FULANO** no **Estabelecimento X**"*
+
+**Se o profissional mudou de vínculo:**
+> *"Hoje, **FULANO** está no **Estabelecimento Y**"*
+
+**Implementação de dados:**
+1. Buscar reviews com join: `professional(id,name,current_establishment_id,current_establishment:establishments!...)` e `establishment(id,name)`.
+2. Para estabelecimento **na época do atendimento**, usar nesta ordem:
+   - `prof_link_snapshot.establishment_id` na review (se existir)
+   - `establishment_id` na review
+   - Fallback legado: `current_establishment` do prof **hoje** (exibir com rótulo discreto "vínculo atual" se não houver snapshot)
+3. **P0 em `reviews-service.js`:** ao salvar avaliação **cliente → profissional**, gravar `prof_link_snapshot` com `professional_id`, `establishment_id` (current do prof no momento) e `captured_at`. Hoje snapshot só é salvo para source `profissional` — corrigir para `cliente` + `CLIENT_TO_PROF` também. Sem isso o histórico fica impreciso.
+
+### 10. "Ver trajetória" do profissional
+- Em cada linha de profissional, link/botão **"Ver trajetória"** ou toque no nome.
+- Ao clicar: expandir bloco inline (accordion) ou mini-painel com histórico de vínculos — reutilizar `buildWorkHistory` + fetch `professional_establishment?professional_id=eq.{id}` (mesmo padrão de `cliente.js` / `profile-page-view.js`).
+- Mostrar lista: *Salão A (atual)*, *Salão B (ex)*, autônomo se aplicável.
+- Link principal do prof: `profilePageUrl('profissional', id)`.
+
+### 11. Link para avaliações completas
+- Rodapé da seção de histórico: link discreto *"Ver todas as minhas avaliações"* → `minhas-avaliacoes.html` (não duplicar página inteira no perfil).
+
+---
+
+## P1 — Polish UX (fazer se couber no mesmo PR)
+
+- Avatar edit badge com `aria-label` acessível.
+- Transição suave view ↔ edit (sem flash de loading).
+- Histórico com skeleton loading enquanto busca reviews.
+- Seções colapsáveis se lista > 5 itens ("Ver mais").
+
+---
+
+## P2 — Não fazer agora
+
+- Mapa geográfico de estabelecimentos.
+- Edição inline campo a campo (manter form único em edit mode).
+- Nova tabela de "visitas" — usar apenas `reviews` existente.
+
+---
+
+## Critérios de aceite (checklist)
+
+- [ ] Sem barra superior "Voltar para busca" na tela de perfil.
+- [ ] Pill Editar no bottom-right do avatar; funciona em mobile.
+- [ ] Salvar alterações persiste e reflete na view sem reload manual.
+- [ ] View: só tags salvas; Edit: todas as opções; pills só editáveis em edit.
+- [ ] Labels das pills brancos e legíveis.
+- [ ] CEP `00000-000` na view e no input (load + digitação).
+- [ ] Histórico de estabelecimentos e profissionais aparece abaixo do perfil.
+- [ ] Linha "atendido em X / hoje em Y" quando vínculo mudou.
+- [ ] "Ver trajetória" abre histórico de vínculos do profissional.
+- [ ] Novas avaliações cliente→prof salvam `prof_link_snapshot`.
+- [ ] `loader.js` carrega reviews em `meu-perfil`.
+
+---
+
+## Referências no código
+
+- `meu-perfil.html` — remover header topbar
+- `meu-perfil.js` — render view/edit, save, histórico
+- `proofly-glass.css` — `.meu-perfil-*` (~linha 4257)
+- `cadastro-cliente.js` — `PROF_STYLE_PICKS`, `EST_STYLE_PICKS`
+- `minhas-avaliacoes.html` — query de reviews do cliente
+- `reviews-service.js` — `buildReviewPayload`, `prof_link_snapshot`
+- `utils.js` — `buildWorkHistory`, `formatarCEP`, `profilePageUrl`
+- `cliente.js` — padrão de `buildWorkHistory` no drawer do profissional

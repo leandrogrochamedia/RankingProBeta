@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking Pro - Profissional</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .prof-landing {
+      max-width: 600px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    .prof-landing .card {
+      padding: 40px 30px;
+    }
+    .prof-landing .icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    .prof-landing h1 {
+      font-size: 28px;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .prof-landing .sub {
+      color: #64748b;
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+    .prof-landing .cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    .prof-landing .cta-group .btn {
+      min-width: 200px;
+      padding: 14px 32px;
+      font-size: 16px;
+      justify-content: center;
+    }
+    .prof-landing .divider {
+      width: 80px;
+      height: 2px;
+      background: #e2e8f0;
+      margin: 12px auto;
+    }
+    .prof-landing .already {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    .prof-landing .already a {
+      color: #6366f1;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .prof-landing .already a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 480px) {
+      .prof-landing .card {
+        padding: 24px 16px;
+      }
+      .prof-landing .cta-group .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <div class="container prof-landing">
+    <div class="card">
+      <div class="icon">💼</div>
+      <h1>Área do Profissional</h1>
+      <p class="sub">Gerencie seu perfil, reputação e vínculos.</p>
+
+      <div class="cta-group">
+        <a href="./login.html?intent=onboarding-profissional" class="btn btn-large">📝 Cadastrar novo profissional</a>
+        <div class="divider"></div>
+        <a href="./login.html?intent=professional" class="btn btn-outline btn-large">🔑 Já tenho cadastro</a>
+      </div>
+
+      <div class="already">
+        <a href="./cliente.html">← Voltar para o cliente</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./session.js"></script>
+  <script src="./profile-selector.js"></script>
+  <script src="./user-service.js"></script>
+  <script src="./router.js"></script>
+  <script src="./menu.js"></script>
+  <script src="./menu-lateral.js"></script>
+
+  <script>
+    // Redirecionar se já tiver profissional na sessão
+    const session = getSession();
+    if (session && getActiveProfileType(session) === 'professional' && session.professionalId) {
+      window.location.href = './dashboard-profissional.html';
+    }
+  </script>
+
+</body>
+</html>

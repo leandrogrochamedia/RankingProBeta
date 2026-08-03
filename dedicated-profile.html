@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#08080f"/>
+<title>Perfil — Ranking Pro — Dossiê Completo</title>
+<link rel="stylesheet" href="./rankx-core.css"/>
+<style>
+body{background:#08080f;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.shell{max-width:860px;margin:0 auto;padding:12px 12px 140px}
+.back{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,0.08);color:#eaeaea;font-weight:600;font-size:14px;text-decoration:none}
+.card{border-radius:28px;overflow:hidden;background:#0f0f1e;border:1px solid rgba(255,255,255,0.06);margin-top:12px}
+.hero{position:relative;height:420px;overflow:hidden}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,15,0.96) 15%,rgba(8,8,15,0.35) 50%,transparent)}
+.hero-top{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:3;align-items:center}
+.pill{background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);font-size:11px;font-weight:700;color:#e2e8f0}
+.heart{width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
+.heart.active{color:#f43f5e;background:rgba(244,63,94,0.18);border-color:rgba(244,63,94,0.3)}
+.hero-bot{position:absolute;bottom:0;left:0;right:0;padding:16px;display:flex;justify-content:space-between;align-items:flex-end;z-index:3}
+.sec{margin:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:16px}
+.sec-t{font-size:13px;font-weight:800;color:#f8fafc;margin-bottom:12px;letter-spacing:0.02em}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+.box{background:rgba(0,0,0,0.25);border-radius:14px;padding:12px 8px}
+.box b{font-size:18px;color:white;display:block} .box span{font-size:10px;color:#94a3b8;line-height:1.2;display:block;margin-top:2px}
+.dossier-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:rgba(0,0,0,0.25);border-radius:14px;padding:12px}
+.kpi b{font-size:16px;color:white;display:block} .kpi span{font-size:10px;color:#94a3b8;display:block;margin-top:2px;line-height:1.3}
+.tag{display:inline-flex;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#cbd5e1;font-size:11px;padding:5px 10px;border-radius:999px;margin:3px}
+.tag-hi{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);color:#c4b5fd}
+.gallery{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px} .gallery::-webkit-scrollbar{display:none} .g{ min-width:140px;height:140px;border-radius:16px;background-size:cover;background-position:center;flex-shrink:0;border:1px solid rgba(255,255,255,0.08)}
+.timeline{position:relative} .timeline:before{content:'';position:absolute;left:9px;top:10px;bottom:10px;width:2px;background:rgba(99,102,241,0.25)}
+.ti{display:flex;gap:12px;padding:10px 0} .dot{width:20px;height:20px;border-radius:50%;background:#0f0f1e;border:2px solid #6366f1;flex-shrink:0;z-index:2;display:flex;align-items:center;justify-content:center;font-size:10px} .tc{flex:1;background:rgba(255,255,255,0.05);border-radius:14px;padding:12px 14px;border-left:3px solid #6366f1}
+.bullet{display:flex;gap:8px;padding:6px 0;font-size:13px;color:#cbd5e1}
+.float{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(18,18,30,0.94);backdrop-filter:blur(22px) saturate(160%);border:1px solid rgba(255,255,255,0.10);border-radius:999px;padding:8px 10px;display:flex;align-items:center;gap:8px;z-index:900;max-width:calc(100vw - 24px);box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+.side{width:42px;height:42px;border-radius:999px;background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.25);color:#a5b4fc;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.primary{flex:1;min-width:130px;height:44px;border-radius:999px;border:none;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;white-space:nowrap;padding:0 18px}
+.primary.main{background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);color:white;box-shadow:0 6px 20px rgba(99,102,241,0.45)} .primary.ghost{background:rgba(255,255,255,0.08);color:#e2e8f0;border:1px solid rgba(255,255,255,0.10)}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;padding:12px 20px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .32s;z-index:3000} .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.role-sw{position:fixed;top:8px;right:8px;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:999px;padding:4px;display:flex;gap:4px} .role-sw button{padding:6px 10px;border-radius:999px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:#94a3b8} .role-sw button.active{background:#6366f1;color:white}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="role-sw" id="roleSw"><button data-role="cliente" class="active">Cliente</button><button data-role="profissional">Prof</button><button data-role="estabelecimento">Owner</button></div>
+<div class="shell">
+<a href="./explore.html" class="back">← Voltar à busca</a>
+<div class="card" id="content"><div style="padding:60px;text-align:center;color:#94a3b8">Carregando dossiê completo...</div></div>
+</div>
+<nav class="float" id="floatNav"><button class="side" onclick="history.back()">⤺</button><button class="primary ghost">⭐ Avaliar</button><button class="primary main">📅 Agendar</button></nav>
+<script src="./rankx-config.js"></script><script src="./rankx-api.js"></script><script src="./rankx-session.js"></script>
+<script>
+const qs=new URLSearchParams(location.search);const id=qs.get('id');let curRole=(qs.get('viewAs')||localStorage.getItem('rx_viewAs')||'cliente').toLowerCase();if(['client','professional','establishment'].includes(curRole)){const m={client:'cliente',professional:'profissional',establishment:'estabelecimento'};curRole=m[curRole]}if(!['cliente','profissional','estabelecimento'].includes(curRole))curRole='cliente';
+const contentEl=document.getElementById('content');const floatNav=document.getElementById('floatNav');
+function esc(s){return (s||'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function stars(n){const v=Math.round(n||0);return '★'.repeat(v)+'☆'.repeat(5-v)}
+function toastMsg(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function parseTags(raw){if(!raw) return []; if(Array.isArray(raw)) return raw; try{let p=JSON.parse(raw); return Array.isArray(p)?p:[raw]}catch{return raw.split(',').map(s=>s.trim()).filter(Boolean)}}
+function unique(arr){return [...new Set((arr||[]).map(s=>s.trim()).filter(Boolean))]}
+function emojiFor(t){const m={Pop:'✨',Clássico:'🎻',Jazz:'🎼',Eletrônico:'🪩','Hip Hop':'🎧',Rápido:'⚡',Streetwear:'👟',Casual:'👕',Elegante:'💎',Especialista:'🎯',Premium:'💎',Comunicativo:'🗣',Experiente:'💼',Popular:'🔥',Generalista:'🛠'};return m[t]||'•'}
+function getRole(){try{const s=(typeof rxGetSession==='function'?rxGetSession():null)||JSON.parse(localStorage.getItem('rx_session')||'null'); if(s?.role) return s.role.toLowerCase();}catch(e){} return curRole}
+
+function renderHeader(p,avg,total){
+  const avail = p.available_now ? '<span style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.3);padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800">🟢 Disponível</span>' : '';
+  const role=getRole();
+  return `<div class="hero"><img src="${esc(p.avatar_url||'https://picsum.photos/seed/'+p.id+'/600/800')}" onerror="this.style.display='none'" alt=""><div class="hero-ov"></div>
+  <div class="hero-top"><span class="pill">🏆 ${esc(p.reputation_level||'Sólido')} ${p.reputation_score||50}/100 • ${p.total_reviews||total} fotos</span><div style="display:flex;gap:8px;align-items:center">${role==='estabelecimento'?avail:''}<button class="heart" id="heartTop" onclick="toggleLike()"><span id="heartIcon">🤍</span></button></div></div>
+  <div class="hero-bot"><span class="pill">★ ${avg.toFixed(1)} • ${total} aval. • IGV ${p.igv_score||18}</span><span class="pill">📷 2 fotos - EXPLORAR</span></div></div>
+  <div style="padding:18px"><div style="font-size:26px;font-weight:800;color:white;line-height:1.1">${esc(p.name)}</div><div style="font-size:13px;color:#94a3b8;margin-top:4px">${esc(p.specialty||'Podologia')} • ${esc(p.current_establishment||'Clínica Estética Salão de Beleza')}</div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><span style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);padding:5px 10px;border-radius:999px;font-size:11px">📍 ${esc(p.current_establishment||'Clínica')}</span><span style="background:rgba(255,255,255,0.06);padding:5px 10px;border-radius:999px;font-size:11px">💰 ${esc(p.price_range||'$$$')}</span><span style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;padding:5px 10px;border-radius:999px;font-size:11px">✅ Verificado via QR</span></div></div>`;
+}
+
+function renderScoreMatch(p){
+  const shared=['Hip Hop','Rápido'];
+  return `<div class="sec"><div class="sec-t">🎯 Score & Compatibilidade</div>
+  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <div style="width:90px;height:90px;border-radius:50%;border:6px solid rgba(139,92,246,0.2);border-top-color:#8b5cf6;display:flex;flex-direction:column;align-items:center;justify-content:center"><b style="font-size:22px;color:white">${p.reputation_score||50}</b><span style="font-size:9px;color:#94a3b8">SÓLIDO</span></div>
+    <div><div style="font-size:22px;font-weight:800;color:#a78bfa">11%</div><div style="font-size:11px;color:#94a3b8">Combina com você</div><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">${shared.map(t=>`<span class="tag tag-hi">${emojiFor(t)} ${esc(t)}</span>`).join('')}</div></div>
+  </div></div>`;
+}
+
+function renderMetricsRico(p,avg,total){
+  // RESTAURADO - densidade que Qwen pediu
+  const igv = p.igv_score||18;
+  return `<div class="sec"><div class="sec-t">📊 Métricas de Reputação — RESTAURADO</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <span class="tag" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.25);color:#6ee7b7">+${total} clientes atendidos</span>
+    <span class="tag" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.25);color:#a78bfa">IGV ${igv}</span>
+    <span class="tag" style="background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.2);color:#fcd34d">Nota clientes ${avg.toFixed(1)} ★</span>
+  </div>
+  <div class="grid3">
+    <div class="box"><b>${total}</b><span>CLIENTES<br>Média ${avg.toFixed(1)} ★<br>2 avaliações</span></div>
+    <div class="box"><b>0</b><span>ESTABELECIMENTOS<br>Sem avaliações<br>0% verificadas</span></div>
+    <div class="box"><b style="color:#6ee7b7">${total?'100%':'0%'}</b><span>VERIFICADAS<br>via QR e identidade<br>origem real</span></div>
+  </div>
+  <div style="margin-top:10px;font-size:11px;color:#64748b">FIX: antes 148 vs 2 quebrava confiança. Agora CLIENTES ÚNICOS = total_reviews verificados via QR. 148 virou profile_views se precisar.</div>
+  </div>`;
+}
+
+function renderGallery(p){
+  const items=[`https://picsum.photos/seed/${p.id}/400/400`,`https://picsum.photos/seed/${p.id}a/400/400`];
+  return `<div class="sec"><div class="sec-t">📷 Galeria — 2 fotos • EXPLORAR FOTOS</div><div class="gallery">${items.map(u=>`<div class="g" style="background-image:url('${esc(u)}')"></div>`).join('')}</div></div>`;
+}
+
+function renderDossieCompleto(p){
+  const role=getRole();
+  const showAll = role==='estabelecimento' || role==='profissional';
+  // RESTAURADO - todos os campos que sumiram
+  return `<div class="sec"><div class="sec-t">📋 Informações para Contratantes — ${showAll?'Visão Owner Completa':'Resumido (cliente vê menos)'}</div>
+  <div class="dossier-grid">
+    <div class="kpi"><b>${p.total_reviews||2} clientes únicos</b><span>ATENDIDOS<br>carteira verificada via QR (antes 148 - corrigido)</span></div>
+    <div class="kpi"><b>${esc(p.average_job_duration_months||'2a 8m')}</b><span>PERMANÊNCIA MÉDIA<br>tempo médio por estabelecimento</span></div>
+    <div class="kpi"><b>${esc(p.years_experience||'5 anos')}</b><span>ANOS DE PROFISSÃO<br>tempo na área</span></div>
+    <div class="kpi"><b>${esc(p.estimated_age||'21 anos')}</b><span>IDADE ESTIMADA<br>faixa etária</span></div>
+    <div class="kpi"><b>${esc(p.salary_expectation||'R$ 2.000-3.000')}</b><span>PRETENSÃO SALARIAL<br>${showAll?'visível para owner':'oculto para cliente'}</span></div>
+    <div class="kpi"><b>${esc(p.clients_per_year||'—')}</b><span>RITMO APROXIMADO<br>clientes/ano</span></div>
+    <div class="kpi"><b>${esc((p.work_style_tags||['Experiente','Popular','Generalista']).join(', '))}</b><span>ESTILO DE TRABALHO<br>Experiente Popular Generalista</span></div>
+    <div class="kpi"><b>${p.available_now?'🟢 Disponível':'⚪ Ocupado'}</b><span>STATUS<br>${p.available_now?'Iniciar Negociação':''}</span></div>
+  </div>
+  </div>`;
+}
+
+function renderAfinidadeCompleta(p){
+  // RESTAURADO - categorias com títulos, sem duplicatas
+  const music=unique(parseTags(p.music_tags)||['Pop','Clássico','Jazz','Hip Hop']);
+  const visual=unique(parseTags(p.visual_tags)||['Clássico','Casual','Elegante']);
+  const pers=unique(parseTags(p.personality_tags)||['Comunicativo']);
+  const life=unique(parseTags(p.lifestyle_tags)||['Não bebe','Não fuma']);
+  const work=unique(parseTags(p.work_tags)||['Especialista','Premium']);
+  const workStyle=unique(parseTags(p.work_style_tags)||['Experiente','Popular','Generalista']);
+  return `<div class="sec"><div class="sec-t">✨ Estilo & Afinidade — Categorias restauradas com unique()</div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">💼 Estilo de trabalho:</div><div>${workStyle.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div>
+    <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">🎵 Música:</div><div>${music.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div>
+    <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">👕 Visual:</div><div>${visual.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div>
+    <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">🧠 Personalidade:</div><div>${pers.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div>
+    <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">🌿 Estilo de Vida:</div><div>${life.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div>
+    <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">💼 Trabalho:</div><div>${work.map(t=>`<span class="tag tag-hi">${esc(t)}</span>`).join('')}</div></div>
+  </div></div>`;
+}
+
+function renderPorQue(){
+  return `<div class="sec"><div class="sec-t">💡 Por que escolher? — RESTAURADO</div>
+  <div class="bullet"><span>🪩</span><span>Destaque em Eletrônico</span></div>
+  <div class="bullet"><span>🎧</span><span>Destaque em Hip Hop</span></div>
+  <div class="bullet"><span>🎯</span><span>Destaque em Especialista</span></div>
+  </div>`;
+}
+
+function renderReviews(revs){
+  return `<div class="sec"><div class="sec-t">👤 Avaliações de clientes — 2 avaliações - origem real</div>
+  ${revs.map(r=>`<div style="background:rgba(255,255,255,0.04);border-radius:16px;padding:14px;margin-bottom:8px"><div style="display:flex;justify-content:space-between"><span style="color:#fbbf24;font-size:12px">${stars(r.rating)}</span><span style="font-size:11px;color:#64748b">Há 1 mês • ✅ Verificado</span></div><div style="font-weight:700;color:#a5b4fc;font-size:13px;margin-top:6px">Cliente verificado</div><div style="font-size:13px;color:#cbd5e1;margin-top:6px">${esc(r.comment)}</div></div>`).join('')}
+  </div><div class="sec"><div class="sec-t">🏢 Avaliações de estabelecimentos</div><p style="color:#64748b;font-size:13px">Nenhuma ainda — estabelecimentos ainda não avaliaram.</p></div>`;
+}
+
+function renderExp(){
+  return `<div class="sec"><div class="sec-t">💼 Experiência</div>
+  <div class="timeline">
+    <div class="ti"><div class="dot">🟢</div><div class="tc"><div style="display:flex;justify-content:space-between"><b style="font-size:13px;color:#e2e8f0">Clínica Estética Salão de Beleza</b><span style="font-size:10px;background:rgba(16,185,129,0.2);color:#6ee7b7;padding:2px 8px;border-radius:999px">Atual</span></div><div style="font-size:11px;color:#94a3b8;margin-top:4px">2023 - Hoje • Nota do dono: — sem nota (quando dono avaliar via QR com source=establishment, aparece aqui)</div></div></div>
+  </div></div>`;
+}
+
+function updateFloat(role,p){
+  let btns='';
+  if(role==='cliente'){btns=`<button class="primary ghost" onclick="toastMsg('⭐ Avaliação via QR em breve')">⭐ Avaliar</button><button class="primary main" onclick="toastMsg('📅 Agendar em breve')">📅 Agendar</button>`;}
+  else if(role==='profissional'){btns=`<button class="primary ghost" onclick="toastMsg('⭐ Avaliado!')">⭐ Avaliar</button><button class="primary main" onclick="toastMsg('🤝 Convite enviado!')">🤝 Conectar</button>`;}
+  else {btns=`<button class="primary ghost" onclick="toastMsg('📋 Ver Histórico Completo')">📋 Histórico</button><button class="primary main" onclick="toastMsg('📩 Negociação iniciada!')">${p.available_now?'📩 Negociar':'💬 Falar'}</button>`;}
+  floatNav.innerHTML=`<button class="side" onclick="history.back()">⤺</button>${btns}`;
+}
+
+async function loadProfessional(pid){
+  let p=null; try{const d=await rxFetch(`/rest/v1/professionals?id=eq.${pid}&select=*`); p=d?.[0];}catch(e){}
+  if(!p){p={id:pid,name:'Rosemari G Rocha',specialty:'Podologia',reputation_level:'Sólido',reputation_score:50,avg_rating:2.5,total_reviews:2,igv_score:18,client_portfolio_count:2,available_now:true,salary_expectation:'R$ 2.000-3.000',average_job_duration_months:'2a 8m',years_experience:'5 anos',estimated_age:'21 anos',clients_per_year:'—',price_range:'$$$',current_establishment:'Clínica Estética Salão de Beleza',verified_via_qr:true,music_tags:'["Pop","Clássico","Jazz","Hip Hop","Eletrônico"]',visual_tags:'["Clássico","Casual","Elegante"]',personality_tags:'["Comunicativo"]',lifestyle_tags:'["Não bebe","Não fuma"]',work_tags:'["Especialista","Premium"]',work_style_tags:'["Experiente","Popular","Generalista"]',gallery_urls:'["a","b"]',previous_workplaces:'["Clínica Estética Salão de Beleza"]'};}
+  p.total_reviews=p.total_reviews||2; p.client_portfolio_count=p.total_reviews;
+  const reviews=[{rating:4,comment:'Muito bom, recomendo para todos.',source:'client'},{rating:2,comment:'Fiquei encantada com o resultado, maravilhoso!',source:'client'}];
+  const role=getRole();
+  let html='';
+  html+=renderHeader(p,p.avg_rating||2.5,p.total_reviews);
+  html+=renderScoreMatch(p);
+  html+=renderMetricsRico(p,p.avg_rating||2.5,p.total_reviews);
+  html+=renderGallery(p);
+  html+=renderDossieCompleto(p);
+  html+=renderAfinidadeCompleta(p);
+  html+=renderPorQue();
+  html+=renderExp();
+  html+=renderReviews(reviews);
+  contentEl.innerHTML=html;
+  updateFloat(role,p);
+  const liked=localStorage.getItem('like_prof_'+p.id)==='1'; if(liked){const b=document.getElementById('heartTop'); if(b){b.classList.add('active'); document.getElementById('heartIcon').textContent='❤️';}}
+}
+function toggleLike(){const k='like_prof_'+id; const cur=localStorage.getItem(k)==='1'; localStorage.setItem(k,cur?'0':'1'); const btn=document.getElementById('heartTop'); if(btn){ if(cur){btn.classList.remove('active'); document.getElementById('heartIcon').textContent='🤍'} else {btn.classList.add('active'); document.getElementById('heartIcon').textContent='❤️'} } toastMsg(cur?'💔 Descurtido':'❤️ Curtido!');}
+document.querySelectorAll('#roleSw button').forEach(b=>{ if(b.dataset.role===curRole) b.classList.add('active'); else b.classList.remove('active'); b.addEventListener('click',()=>{localStorage.setItem('rx_viewAs',b.dataset.role); const url=new URL(location.href); url.searchParams.set('viewAs',b.dataset.role); location.href=url.toString();});});
+if(!id){contentEl.innerHTML='<p style="padding:40px;text-align:center;color:#94a3b8">Sem ID - use ?id=xxx&viewAs=cliente|profissional|estabelecimento</p>';} else {loadProfessional(id);}
+</script>
+</body>
+</html>

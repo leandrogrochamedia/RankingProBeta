@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking Pro — Como entrar</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="profile-select-page">
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <main class="profile-select-shell">
+    <div class="profile-select-card glass-surface">
+      <span class="profile-select-eyebrow">🏆 Ranking Pro</span>
+      <h1 id="profileSelectTitle">Quem é você?</h1>
+      <p class="profile-select-sub" id="profileSelectSub">Carregando suas opções…</p>
+      <div id="profileCards" class="profile-select-grid" role="listbox" aria-label="Tipo de perfil">
+        <div class="profile-select-loading">⏳</div>
+      </div>
+    </div>
+  </main>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./session.js"></script>
+  <script src="./user-service.js"></script>
+  <script src="./profile-selector.js"></script>
+  <script src="./menu-lateral.js"></script>
+
+  <script>
+    (async function() {
+      const session = typeof getSession === 'function' ? getSession() : null;
+      const force = isForceProfileSelect();
+      const grid = document.getElementById('profileCards');
+      const sub = document.getElementById('profileSelectSub');
+      const title = document.getElementById('profileSelectTitle');
+      const esc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '');
+
+      if (!session?.userId) {
+        const returnTo = getProfileSelectorUrl(force);
+        window.location.href = `./login.html?returnTo=${encodeURIComponent(returnTo.replace('./', ''))}`;
+        return;
+      }
+
+      if (!force && getActiveProfileType(session)) {
+        redirectToActiveProfileHome(session);
+        return;
+      }
+
+      let affiliations = { client: null, professional: null, establishment: null };
+      if (typeof fetchUserAffiliations === 'function') {
+        affiliations = await fetchUserAffiliations(session);
+      }
+      const linkedCount = typeof countUserAffiliations === 'function'
+        ? countUserAffiliations(affiliations)
+        : 0;
+      const options = buildProfileEntryOptions(affiliations);
+
+      if (force) {
+        title.textContent = 'Trocar de área';
+        sub.textContent = session.name
+          ? `Olá, ${session.name} — escolha onde entrar agora`
+          : 'Escolha onde entrar agora';
+      } else if (linkedCount > 1) {
+        title.textContent = 'Onde você quer entrar?';
+        sub.textContent = 'Encontramos mais de uma área vinculada à sua conta';
+      } else if (linkedCount === 1) {
+        title.textContent = 'Bem-vindo de volta';
+        sub.textContent = 'Confirme como deseja entrar agora';
+      } else {
+        title.textContent = 'Quem é você?';
+        sub.textContent = 'Ainda não identificamos seu perfil — escolha uma área';
+      }
+
+      grid.innerHTML = '';
+      options.forEach((opt) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'profile-select-card-btn'
+          + (opt.linked ? ' is-linked' : '')
+          + (opt.badgeRole === 'owner' ? ' is-owner' : '');
+        card.setAttribute('role', 'option');
+        card.innerHTML = `
+          <span class="profile-select-icon">${opt.icon}</span>
+          <span class="profile-select-text">
+            <strong>${esc(opt.title)}</strong>
+            <small>${esc(opt.subtitle)}</small>
+            ${opt.badge ? `<span class="profile-select-badge${opt.badgeRole ? ' profile-select-badge-' + opt.badgeRole : ''}">${esc(opt.badge)}</span>` : ''}
+          </span>
+          <span class="profile-select-chevron" aria-hidden="true">›</span>
+        `;
+        card.addEventListener('click', () => {
+          card.classList.add('is-selecting');
+          selectAffiliationAndGo(opt);
+        });
+        grid.appendChild(card);
+      });
+    })();
+  </script>
+</body>
+</html>

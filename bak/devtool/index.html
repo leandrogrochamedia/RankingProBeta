@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>🏆 Ranking Pro — DevTool</title>
+  <link rel="stylesheet" href="./devtool.css" />
+</head>
+<body>
+  <div class="devtool-app">
+    <header class="devtool-titlebar">
+      <div class="devtool-traffic" aria-hidden="true">
+        <span class="devtool-dot devtool-dot--close"></span>
+        <span class="devtool-dot devtool-dot--min"></span>
+        <span class="devtool-dot devtool-dot--max"></span>
+      </div>
+      <div class="devtool-titlebar-center">🏆 Ranking Pro · DevTool</div>
+      <div class="devtool-titlebar-right">
+        <button type="button" class="devtool-start-btn" id="btnStartServer" title="Iniciar ou reconectar servidor">▶ Iniciar servidor</button>
+        <button type="button" class="devtool-git-btn" id="btnGitPush" title="git add + commit + push" disabled>↑ Git push</button>
+        <span class="devtool-status">
+          <span class="devtool-status-dot" id="statusDot"></span>
+          <span id="statusLabel">Conectando…</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="devtool-body">
+      <!-- Preview — esquerda -->
+      <section class="devtool-preview" aria-label="Preview do app">
+        <div class="devtool-preview-toolbar">
+          <div class="devtool-tabs" role="tablist">
+            <button type="button" class="devtool-tab is-active" id="tabLocal" role="tab" aria-selected="true">Local</button>
+            <button type="button" class="devtool-tab" id="tabOnline" role="tab" aria-selected="false">GitHub Pages</button>
+            <button type="button" class="devtool-tab" id="tabFiles" role="tab" aria-selected="false">Arquivos</button>
+          </div>
+          <div class="devtool-preview-actions">
+            <button
+              type="button"
+              class="devtool-view-btn"
+              id="btnMobileView"
+              title="Simular iPhone 15 Pro Max (430×932)"
+              aria-pressed="false"
+            >📱 Mobile</button>
+            <div class="devtool-url-stack">
+              <span class="devtool-url-root" id="previewUrlRoot" title="Pasta do site no disco (onde está index.html)">Root · —</span>
+              <span class="devtool-url" id="previewUrl" title="Path a partir da root">—</span>
+              <span class="devtool-url devtool-url--live" id="previewIframeUrl" title="Path atual no iframe">—</span>
+            </div>
+            <button type="button" class="devtool-update-toolbar-btn" id="btnUpdatePreview" hidden title="Atualizar preview após tarefa">↻ Atualizar</button>
+            <button type="button" class="devtool-icon-btn" id="btnRefresh" title="Recarregar preview">↻</button>
+          </div>
+        </div>
+        <div class="devtool-preview-stage" id="previewStage">
+          <aside class="devtool-explorer" id="fileExplorer" hidden aria-label="Explorador de arquivos">
+            <div class="devtool-explorer-head">
+              <span class="devtool-explorer-title">📁 Projeto</span>
+              <button type="button" class="devtool-explorer-up" id="explorerUp" title="Pasta anterior" hidden>↑</button>
+            </div>
+            <p class="devtool-explorer-path" id="explorerPath"></p>
+            <div class="devtool-explorer-list" id="explorerList" role="list"></div>
+          </aside>
+          <div class="devtool-frame-wrap" id="frameWrap">
+            <div class="devtool-preview-viewport" id="previewViewport">
+              <div class="devtool-mobile-chrome" id="mobileChrome">
+                <span class="devtool-mobile-tag" id="mobileTag">iPhone 15 Pro Max · 430 × 932</span>
+                <div class="devtool-mobile-bezel" id="mobileBezel">
+                  <div class="devtool-frame-shell" id="frameShell">
+                    <!-- Overlay: Dynamic Island + status bar (por cima do conteúdo, sem cortar) -->
+                    <div class="devtool-mobile-screen-chrome" aria-hidden="true">
+                      <div class="devtool-mobile-statusbar">
+                        <time class="devtool-mobile-time" id="mobileTime">9:41</time>
+                        <div class="devtool-mobile-status-icons">
+                          <svg class="devtool-icon-signal" viewBox="0 0 18 12" width="18" height="12" aria-hidden="true">
+                            <rect x="0" y="8" width="3" height="4" rx="0.5" fill="currentColor"/>
+                            <rect x="5" y="5" width="3" height="7" rx="0.5" fill="currentColor"/>
+                            <rect x="10" y="2" width="3" height="10" rx="0.5" fill="currentColor"/>
+                            <rect x="15" y="0" width="3" height="12" rx="0.5" fill="currentColor"/>
+                          </svg>
+                          <svg class="devtool-icon-wifi" viewBox="0 0 16 12" width="16" height="12" aria-hidden="true">
+                            <path d="M8 12c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z" fill="currentColor"/>
+                            <path d="M4.9 7.5a5.5 5.5 0 0 1 6.2 0" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                            <path d="M1.8 4.4a9.5 9.5 0 0 1 12.4 0" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                          </svg>
+                          <svg class="devtool-icon-battery" viewBox="0 0 27 13" width="27" height="13" aria-hidden="true">
+                            <rect x="0.5" y="0.5" width="22" height="12" rx="3" stroke="currentColor" fill="none"/>
+                            <rect x="2.5" y="2.5" width="17" height="8" rx="1.5" fill="currentColor"/>
+                            <path d="M24 4.5v4a2 2 0 0 0 0-4z" fill="currentColor"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="devtool-mobile-island"></div>
+                    </div>
+                    <!-- Viewport interno: desloca o iframe para baixo da safe area -->
+                    <div class="devtool-mobile-viewport" id="mobileViewport">
+                      <iframe
+                        id="previewFrame"
+                        class="devtool-frame"
+                        title="Preview Ranking Pro"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                      ></iframe>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agentes — direita (3 chats independentes) -->
+      <aside class="devtool-agents" aria-label="Agentes Grok CLI">
+        <section class="devtool-agent-panel devtool-agent-panel--supervisor" data-agent="supervisor">
+          <header class="devtool-agent-header">
+            <div class="devtool-agent-badge">🛡️</div>
+            <div class="devtool-agent-head-text">
+              <h2>Supervisor (Mega Blaster)</h2>
+              <p>Estratégia PROOFLY · North Star · priorização</p>
+            </div>
+          </header>
+          <div class="devtool-messages" id="chatMessages-supervisor" aria-live="polite"></div>
+          <div class="devtool-composer">
+            <div class="devtool-composer-inner">
+              <textarea id="chatInput-supervisor" rows="1" placeholder="Delegar estratégia ou revisão…" aria-label="Mensagem para Supervisor"></textarea>
+              <button type="button" class="devtool-send devtool-send--supervisor" id="chatSend-supervisor" aria-label="Enviar">↑</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="devtool-agent-panel devtool-agent-panel--designer" data-agent="designer">
+          <header class="devtool-agent-header">
+            <div class="devtool-agent-badge">✨</div>
+            <div class="devtool-agent-head-text">
+              <h2>Designer Premium</h2>
+              <p>UX/UI · DNA Apple · hierarquia visual</p>
+            </div>
+          </header>
+          <div class="devtool-messages" id="chatMessages-designer" aria-live="polite"></div>
+          <div class="devtool-composer">
+            <div class="devtool-composer-inner">
+              <textarea id="chatInput-designer" rows="1" placeholder="Pedir ajustes visuais, layout, tipografia…" aria-label="Mensagem para Designer"></textarea>
+              <button type="button" class="devtool-send devtool-send--designer" id="chatSend-designer" aria-label="Enviar">↑</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="devtool-agent-panel devtool-agent-panel--developer" data-agent="developer">
+          <header class="devtool-agent-header">
+            <div class="devtool-agent-badge">⚙️</div>
+            <div class="devtool-agent-head-text">
+              <h2>Desenvolvedor</h2>
+              <p>HTML · CSS · JS · implementação técnica</p>
+            </div>
+          </header>
+          <div class="devtool-messages" id="chatMessages-developer" aria-live="polite"></div>
+          <div class="devtool-composer">
+            <div class="devtool-composer-inner">
+              <textarea id="chatInput-developer" rows="1" placeholder="Implementar feature, corrigir bug, refatorar…" aria-label="Mensagem para Desenvolvedor"></textarea>
+              <button type="button" class="devtool-send devtool-send--developer" id="chatSend-developer" aria-label="Enviar">↑</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script src="./url-path-utils.js"></script>
+  <script src="./agent-prompts.js"></script>
+  <script src="./devtool.js"></script>
+</body>
+</html>

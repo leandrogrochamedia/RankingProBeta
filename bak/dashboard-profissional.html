@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking Pro - Perfil Profissional</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./profile-dashboard.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+</head>
+<body class="cliente-page prof-dashboard-page">
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <header class="cliente-hero ios-app-header glass-surface prof-dash-topbar">
+    <div class="cliente-hero-inner">
+      <div class="cliente-hero-text">
+        <span class="cliente-eyebrow">💼 Carreira & reputação</span>
+        <h1>Meu perfil profissional</h1>
+        <p>Gerencie seu perfil, candidaturas e reputação no Ranking Pro.</p>
+      </div>
+      <div class="cliente-hero-actions action-bar" id="actionBar">
+        <a href="./selecionar-perfil.html?forceProfileSelect=true" class="btn-ios-pill btn-ios-pill-ghost" style="text-decoration:none;">🔀 Trocar perfil</a>
+        <button type="button" class="btn-ios-pill btn-ios-pill-primary btn-edit" id="editToggleBtn">✏️ Editar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-success btn-save" id="saveBtn" style="display:none;">💾 Salvar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost btn-cancel" id="cancelBtn" style="display:none;">❌ Cancelar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost btn-cancel" onclick="sairModo()" id="sairBtn">🚪 Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="cliente-main prof-dash-main">
+
+    <section class="glass-surface prof-dash-panel prof-dash-hero">
+      <div class="profile-header prof-header">
+        <div class="avatar-wrapper">
+          <img id="profAvatar" class="avatar" src="" alt="Avatar" style="display:none;" />
+          <div id="profAvatarPlaceholder" class="avatar">?</div>
+          <button class="avatar-upload-btn" id="uploadAvatarBtn" title="Alterar foto">📷</button>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" />
+        </div>
+        <div class="info">
+          <div class="name" id="profName">Carregando...</div>
+          <div class="username" id="profUsername"></div>
+          <div class="subtitle" id="profSpecialty">-</div>
+          <div class="meta-line" id="profMeta"></div>
+          <div class="profile-rating-block empty" id="profRatingBlock">
+            <div class="rating-stars" id="profRatingStars">☆☆☆☆☆</div>
+            <div class="rating-detail">
+              <span class="rating-value" id="profRatingValue">—</span>
+              <span class="rating-count" id="profRatingCount">Sem avaliações ainda</span>
+            </div>
+          </div>
+          <div class="proofly-score-block empty" id="profProoflyBlock">
+            <div class="proofly-score-ring" id="profProoflyRing" aria-label="Ranking Pro Score"></div>
+            <div class="proofly-score-detail">
+              <div class="title" id="profProoflyLabel">Ranking Pro Score</div>
+              <div class="breakdown" id="profProoflyBreakdown">Aguardando avaliações...</div>
+              <div class="proofly-dash-badges" id="profProoflyBadges"></div>
+              <div class="proofly-social-dash" id="profProoflySocial"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="prof-dash-meta-row">
+        <span class="mock-badge">🧪 Modo Dev</span>
+        <span class="prof-dash-hint">✏️ Clique em "Editar" para alterar seus dados</span>
+      </div>
+    </section>
+
+    <!-- ===== CENTRO DE CARREIRA ===== -->
+    <section class="glass-surface prof-dash-panel" id="careerHubSection">
+        <div class="rh-hub-banner career-hub-banner">
+          <div>
+            <h3>💼 Centro de Carreira — onde trabalhar</h3>
+            <p>Descubra estabelecimentos com melhor match, envie candidaturas e acompanhe propostas recebidas.</p>
+          </div>
+          <button type="button" class="btn btn-small" onclick="document.getElementById('profEstabRecoGrid')?.scrollIntoView({behavior:'smooth',block:'start'})">🔍 Ver oportunidades</button>
+        </div>
+
+        <div class="summary-grid" id="profCareerStats" style="margin-bottom:20px;">
+          <div class="stat-box"><div class="number" id="profStatOffers">0</div><div class="label">Propostas</div></div>
+          <div class="stat-box"><div class="number" id="profStatApplications">0</div><div class="label">Candidaturas</div></div>
+          <div class="stat-box"><div class="number" id="profStatMatch">—</div><div class="label">Melhor match</div></div>
+          <div class="stat-box"><div class="number" id="profStatStatus">—</div><div class="label">Status</div></div>
+        </div>
+
+        <div class="section-title" style="margin-top:8px;"><span class="icon">📨</span> Propostas recebidas <span class="hint">estabelecimentos interessados em você</span></div>
+        <div id="profHiringInbox"><p style="color:#94a3b8;">Carregando...</p></div>
+
+        <div class="section-title" style="margin-top:24px;"><span class="icon">📤</span> Minhas candidaturas <span class="hint">pedidos de emprego enviados</span></div>
+        <div id="profApplicationsList"><p style="color:#94a3b8;">Nenhuma candidatura ainda.</p></div>
+
+        <div class="section-title" style="margin-top:24px;"><span class="icon">🔥</span> Estabelecimentos para você <span class="hint">match + nota · pedir emprego</span></div>
+        <div id="profEstabRecoGrid" class="rh-reco-grid"><p class="prof-dash-muted">Carregando estabelecimentos...</p></div>
+    </section>
+
+    <section class="glass-surface prof-dash-panel prof-dash-editable">
+
+      <!-- ===== GALERIA ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📸</span> Galeria <span class="hint">Até 4 fotos</span></div>
+        <div class="view-mode">
+          <div id="profGalleryDash" style="display:flex;flex-wrap:wrap;gap:10px;"><p style="color:#94a3b8;">Carregando...</p></div>
+        </div>
+        <div class="edit-mode-field">
+          <div class="gallery-upload-grid" id="profGalleryEdit"></div>
+          <input type="file" id="profGalleryInput" accept="image/*" multiple style="display:none;" />
+          <button type="button" class="btn-gallery-add" id="profGalleryAddBtn">📷 Adicionar fotos</button>
+          <span class="gallery-edit-hint">A primeira foto será a principal do perfil.</span>
+        </div>
+      </div>
+
+      <!-- ===== IDENTIDADE ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🧠</span> Identidade <span class="hint">Nome e especialidade</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Nome</label><p id="viewName" style="font-size:18px; font-weight:600; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Nome completo *</label><input type="text" id="editName" required /></div>
+        </div>
+        <div class="form-group">
+          <div class="view-mode"><label>Especialidade</label><p id="viewSpecialty" style="font-size:16px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Especialidade</label><input type="text" id="editSpecialty" /></div>
+        </div>
+      </div>
+
+      <!-- ===== BIO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🧾</span> Sobre você <span class="hint">Bio profissional</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Bio</label><p id="viewBio" style="font-size:15px; color:#1e293b; line-height:1.7; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Bio</label><textarea id="editBio" rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <!-- ===== MÚSICA ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🎵</span> Música <span class="hint">Estilo musical</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewMusicTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editMusicTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="musicTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== VISUAL ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">👕</span> Visual <span class="hint">Estilo visual</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewVisualTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editVisualTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="visualTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PERSONALIDADE ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🧠</span> Personalidade <span class="hint">Traços</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewPersonalityTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editPersonalityTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="personalityTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ESTILO DE VIDA ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🌿</span> Estilo de Vida <span class="hint">Hábitos</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewLifestyleTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editLifestyleTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="lifestyleTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TRABALHO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">💼</span> Trabalho <span class="hint">Perfil profissional</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewWorkTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editWorkTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="workTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CONTATO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📞</span> Contato <span class="hint">Telefone e email</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="view-mode"><label>Telefone</label><p id="viewPhone" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+            <div class="edit-mode-field"><label>Telefone</label><input type="tel" id="editPhone" placeholder="(00) 00000-0000" oninput="formatarTelefone(this)" />
+              <span class="error-message">Telefone inválido</span></div>
+          </div>
+          <div class="form-group">
+            <div class="view-mode"><label>Email</label><p id="viewEmail" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+            <div class="edit-mode-field"><label>Email</label><input type="email" id="editEmail" placeholder="email@exemplo.com" /></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ENDEREÇO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📍</span> Endereço <span class="hint">Onde você está</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Endereço</label><p id="viewEndereco" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Rua, número</label><input type="text" id="editStreet" placeholder="Rua, número" /></div>
+        </div>
+        <div class="form-row edit-mode-field">
+          <div class="form-group"><label>Cidade</label><input type="text" id="editCity" placeholder="Cidade" /></div>
+          <div class="form-group"><label>Estado</label><input type="text" id="editState" placeholder="UF" maxlength="2" /></div>
+        </div>
+      </div>
+
+      <!-- ===== VÍNCULO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🏢</span> Vínculo <span class="hint">Estabelecimento onde atua</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Estabelecimento</label><p id="viewEstab" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field">
+            <label>Estabelecimento</label>
+            <select id="editEstablishment"><option value="">Autônomo</option></select>
+            <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+              <label style="font-weight:400; font-size:14px; color:#64748b; cursor:pointer;">
+                <input type="checkbox" id="editAutonomo" style="width:auto; margin-right:6px;" />
+                Autônomo (ignora seleção acima)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== DADOS PRIVADOS ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🔒</span> Dados privados <span class="hint">Apenas para validação</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>CPF</label><p id="viewCpf" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>CPF</label><input type="text" id="editCpf" placeholder="000.000.000-00" oninput="formatarCPF(this)" />
+            <span class="error-message">CPF inválido</span></div>
+        </div>
+      </div>
+
+      <!-- ===== INFORMAÇÕES PARA CONTRATANTES ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📋</span> Informações para Contratantes <span class="hint">Visível para donos de barbearia</span></div>
+        <div class="view-mode" id="viewHiringSection"></div>
+        <div class="edit-mode-field">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editYearsExperience">Anos de profissão *</label>
+              <input type="number" id="editYearsExperience" min="0" max="50" />
+            </div>
+            <div class="form-group">
+              <label for="editAvgJobDuration">Permanência média (meses)</label>
+              <input type="number" id="editAvgJobDuration" min="1" max="120" placeholder="Ex: 18" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editSalaryExpectation">Pretensão salarial / comissão</label>
+              <select id="editSalaryExpectation">
+                <option value="">Prefiro não informar</option>
+                <option value="Comissão 30%">Comissão 30%</option>
+                <option value="Comissão 40%">Comissão 40%</option>
+                <option value="Comissão 50%">Comissão 50%</option>
+                <option value="Salário + comissão">Salário + comissão</option>
+                <option value="A combinar">A combinar</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editBirthDate">Data de nascimento <span style="font-weight:400;color:#94a3b8;">(opcional)</span></label>
+              <input type="date" id="editBirthDate" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Estilo de trabalho (até 3)</label>
+            <div id="editWorkStyleTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="workStyleTagsCounter">0 selecionadas</div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-inline" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
+              <input type="checkbox" id="editAvailableNow" style="width:auto;" />
+              Disponível agora para contratação
+            </label>
+            <label class="checkbox-inline" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="editSeekingWork" style="width:auto;" checked />
+              Aberto a novas oportunidades
+            </label>
+          </div>
+          <p style="font-size:13px;color:#64748b;margin:0;">Carteira e IGV são calculados automaticamente pelas avaliações.</p>
+        </div>
+      </div>
+
+      <!-- ===== BOTÕES INFERIORES ===== -->
+      <div class="edit-actions-bottom">
+        <button type="button" class="btn-ios-pill btn-ios-pill-success btn-save" id="saveBtnBottom" style="display:none;">💾 Salvar</button>
+        <button type="button" class="btn-ios-pill btn-ios-pill-ghost btn-cancel" id="cancelBtnBottom" style="display:none;">❌ Cancelar</button>
+      </div>
+    </section>
+
+    <section class="glass-surface prof-dash-panel">
+
+      <!-- ===== RESUMO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📊</span> Resumo <span class="hint">Sua reputação em números</span></div>
+        <div class="summary-grid" id="summaryGrid">
+          <div class="stat-box"><div class="number" id="avgDisplay">0.0</div><div class="label">Média</div></div>
+          <div class="stat-box"><div class="number" id="totalDisplay">0</div><div class="label">Carteira (clientes)</div></div>
+          <div class="stat-box"><div class="number" id="igvDisplay">0</div><div class="label">IGV</div></div>
+          <div class="stat-box"><div class="number" id="estabDisplay">-</div><div class="label">Estabelecimento</div></div>
+        </div>
+        <p id="carteiraLabelLine" style="font-size:13px;color:#64748b;margin-top:10px;"></p>
+        <div style="margin-top:16px;">
+          <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:8px;">💡 Por que escolher você?</div>
+          <div id="profWhySection"><p style="color:#94a3b8;font-size:14px;">Carregando pontos fortes...</p></div>
+        </div>
+      </div>
+
+      <!-- ===== AVALIAÇÕES DE CLIENTES ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">⭐</span> Avaliações de Clientes <span class="hint">Feedback</span></div>
+        <div id="clientReviewsList"><p style="color:#94a3b8;">Carregando...</p></div>
+      </div>
+
+      <!-- ===== AVALIAÇÕES DE ESTABELECIMENTOS ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🏢</span> Avaliações de Estabelecimentos <span class="hint">Feedback dos locais</span></div>
+        <div id="estabReviewsList"><p class="prof-dash-muted">Carregando...</p></div>
+      </div>
+    </section>
+
+    <section class="glass-surface prof-dash-panel">
+
+      <!-- ===== HISTÓRICO DE TRABALHO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">💼</span> Histórico de Trabalho <span class="hint">Locais + nota recebida</span></div>
+        <div id="vinculosContainer" class="work-history-dash"><p style="color:#94a3b8;">Carregando...</p></div>
+      </div>
+
+      <!-- ===== QR CODE ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📱</span> QR Code <span class="hint">Para avaliação verificada</span></div>
+        <p style="color:#64748b; font-size:14px; margin-bottom:12px;">Gere um QR Code para que clientes avaliem você com verificação.</p>
+        <button type="button" class="btn-ios-pill btn-ios-pill-success btn-qr" onclick="gerarQRCode()">📲 Gerar QR Code</button>
+        <div id="qrResult" style="margin-top:12px;"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./session.js"></script>
+  <script src="./profile-selector.js"></script>
+  <script src="./user-service.js"></script>
+  <script src="./reviews-service.js"></script>
+  <script src="./talent-market.js"></script>
+  <script src="./hiring-service.js"></script>
+  <script src="./router.js"></script>
+  <script src="./menu.js"></script>
+  <script src="./menu-lateral.js"></script>
+  <script src="./confirm-modal.js"></script>
+  <script src="./components/profile-card.js"></script>
+
+  <script>
+    // ============================================================
+    // DASHBOARD PROFISSIONAL – COMPLETO
+    // ============================================================
+
+    if (!enforceProfileGuard('professional')) {
+      throw new Error('redirect');
+    }
+    const session = getSession();
+    if (!session.professionalId) {
+      window.location.href = './selecionar-profissional.html';
+    }
+
+    let profId = session.professionalId;
+    let isEditMode = false;
+    let currentProf = null;
+    let currentPrivate = null;
+    let newAvatarBase64 = null;
+    let editGalleryPhotos = [];
+
+    // ===== OPÇÕES PARA CADA CATEGORIA =====
+    const musicOptions = ['Hip Hop', 'Rock', 'Sertanejo', 'Pop', 'Clássico', 'MPB', 'Eletrônico', 'Reggae', 'Jazz', 'Blues'];
+    const visualOptions = ['Streetwear', 'Clássico', 'Moderno', 'Tradicional', 'Casual', 'Urbano', 'Elegante', 'Despojado'];
+    const personalityOptions = ['Comunicativo', 'Reservado', 'Extrovertido', 'Detalhista', 'Rápido', 'Perfeccionista', 'Criativo', 'Ousado'];
+    const lifestyleOptions = ['Não bebe', 'Bebe socialmente', 'Não fuma', 'Fuma', 'Vegano', 'Esportista', 'Religioso', 'Noturno'];
+    const workOptions = ['Especialista', 'Generalista', 'Experiente', 'Iniciante', 'Premium', 'Popular'];
+    const workStyleOptions = typeof WORK_STYLE_TAG_OPTIONS !== 'undefined'
+      ? WORK_STYLE_TAG_OPTIONS
+      : ['Alto volume', 'Atendimento premium', 'Detalhista', 'Rápido e objetivo', 'Fiel ao estilo do salão', 'Criativo', 'Paciente', 'Foco em fidelização'];
+
+    // ===== VIEW REFS =====
+    const view = {
+      name: document.getElementById('viewName'),
+      specialty: document.getElementById('viewSpecialty'),
+      bio: document.getElementById('viewBio'),
+      phone: document.getElementById('viewPhone'),
+      email: document.getElementById('viewEmail'),
+      endereco: document.getElementById('viewEndereco'),
+      estab: document.getElementById('viewEstab'),
+      cpf: document.getElementById('viewCpf'),
+      musicTags: document.getElementById('viewMusicTags'),
+      visualTags: document.getElementById('viewVisualTags'),
+      personalityTags: document.getElementById('viewPersonalityTags'),
+      lifestyleTags: document.getElementById('viewLifestyleTags'),
+      workTags: document.getElementById('viewWorkTags'),
+      hiringSection: document.getElementById('viewHiringSection'),
+    };
+
+    // ===== EDIT REFS =====
+    const edit = {
+      name: document.getElementById('editName'),
+      specialty: document.getElementById('editSpecialty'),
+      bio: document.getElementById('editBio'),
+      phone: document.getElementById('editPhone'),
+      email: document.getElementById('editEmail'),
+      street: document.getElementById('editStreet'),
+      city: document.getElementById('editCity'),
+      state: document.getElementById('editState'),
+      establishment: document.getElementById('editEstablishment'),
+      autonomo: document.getElementById('editAutonomo'),
+      cpf: document.getElementById('editCpf'),
+      musicContainer: document.getElementById('editMusicTagsContainer'),
+      visualContainer: document.getElementById('editVisualTagsContainer'),
+      personalityContainer: document.getElementById('editPersonalityTagsContainer'),
+      lifestyleContainer: document.getElementById('editLifestyleTagsContainer'),
+      workContainer: document.getElementById('editWorkTagsContainer'),
+      musicCounter: document.getElementById('musicTagsCounter'),
+      visualCounter: document.getElementById('visualTagsCounter'),
+      personalityCounter: document.getElementById('personalityTagsCounter'),
+      lifestyleCounter: document.getElementById('lifestyleTagsCounter'),
+      workCounter: document.getElementById('workTagsCounter'),
+      yearsExperience: document.getElementById('editYearsExperience'),
+      avgJobDuration: document.getElementById('editAvgJobDuration'),
+      birthDate: document.getElementById('editBirthDate'),
+      workStyleContainer: document.getElementById('editWorkStyleTagsContainer'),
+      workStyleCounter: document.getElementById('workStyleTagsCounter'),
+      salaryExpectation: document.getElementById('editSalaryExpectation'),
+      availableNow: document.getElementById('editAvailableNow'),
+      seekingWork: document.getElementById('editSeekingWork'),
+    };
+
+    // ===== AVATAR =====
+    const avatarImg = document.getElementById('profAvatar');
+    const avatarPlaceholder = document.getElementById('profAvatarPlaceholder');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    const uploadBtn = document.getElementById('uploadAvatarBtn');
+
+    uploadBtn.addEventListener('click', () => avatarFileInput.click());
+    avatarFileInput.addEventListener('change', async function() {
+      const file = this.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await resizeAndCompressImage(file, 300, 300, 0.6);
+        newAvatarBase64 = dataUrl;
+        avatarImg.src = dataUrl;
+        avatarImg.style.display = 'block';
+        avatarPlaceholder.style.display = 'none';
+        await showAlert('✅ Sucesso!', 'Imagem processada.');
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao processar imagem.');
+      }
+      this.value = '';
+    });
+
+    // ===== GALERIA (EDIÇÃO) =====
+    const profGalleryEdit = document.getElementById('profGalleryEdit');
+    const profGalleryInput = document.getElementById('profGalleryInput');
+    const profGalleryAddBtn = document.getElementById('profGalleryAddBtn');
+
+    function syncProfAvatarFromGallery() {
+      const main = editGalleryPhotos[0];
+      if (!main) return;
+      avatarImg.src = main;
+      avatarImg.style.display = 'block';
+      avatarPlaceholder.style.display = 'none';
+    }
+
+    function renderGalleryEdit() {
+      if (!profGalleryEdit) return;
+      profGalleryEdit.innerHTML = editGalleryPhotos.map((url, i) => `
+        <div class="gallery-slot${i === 0 ? ' primary' : ''}">
+          <img src="${url}" alt="" />
+          <button type="button" class="remove-photo" onclick="removeProfGalleryPhoto(${i})" aria-label="Remover">✕</button>
+        </div>
+      `).join('');
+      if (editGalleryPhotos.length < 4) {
+        profGalleryEdit.innerHTML += `<div class="gallery-slot add-slot" onclick="document.getElementById('profGalleryInput').click()">+</div>`;
+      }
+      syncProfAvatarFromGallery();
+    }
+
+    window.removeProfGalleryPhoto = function(index) {
+      editGalleryPhotos.splice(index, 1);
+      renderGalleryEdit();
+    };
+
+    profGalleryAddBtn?.addEventListener('click', () => profGalleryInput?.click());
+    profGalleryInput?.addEventListener('change', async function() {
+      const files = Array.from(this.files || []);
+      for (const file of files) {
+        if (editGalleryPhotos.length >= 4) {
+          await showAlert('⚠️ Atenção', 'Máximo de 4 fotos.');
+          break;
+        }
+        try {
+          const dataUrl = await resizeAndCompressImage(file, 600, 600, 0.7);
+          editGalleryPhotos.push(dataUrl);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      this.value = '';
+      renderGalleryEdit();
+    });
+
+    // ===== CARREGAR ESTABELECIMENTOS PARA SELECT =====
+    async function carregarEstabelecimentosSelect() {
+      try {
+        const data = await fetchAPI('/rest/v1/establishments?select=id,name&order=name');
+        const sel = edit.establishment;
+        sel.innerHTML = '<option value="">Autônomo</option>';
+        data.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.name;
+          sel.appendChild(opt);
+        });
+      } catch (e) { console.warn('Erro ao carregar estabelecimentos:', e); }
+    }
+
+    function renderCareerHub() {
+      renderPropostasRecebidas();
+      renderMinhasCandidaturas();
+      renderCareerStats();
+      carregarEstabelecimentosRecomendados();
+    }
+
+    function renderPropostasRecebidas() {
+      const el = document.getElementById('profHiringInbox');
+      if (!el || typeof HiringFlow === 'undefined') return;
+      const proposals = HiringFlow.getProposalsForProfessional(profId)
+        .filter(p => p.initiatedBy !== 'professional' && !['withdrawn', 'hired'].includes(p.status));
+      if (!proposals.length) {
+        el.innerHTML = '<p style="color:#64748b;font-size:14px;">Nenhuma proposta no momento. Explore os estabelecimentos abaixo e envie candidaturas — ou marque-se como <strong>disponível</strong> no perfil para aparecer no mercado de talentos.</p>';
+        return;
+      }
+      el.innerHTML = proposals.map(p => {
+        const row = HiringFlow.renderProposalRow(p, 'professional');
+        const detail = p.message
+          ? `<p style="font-size:13px;color:#475569;margin:8px 0 0;padding:0 16px 12px;">"${escapeHtml(p.message)}"${p.offerText ? ` · <strong>${escapeHtml(p.offerText)}</strong>` : ''}</p>`
+          : '';
+        return row.replace('</article>', `${detail}</article>`);
+      }).join('');
+    }
+
+    function renderMinhasCandidaturas() {
+      const el = document.getElementById('profApplicationsList');
+      if (!el || typeof HiringFlow === 'undefined') return;
+      const apps = HiringFlow.getProposalsForProfessional(profId)
+        .filter(p => (p.initiatedBy === 'professional' || p.type === 'application') && !['withdrawn'].includes(p.status));
+      if (!apps.length) {
+        el.innerHTML = '<p style="color:#64748b;font-size:14px;">Você ainda não se candidatou. Escolha um estabelecimento abaixo e clique em <strong>Pedir emprego</strong>.</p>';
+        return;
+      }
+      el.innerHTML = apps.map(p => HiringFlow.renderProposalRow(p, 'professional')).join('');
+    }
+
+    function renderCareerStats() {
+      if (typeof HiringFlow === 'undefined') return;
+      const all = HiringFlow.getProposalsForProfessional(profId);
+      const offers = all.filter(p => p.initiatedBy !== 'professional' && !['withdrawn', 'declined', 'hired'].includes(p.status)).length;
+      const apps = all.filter(p => (p.initiatedBy === 'professional' || p.type === 'application') && !['withdrawn', 'declined', 'hired'].includes(p.status)).length;
+      const offersEl = document.getElementById('profStatOffers');
+      const appsEl = document.getElementById('profStatApplications');
+      const matchEl = document.getElementById('profStatMatch');
+      const statusEl = document.getElementById('profStatStatus');
+      if (offersEl) offersEl.textContent = String(offers);
+      if (appsEl) appsEl.textContent = String(apps);
+
+      const isAutonomo = !currentProf?.current_establishment_id;
+      const seeking = currentProf?.seeking_work !== false;
+      const avail = currentProf?.available_now;
+      if (statusEl) {
+        statusEl.textContent = isAutonomo
+          ? (avail ? '🟢 Livre' : (seeking ? '🔓 Aberto' : '⏸️'))
+          : '🏢 Vinculado';
+        statusEl.style.fontSize = isAutonomo && !avail ? '18px' : '22px';
+      }
+      if (matchEl) matchEl.dataset.pending = '1';
+    }
+
+    async function carregarEstabelecimentosRecomendados() {
+      const el = document.getElementById('profEstabRecoGrid');
+      const matchEl = document.getElementById('profStatMatch');
+      if (!el || typeof HiringFlow === 'undefined' || !currentProf) return;
+      try {
+        const establishments = await fetchAPI(
+          '/rest/v1/establishments?select=id,name,type,city,neighborhood,avg_rating,total_reviews,music_tags,infra_tags,positioning_tags,audience_tags,vibe_tags,style_tags,tags&order=avg_rating.desc.nullslast&limit=40'
+        );
+        const prof = typeof enrichProfWithTalentMetrics === 'function'
+          ? enrichProfWithTalentMetrics(currentProf)
+          : currentProf;
+        const currentEstId = currentProf.current_establishment_id;
+
+        const ranked = (establishments || [])
+          .filter(e => e.id !== currentEstId)
+          .map(est => {
+            const enriched = typeof enrichProfForContratante === 'function'
+              ? enrichProfForContratante(prof, est)
+              : { _contratanteMatch: null };
+            return { est, match: enriched._contratanteMatch?.percent ?? 0, enriched };
+          })
+          .sort((a, b) => b.match - a.match)
+          .slice(0, 8);
+
+        if (!ranked.length) {
+          el.innerHTML = '<p style="color:#64748b;font-size:14px;">Nenhum estabelecimento disponível no momento.</p>';
+          return;
+        }
+
+        if (matchEl) matchEl.textContent = `${ranked[0].match}%`;
+        el.innerHTML = ranked.map(({ est }) => HiringFlow.renderEstabOpportunityCard(est, prof)).join('');
+      } catch (e) {
+        console.warn('Estabelecimentos recomendados:', e);
+        el.innerHTML = '<p style="color:#94a3b8;">Não foi possível carregar oportunidades.</p>';
+      }
+    }
+
+    document.addEventListener('proofly:hiring-updated', () => {
+      renderCareerHub();
+      carregarDados();
+    });
+
+    // ===== CARREGAR DADOS =====
+    async function carregarDados() {
+      try {
+        const profData = await fetchAPI(
+          `/rest/v1/professionals?id=eq.${profId}&select=*,current_establishment:establishments!professionals_current_establishment_id_fkey(id,name),profile:professional_profiles(*),music_tags,visual_tags,personality_tags,lifestyle_tags,work_tags,work_style_tags,price_range,previous_workplaces,gallery_urls,salary_expectation,average_job_duration_months,available_now,seeking_work,client_portfolio_count,igv_score,availability`
+        );
+        if (!profData.length) {
+          await showAlert('❌ Erro', 'Profissional não encontrado.');
+          return;
+        }
+        currentProf = profData[0];
+        newAvatarBase64 = null;
+        editGalleryPhotos = typeof getProfilePhotos === 'function'
+          ? getProfilePhotos(currentProf).slice(0, 4)
+          : [];
+
+        const privData = await fetchAPI(`/rest/v1/professional_private_data?professional_id=eq.${profId}&select=*`);
+        currentPrivate = privData && privData.length > 0 ? privData[0] : null;
+
+        preencherVisual();
+        preencherEdicao();
+        atualizarResumo();
+
+        if (currentProf.current_establishment_id) {
+          edit.establishment.value = currentProf.current_establishment_id;
+          edit.autonomo.checked = false;
+          edit.establishment.disabled = false;
+        } else {
+          edit.establishment.value = '';
+          edit.autonomo.checked = true;
+          edit.establishment.disabled = true;
+        }
+
+        await carregarAvaliacoes();
+        await carregarEstabReviews();
+        await carregarProoflyScore();
+        await carregarVinculos();
+        renderCareerHub();
+
+        if (isEditMode) toggleEditMode(false);
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao carregar dados: ' + e.message);
+        console.error(e);
+      }
+    }
+
+    // ===== PREENCHER VISUAL =====
+    function preencherVisual() {
+      const p = currentProf;
+      applyProfileAvatar(avatarImg, avatarPlaceholder, p.name, p.avatar_url);
+      document.getElementById('profName').textContent = p.name || 'Sem nome';
+      const username = formatUsername(p.profile?.instagram);
+      const usernameEl = document.getElementById('profUsername');
+      usernameEl.textContent = username;
+      usernameEl.style.display = username ? 'block' : 'none';
+      document.getElementById('profSpecialty').textContent = p.profile?.specialty || p.specialty || 'Profissional';
+      const metaParts = [];
+      if (currentPrivate?.phone) metaParts.push(`📞 ${currentPrivate.phone}`);
+      if (p.current_establishment?.name) metaParts.push(`📍 ${p.current_establishment.name}`);
+      else metaParts.push('📍 Autônomo');
+      document.getElementById('profMeta').textContent = metaParts.join(' · ');
+      updateProfileRatingBlock(
+        document.getElementById('profRatingBlock'),
+        document.getElementById('profRatingStars'),
+        document.getElementById('profRatingValue'),
+        document.getElementById('profRatingCount'),
+        p.avg_rating,
+        p.total_reviews
+      );
+
+      view.name.textContent = p.name || '-';
+      view.specialty.textContent = p.specialty || '-';
+      view.bio.textContent = p.bio || '-';
+
+      if (currentPrivate) {
+        view.phone.textContent = currentPrivate.phone || '-';
+        view.email.textContent = currentPrivate.email || '-';
+        const end = [currentPrivate.street, currentPrivate.city, currentPrivate.state].filter(Boolean).join(', ');
+        view.endereco.textContent = end || '-';
+        view.cpf.textContent = currentPrivate.cpf || '-';
+      } else {
+        view.phone.textContent = '-';
+        view.email.textContent = '-';
+        view.endereco.textContent = '-';
+        view.cpf.textContent = '-';
+      }
+      view.estab.textContent = p.current_establishment?.name || 'Autônomo';
+
+      // Tags
+      function renderViewTags(container, tags) {
+        if (tags && tags.length) {
+          container.innerHTML = tags.map(t => renderTagWithEmoji(t)).join('');
+        } else {
+          container.innerHTML = '<span style="color:#94a3b8; font-size:13px;">Nenhuma tag</span>';
+        }
+      }
+      renderViewTags(view.musicTags, p.music_tags || []);
+      renderViewTags(view.visualTags, p.visual_tags || []);
+      renderViewTags(view.personalityTags, p.personality_tags || []);
+      renderViewTags(view.lifestyleTags, p.lifestyle_tags || []);
+      renderViewTags(view.workTags, p.work_tags || []);
+
+      const galleryEl = document.getElementById('profGalleryDash');
+      if (galleryEl && typeof ProfileCard !== 'undefined') {
+        const photos = getProfilePhotos(p);
+        galleryEl.innerHTML = ProfileCard.renderGalleryPreview(photos, p.id);
+      }
+
+      if (view.hiringSection && typeof renderContratanteHiringSection === 'function') {
+        const hiringHtml = renderContratanteHiringSection(p, { privateData: currentPrivate, variant: 'dash' });
+        view.hiringSection.innerHTML = hiringHtml;
+        const statusPills = [];
+        if (typeof isDisponivelAgora === 'function' && isDisponivelAgora(p)) {
+          statusPills.push('<span class="tag-pill">🟢 Disponível agora</span>');
+        }
+        if (typeof isAbertoContratacao === 'function' && isAbertoContratacao(p)) {
+          statusPills.push('<span class="tag-pill">🔓 Aberto a contratação</span>');
+        }
+        if (statusPills.length) {
+          view.hiringSection.insertAdjacentHTML('beforeend', `<div class="tags-container" style="margin-top:12px;">${statusPills.join('')}</div>`);
+        }
+      }
+    }
+
+    // ===== PREENCHER EDIÇÃO =====
+    function preencherEdicao() {
+      const p = currentProf;
+      edit.name.value = p.name || '';
+      edit.specialty.value = p.specialty || '';
+      edit.bio.value = p.bio || '';
+      if (currentPrivate) {
+        edit.phone.value = currentPrivate.phone || '';
+        edit.email.value = currentPrivate.email || '';
+        edit.street.value = currentPrivate.street || '';
+        edit.city.value = currentPrivate.city || '';
+        edit.state.value = currentPrivate.state || '';
+        edit.cpf.value = currentPrivate.cpf || '';
+      } else {
+        edit.phone.value = '';
+        edit.email.value = '';
+        edit.street.value = '';
+        edit.city.value = '';
+        edit.state.value = '';
+        edit.cpf.value = '';
+      }
+      // Tags – usar renderEditChips do utils
+      renderEditChips(edit.musicContainer, musicOptions, p.music_tags || [], 3, edit.musicCounter);
+      renderEditChips(edit.visualContainer, visualOptions, p.visual_tags || [], 3, edit.visualCounter);
+      renderEditChips(edit.personalityContainer, personalityOptions, p.personality_tags || [], 3, edit.personalityCounter);
+      renderEditChips(edit.lifestyleContainer, lifestyleOptions, p.lifestyle_tags || [], 3, edit.lifestyleCounter);
+      renderEditChips(edit.workContainer, workOptions, p.work_tags || [], 3, edit.workCounter);
+      editGalleryPhotos = typeof getProfilePhotos === 'function'
+        ? getProfilePhotos(p).slice(0, 4)
+        : [];
+      renderGalleryEdit();
+      if (edit.yearsExperience) edit.yearsExperience.value = p.profile?.years_experience ?? '';
+      if (edit.avgJobDuration) edit.avgJobDuration.value = p.average_job_duration_months ?? '';
+      if (edit.birthDate) edit.birthDate.value = currentPrivate?.birth_date?.slice(0, 10) || '';
+      renderEditChips(edit.workStyleContainer, workStyleOptions, p.work_style_tags || [], 3, edit.workStyleCounter);
+      if (edit.salaryExpectation) edit.salaryExpectation.value = p.salary_expectation || '';
+      if (edit.availableNow) edit.availableNow.checked = !!p.available_now;
+      if (edit.seekingWork) edit.seekingWork.checked = p.seeking_work !== false;
+    }
+
+    // ===== ATUALIZAR RESUMO =====
+    function atualizarResumo() {
+      const p = currentProf;
+      const metrics = typeof enrichProfWithTalentMetrics === 'function'
+        ? enrichProfWithTalentMetrics(p)._talentMetrics
+        : (typeof calcularIGV === 'function' ? calcularIGV(p) : null);
+      document.getElementById('avgDisplay').textContent = p.avg_rating ? p.avg_rating.toFixed(1) : '0.0';
+      document.getElementById('totalDisplay').textContent = metrics?.carteira?.total ?? p.client_portfolio_count ?? p.total_reviews ?? 0;
+      document.getElementById('igvDisplay').textContent = metrics?.igv ?? p.igv_score ?? 0;
+      document.getElementById('estabDisplay').textContent = p.current_establishment?.name || 'Autônomo';
+      const carteiraLine = document.getElementById('carteiraLabelLine');
+      if (carteiraLine && metrics?.carteiraLabel) {
+        carteiraLine.innerHTML = `<strong>${escapeHtml(metrics.carteiraLabel)}</strong> — calculado automaticamente pelas avaliações`;
+      }
+    }
+
+    // ===== CARREGAR AVALIAÇÕES =====
+    async function carregarAvaliacoes() {
+      try {
+        const reviews = await fetchReviews(
+          `professional_id=eq.${profId}&review_type=eq.client_to_professional`,
+          { limit: 10, viewContext: { entityType: 'prof' } }
+        );
+        const list = document.getElementById('clientReviewsList');
+        list.innerHTML = typeof renderReviewsListHtml === 'function'
+          ? renderReviewsListHtml(reviews, 'Nenhuma avaliação de cliente ainda.', { entityType: 'prof' })
+          : '<p style="color:#94a3b8;">Nenhuma avaliação de cliente ainda.</p>';
+      } catch (e) { console.warn('Erro ao carregar avaliações de clientes:', e); }
+    }
+
+    // ===== PROOFLY SCORE =====
+    async function carregarProoflyScore() {
+      try {
+        const allReviews = await fetchReviews(`professional_id=eq.${profId}`);
+        const data = calcularProoflyScoreFromReviews(allReviews, profId, 'prof');
+        updateProoflyScoreBlock(
+          document.getElementById('profProoflyBlock'),
+          null,
+          document.getElementById('profProoflyLabel'),
+          document.getElementById('profProoflyBreakdown'),
+          data
+        );
+        const badges = getProoflyBadges(currentProf, data.score, { clientTotal: data.clientStats?.total });
+        document.getElementById('profProoflyBadges').innerHTML = badges.map(b =>
+          `<span class="proofly-dash-badge">${b.icon} ${escapeHtml(b.label)}</span>`
+        ).join('');
+        const social = data.social || getMockSocialSignals(profId, 'prof');
+        document.getElementById('profProoflySocial').innerHTML = `
+          <span>❤️ ${social.likes || 0} curtidas</span>
+          <span>👁️ ${social.views || 0} views</span>
+          <span>⭐ ${social.favorites || 0} salvos</span>
+        `;
+        const strengths = buildStrengthPoints(currentProf, 'prof', data.score, data.groups);
+        const whyEl = document.getElementById('profWhySection');
+        if (whyEl && strengths.length) {
+          whyEl.innerHTML = `<ul style="margin:0;padding-left:18px;color:#475569;line-height:1.7;">${strengths.map(s => `<li>${s}</li>`).join('')}</ul>`;
+        }
+      } catch (e) { console.warn('Erro Ranking Pro Score:', e); }
+    }
+
+    // ===== CARREGAR AVALIAÇÕES DE ESTABELECIMENTOS =====
+    async function carregarEstabReviews() {
+      try {
+        const reviews = await fetchReviews(
+          `professional_id=eq.${profId}&review_type=eq.establishment_to_professional`,
+          { limit: 10, viewContext: { entityType: 'prof' } }
+        );
+        const list = document.getElementById('estabReviewsList');
+        list.innerHTML = typeof renderReviewsListHtml === 'function'
+          ? renderReviewsListHtml(reviews, 'Nenhuma avaliação de estabelecimento ainda.', { entityType: 'prof' })
+          : '<p style="color:#94a3b8;">Nenhuma avaliação de estabelecimento ainda.</p>';
+      } catch (e) { console.warn('Erro ao carregar avaliações de estabelecimentos:', e); }
+    }
+
+    // ===== CARREGAR VÍNCULOS =====
+    async function carregarVinculos() {
+      try {
+        const vinculos = await fetchAPI(
+          `/rest/v1/professional_establishment?select=*,establishment:establishment_id(id,name)&professional_id=eq.${profId}&order=started_at.desc&limit=8`
+        );
+        const estabReviews = await fetchAPI(
+          `/rest/v1/reviews?professional_id=eq.${profId}&review_type=eq.establishment_to_professional&select=rating,establishment_id`
+        );
+        const workHistory = buildWorkHistory(vinculos, estabReviews, currentProf.previous_workplaces);
+        const container = document.getElementById('vinculosContainer');
+        if (!workHistory.length) {
+          container.innerHTML = '<p style="color:#94a3b8;">Nenhum histórico registrado.</p>';
+          return;
+        }
+        let html = '';
+        workHistory.forEach(w => {
+          const rating = w.avg != null ? `⭐ ${w.avg.toFixed(1)}` : '— sem nota';
+          const badge = w.isCurrent ? ' <span style="font-size:10px;background:#d1fae5;color:#059669;padding:2px 8px;border-radius:999px;">Atual</span>' : '';
+          html += `
+            <div class="work-row">
+              <div class="name">${escapeHtml(w.name)}${badge}</div>
+              <div class="rating">${rating}</div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (e) { console.warn('Erro ao carregar vínculos:', e); }
+    }
+
+    // ===== TOGGLE EDIÇÃO =====
+    function toggleEditMode(enable) {
+      isEditMode = (enable !== undefined) ? enable : !isEditMode;
+      document.body.classList.toggle('edit-mode', isEditMode);
+      document.getElementById('editToggleBtn').style.display = isEditMode ? 'none' : 'inline-flex';
+      document.getElementById('saveBtn').style.display = isEditMode ? 'inline-flex' : 'none';
+      document.getElementById('cancelBtn').style.display = isEditMode ? 'inline-flex' : 'none';
+      document.getElementById('sairBtn').style.display = isEditMode ? 'none' : 'inline-flex';
+      document.getElementById('saveBtnBottom').style.display = isEditMode ? 'inline-flex' : 'none';
+      document.getElementById('cancelBtnBottom').style.display = isEditMode ? 'inline-flex' : 'none';
+      if (isEditMode) renderGalleryEdit();
+    }
+
+    // ===== SALVAR =====
+    async function salvarEdicao() {
+      const formatted = typeof formatTextFields === 'function'
+        ? formatTextFields({
+            name: edit.name.value.trim(),
+            specialty: edit.specialty.value.trim(),
+            bio: edit.bio.value.trim(),
+            street: edit.street.value.trim(),
+            city: edit.city.value.trim(),
+            state: edit.state.value.trim()
+          }, {
+            name: 'personName',
+            specialty: 'specialty',
+            bio: 'bio',
+            street: 'address',
+            city: 'city',
+            state: 'state'
+          })
+        : {
+            name: edit.name.value.trim(),
+            specialty: edit.specialty.value.trim(),
+            bio: edit.bio.value.trim(),
+            street: edit.street.value.trim(),
+            city: edit.city.value.trim(),
+            state: edit.state.value.trim()
+          };
+      const name = formatted.name;
+      if (!name) {
+        await showAlert('⚠️ Atenção', 'Nome é obrigatório.');
+        return;
+      }
+      if (edit.phone.value.trim() && !formatarTelefone(edit.phone)) {
+        await showAlert('⚠️ Atenção', 'Telefone inválido.');
+        edit.phone.focus();
+        return;
+      }
+      if (edit.cpf.value.trim() && !validarCPF(edit.cpf)) {
+        await showAlert('⚠️ Atenção', 'CPF inválido.');
+        edit.cpf.focus();
+        return;
+      }
+
+      // Coletar tags de cada categoria
+      const musicTags = Array.from(edit.musicContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const visualTags = Array.from(edit.visualContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const personalityTags = Array.from(edit.personalityContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const lifestyleTags = Array.from(edit.lifestyleContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const workTags = Array.from(edit.workContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const workStyleTags = Array.from(edit.workStyleContainer?.querySelectorAll('.active') || []).map(el => el.dataset.tag);
+      const yearsExp = parseInt(edit.yearsExperience?.value, 10);
+
+      const profPayload = {
+        name: name,
+        specialty: formatted.specialty || null,
+        bio: formatted.bio || null,
+        current_establishment_id: edit.autonomo.checked ? null : (edit.establishment.value || null),
+        avatar_url: editGalleryPhotos[0] || newAvatarBase64 || currentProf?.avatar_url || null,
+        gallery_urls: editGalleryPhotos,
+        music_tags: musicTags,
+        visual_tags: visualTags,
+        personality_tags: personalityTags,
+        lifestyle_tags: lifestyleTags,
+        work_tags: workTags,
+        work_style_tags: workStyleTags,
+        salary_expectation: edit.salaryExpectation?.value || null,
+        average_job_duration_months: parseInt(edit.avgJobDuration?.value, 10) || null,
+        available_now: !!edit.availableNow?.checked,
+        seeking_work: edit.seekingWork?.checked !== false,
+      };
+
+      const privPayload = {
+        professional_id: profId,
+        phone: edit.phone.value.trim() || null,
+        email: edit.email.value.trim() || null,
+        street: formatted.street || null,
+        city: formatted.city || null,
+        state: formatted.state || null,
+        cpf: edit.cpf.value.trim() || null,
+        birth_date: edit.birthDate?.value || null,
+      };
+
+      try {
+        await fetchAPI(`/rest/v1/professionals?id=eq.${profId}`, 'PATCH', profPayload);
+        if (!Number.isNaN(yearsExp)) {
+          await fetchAPI(`/rest/v1/professional_profiles?professional_id=eq.${profId}`, 'PATCH', {
+            years_experience: yearsExp,
+            specialty: formatted.specialty || null,
+            bio: formatted.bio || null
+          });
+        }
+        if (currentPrivate) {
+          await fetchAPI(`/rest/v1/professional_private_data?id=eq.${currentPrivate.id}`, 'PATCH', privPayload);
+        } else {
+          await fetchAPI('/rest/v1/professional_private_data', 'POST', privPayload);
+        }
+        await showAlert('✅ Sucesso!', 'Perfil atualizado com sucesso!');
+        await carregarDados();
+        toggleEditMode(false);
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao salvar: ' + e.message);
+      }
+    }
+
+    // ===== CANCELAR =====
+    async function cancelarEdicao() {
+      const confirmado = await showConfirm({
+        title: 'Cancelar edição?',
+        message: 'As alterações não salvas serão perdidas.',
+        confirmText: 'Sim, cancelar',
+        cancelText: 'Continuar editando',
+        danger: false
+      });
+      if (confirmado) {
+        carregarDados();
+        toggleEditMode(false);
+      }
+    }
+
+    // ===== QR CODE =====
+    window.gerarQRCode = async function() {
+      const div = document.getElementById('qrResult');
+      div.innerHTML = '<div class="loading">Gerando QR Code...</div>';
+      try {
+        const token = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+        const url = window.location.origin + window.location.pathname.replace('dashboard-profissional.html', 'cliente.html') + '?professionalId=' + profId + '&token=' + token;
+        await fetchAPI('/rest/v1/qr_codes', 'POST', {
+          professional_id: profId,
+          token: token,
+          url: url,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        });
+        div.innerHTML = `
+          <div style="background:white;padding:16px;border-radius:12px;display:inline-block;">
+            <div id="qrcodeContainer"></div>
+            <p style="font-size:12px;color:#94a3b8;margin-top:8px;">Válido por 30 dias</p>
+          </div>
+        `;
+        if (typeof QRCode === 'undefined') {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+          script.onload = () => {
+            new QRCode(document.getElementById('qrcodeContainer'), { text: url, width: 160, height: 160 });
+          };
+          document.head.appendChild(script);
+        } else {
+          new QRCode(document.getElementById('qrcodeContainer'), { text: url, width: 160, height: 160 });
+        }
+        await showAlert('✅ Sucesso!', 'QR Code gerado com sucesso.');
+      } catch (e) {
+        div.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`;
+        await showAlert('❌ Erro', 'Erro ao gerar QR Code: ' + e.message);
+      }
+    };
+
+    // ===== SAIR =====
+    async function sairModo() {
+      const confirmado = await showConfirm({
+        title: 'Sair do perfil?',
+        message: 'Você será desconectado.',
+        confirmText: 'Sair',
+        cancelText: 'Ficar',
+        danger: false
+      });
+      if (confirmado) {
+        if (typeof resetSessionAndGoHome === 'function') {
+          resetSessionAndGoHome();
+        } else {
+          clearSession();
+          window.location.replace('index.html');
+        }
+      }
+    }
+    window.sairModo = sairModo;
+
+    // ===== EVENTOS =====
+    document.getElementById('editToggleBtn').addEventListener('click', () => toggleEditMode(true));
+    document.getElementById('saveBtn').addEventListener('click', salvarEdicao);
+    document.getElementById('cancelBtn').addEventListener('click', cancelarEdicao);
+    document.getElementById('saveBtnBottom').addEventListener('click', salvarEdicao);
+    document.getElementById('cancelBtnBottom').addEventListener('click', cancelarEdicao);
+
+    edit.autonomo.addEventListener('change', function() {
+      edit.establishment.disabled = this.checked;
+      if (this.checked) {
+        edit.establishment.value = '';
+      }
+    });
+
+    if (typeof bindRegistrationFormatting === 'function') {
+      bindRegistrationFormatting({
+        name: edit.name,
+        specialty: edit.specialty,
+        bio: edit.bio,
+        street: edit.street,
+        city: edit.city,
+        state: edit.state
+      });
+    }
+
+    // ===== INICIALIZAR =====
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarEstabelecimentosSelect();
+      await carregarDados();
+      toggleEditMode(false);
+    });
+  </script>
+</body>
+</html>

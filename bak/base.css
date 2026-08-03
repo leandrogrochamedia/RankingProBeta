@@ -1,0 +1,173 @@
+/* ============================================
+   PROOFLY - BASE CSS (Variáveis Globais)
+   ============================================ */
+
+:root {
+  /* ===== CORES ===== */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gradient-hero: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --gradient-green: linear-gradient(135deg, #10b981, #059669);
+  --gradient-red: linear-gradient(135deg, #ef4444, #dc2626);
+  --gradient-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-primary-light: #818cf8;
+  --color-secondary: #8b5cf6;
+
+  --bg-body: #0d0d1a;
+  --bg-card: #ffffff;
+  --bg-card-alt: #f8fafc;
+  --bg-card-hover: #eef2ff;
+  --bg-input: #f8fafc;
+  --bg-input-disabled: #f1f5f9;
+  --bg-nav: #0d0d1a;
+  --bg-hero: #0f172a;
+  --bg-hero-gradient: #1e1b4b;
+  --bg-tag: #f1f5f9;
+  --bg-tag-hover: #e2e8f0;
+  --bg-tag-active: #6366f1;
+  --bg-alert: #fef3c7;
+  --bg-success: #d1fae5;
+  --bg-error: #fee2e2;
+  --bg-warning: #fef3c7;
+
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --text-white: #f1f5f9;
+  --text-dark: #0d0d1a;
+  --text-body: #e0e0e0;
+
+  /* Contextual surfaces (overridden per page theme) */
+  --surface-bg: #ffffff;
+  --surface-elevated: #f8fafc;
+  --surface-border: #e2e8f0;
+  --text-on-surface: #0f172a;
+  --text-on-surface-secondary: #475569;
+  --text-on-surface-muted: #64748b;
+  --text-on-surface-faint: #94a3b8;
+  --review-card-bg: #f8fafc;
+  --review-card-text: #334155;
+  --chip-bg: rgba(99, 102, 241, 0.12);
+  --chip-text: #4338ca;
+  --chip-border: rgba(99, 102, 241, 0.25);
+
+  --border-color: #e2e8f0;
+  --border-color-light: #f0f0f0;
+  --border-active: #6366f1;
+
+  --color-success: #10b981;
+  --color-success-bg: #d1fae5;
+  --color-success-text: #065f46;
+  --color-error: #ef4444;
+  --color-error-bg: #fee2e2;
+  --color-error-text: #991b1b;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fef3c7;
+  --color-warning-text: #92400e;
+
+  --tag-music-bg: #fce4ec;
+  --tag-music-text: #b91c1c;
+  --tag-visual-bg: #e0f2fe;
+  --tag-visual-text: #0369a1;
+  --tag-amenity-bg: #d1fae5;
+  --tag-amenity-text: #065f46;
+  --tag-vibe-bg: #fef3c7;
+  --tag-vibe-text: #92400e;
+  --tag-default-bg: #e2e8f0;
+  --tag-default-text: #1e293b;
+
+  --star-color: #f59e0b;
+  --star-empty: #cbd5e1;
+
+  /* ===== FONTES ===== */
+  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 22px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 28px;
+  --font-size-5xl: 32px;
+  --font-size-6xl: 36px;
+  --font-size-7xl: 48px;
+
+  /* ===== ESPAÇAMENTOS ===== */
+  --space-xs: 4px;
+  --space-sm: 6px;
+  --space-md: 8px;
+  --space-base: 10px;
+  --space-lg: 12px;
+  --space-xl: 15px;
+  --space-2xl: 16px;
+  --space-3xl: 18px;
+  --space-4xl: 20px;
+  --space-5xl: 24px;
+  --space-6xl: 28px;
+  --space-7xl: 30px;
+  --space-8xl: 32px;
+  --space-9xl: 36px;
+  --space-10xl: 40px;
+  --space-11xl: 50px;
+  --space-12xl: 60px;
+  --space-13xl: 80px;
+  --space-14xl: 100px;
+  --space-15xl: 120px;
+
+  /* ===== BORDER-RADIUS ===== */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 30px;
+  --radius-5xl: 40px;
+  --radius-full: 50px;
+  --radius-circle: 50%;
+
+  /* ===== SHADOWS ===== */
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 8px 25px rgba(99, 102, 241, 0.4);
+  --shadow-2xl: 0 12px 30px rgba(99, 102, 241, 0.45);
+  --shadow-3xl: 0 20px 60px rgba(0, 0, 0, 0.3);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* ===== TRANSIÇÕES ===== */
+  --transition-fast: 0.2s;
+  --transition-base: 0.25s;
+  --transition-slow: 0.3s;
+
+  /* ===== Z-INDEX ===== */
+  --z-dropdown: 50;
+  --z-menu: 100;
+  --z-confirm: 200;
+  --z-drawer: 1000;
+  --z-drawer-overlay: 999;
+  --z-floating-menu: 999;
+
+  /* ===== BREAKPOINTS ===== */
+  --breakpoint-mobile: 480px;
+  --breakpoint-tablet: 600px;
+  --breakpoint-desktop: 768px;
+
+  /* ===== OUTROS ===== */
+  --container-max: 750px;
+  --card-padding: 25px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

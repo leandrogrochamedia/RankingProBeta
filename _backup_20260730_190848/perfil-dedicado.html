@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Perfil — Ranking Pro</title><link rel="stylesheet" href="./rankx-core.css"/>
+<style>
+.shell{max-width:860px;margin:0 auto;padding:20px 20px 180px}.back{display:inline-flex;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,0.08);color:#eaeaea;text-decoration:none;margin-bottom:16px}
+.glass{border-radius:28px;overflow:hidden;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
+.hero{position:relative;min-height:320px;background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:flex-end;padding:24px}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,15,0.95),transparent)}
+.inner{position:relative;z-index:2}.name{font-size:28px;font-weight:800;color:white}.sub{font-size:13px;color:rgba(255,255,255,0.7)}
+.badge{display:inline-flex;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800;margin-top:8px}
+.body{padding:20px}.sec{margin-top:20px}.sec-title{font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.08em;margin-bottom:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:14px;text-align:center}
+.num{font-size:22px;font-weight:800;color:white}.lbl{font-size:10px;color:#94a3b8}
+.gauge{position:relative;width:110px;height:110px}.bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:10}.fg{fill:none;stroke:#8b5cf6;stroke-width:10;stroke-linecap:round;transition:all 1s}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.bar{display:flex;align-items:center;gap:8px;margin-bottom:6px}.track{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:999px}
+.tag{display:inline-flex;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#cbd5e1;font-size:11px;padding:4px 9px;border-radius:999px;margin:3px}
+.rev{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px;margin-bottom:8px}
+.float{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(18,18,30,0.96);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,0.12);border-radius:999px;padding:8px 10px;display:flex;gap:6px;z-index:900}
+.float button,.float a{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);color:#e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;position:relative}
+.float .pri{background:linear-gradient(135deg,#6366f1,#8b5cf6);width:52px;height:52px;color:white}
+</style></head>
+<body>
+<div id="toast" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;padding:12px 20px;border-radius:999px;font-size:13px;opacity:0;transition:all .3s;z-index:3000"></div>
+<div class="shell"><a href="./explore.html" class="back">← Voltar</a><div class="glass" id="c"><div style="padding:40px;text-align:center;color:#94a3b8">Carregando perfil com gráficos...</div></div></div>
+<nav class="float" id="acts" style="display:none"></nav>
+<script src="./rankx-config.js"></script><script src="./rankx-api.js"></script><script src="./rankx-session.js"></script>
+<script>
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.opacity='1';e.style.transform='translateX(-50%) translateY(0)';setTimeout(()=>{e.style.opacity='0'},3000)}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+const qs=new URLSearchParams(location.search);let tipo=(qs.get('tipo')||'profissional').includes('estab')?'estab':'prof';let id=qs.get('id');
+const content=document.getElementById('c');const acts=document.getElementById('acts');
+function gauge(score){const circ=2*Math.PI*45;const off=circ*(1-score/100);return `<div style="display:flex;gap:16px;align-items:center"><div style="position:relative;width:110px;height:110px"><svg width="110" height="110" style="transform:rotate(-90deg)"><circle class="bg" cx="55" cy="55" r="45"/><circle class="fg" cx="55" cy="55" r="45" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg><div class="center"><div style="font-size:24px;font-weight:800;color:white">${score}</div><div style="font-size:10px;color:#94a3b8">IGV</div></div></div><div><div style="font-weight:700;color:white;font-size:13px">Reputação verificada</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Baseado em avaliações via QR Code + IGV + verificação</div></div></div>`}
+function bars(revs){const cnt={5:0,4:0,3:0,2:0,1:0};revs.forEach(r=>{cnt[Math.round(r.rating||5)]++});const tot=revs.length||1;let h='';for(let s=5;s>=1;s--){const p=Math.round(cnt[s]/tot*100);h+=`<div class="bar"><div style="width:30px;font-size:11px;color:#94a3b8">${s} ★</div><div class="track"><div class="fill" style="width:${p}%"></div></div><div style="width:30px;font-size:11px;color:#cbd5e1;text-align:right">${p}%</div></div>`}return h}
+async function loadProf(pid){
+  try{
+    const d=await rxFetch(`/rest/v1/professionals?id=eq.${pid}&select=*`);const p=d[0];
+    const revs=await rxFetch(`/rest/v1/reviews?professional_id=eq.${pid}&order=created_at.desc&limit=20`).catch(()=>[]);
+    const avatar=p.avatar_url||`https://picsum.photos/seed/${p.id}/600/600`;
+    const igv=p.igv_score||75;const match=Math.floor(15+Math.random()*40);
+    let h=`<div class="hero" style="background-image:url('${avatar}')"><div class="inner"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.specialty||'Profissional')} • ★ ${(p.avg_rating||4.8).toFixed(1)} • ${p.total_reviews||0} avaliações</div><div class="badge">${match}% match • IGV ${igv}</div></div></div>`;
+    h+=`<div class="body"><div class="grid3"><div class="box"><div class="num">★ ${(p.avg_rating||4.8).toFixed(1)}</div><div class="lbl">AVG</div></div><div class="box"><div class="num">${igv}</div><div class="lbl">IGV</div></div><div class="box"><div class="num">${p.total_reviews||revs.length||0}</div><div class="lbl">REVIEWS</div></div></div>`;
+    h+=`<div class="sec"><div class="sec-title">📊 MEDIDORES DE AVALIAÇÃO</div>${gauge(igv)}<div style="margin-top:16px">${bars(revs)}</div></div>`;
+    h+=`<div class="sec"><div class="sec-title">TAGS</div><div>${((p.tags||'')+','+(p.style_tags||'')).split(',').filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div>`;
+    h+=`<div class="sec"><div class="sec-title">AVALIAÇÕES VERIFICADAS</div>${revs.map(r=>`<div class="rev"><div style="color:#f59e0b;font-size:12px">${'★'.repeat(r.rating||5)} • ${new Date(r.created_at).toLocaleDateString()}</div><div style="font-size:13px;color:#e2e8f0;margin-top:4px">${esc(r.comment||'Sem comentário')}</div></div>`).join('')||'<p style="color:#64748b">Sem avaliações</p>'}</div></div>`;
+    content.innerHTML=h;
+    acts.innerHTML=`<a href="./explore.html">⤺</a><button class="pri" onclick="location.href='./app-worker.html?id=${p.id}'">⭐</button><button onclick="toast('🤝 Convite enviado!')">🤝</button><button onclick="toggle('like_prof_${p.id}')">❤</button><button onclick="toggle('fav_prof_${p.id}')">🤍</button><a href="./explore.html">✕</a>`;
+    acts.style.display='flex';
+  }catch(e){content.innerHTML=`Erro: ${e.message}`}
+}
+async function loadEst(eid){
+  try{
+    const d=await rxFetch(`/rest/v1/establishments?id=eq.${eid}&select=*`);const e=d[0];
+    const revs=await rxFetch(`/rest/v1/reviews?establishment_id=eq.${eid}&order=created_at.desc&limit=20`).catch(()=>[]);
+    const avatar=e.avatar_url||`https://picsum.photos/seed/est-${e.id}/600/400`;const igv=Math.round((e.avg_rating||4.5)*18);
+    let h=`<div class="hero" style="background-image:url('${avatar}')"><div class="inner"><div class="name">🏢 ${esc(e.name)}</div><div class="sub">${esc(e.type||'')} • ${esc(e.city||'')} • ★ ${(e.avg_rating||4.5).toFixed(1)}</div></div></div>`;
+    h+=`<div class="body"><div class="grid3"><div class="box"><div class="num">★ ${(e.avg_rating||4.5).toFixed(1)}</div><div class="lbl">AVG</div></div><div class="box"><div class="num">${igv}</div><div class="lbl">PROOFLY</div></div><div class="box"><div class="num">${e.total_reviews||revs.length||0}</div><div class="lbl">REVIEWS</div></div></div>`;
+    h+=`<div class="sec"><div class="sec-title">📊 MEDIDORES</div>${gauge(igv)}<div style="margin-top:16px">${bars(revs)}</div></div>`;
+    h+=`<div class="sec"><div class="sec-title">AVALIAÇÕES</div>${revs.map(r=>`<div class="rev"><div style="color:#f59e0b">${'★'.repeat(r.rating||5)}</div><div style="font-size:13px;color:#e2e8f0;margin-top:4px">${esc(r.comment||'')}</div></div>`).join('')||'<p style="color:#64748b">Sem avaliações</p>'}</div></div>`;
+    content.innerHTML=h;
+    acts.innerHTML=`<a href="./explore.html">⤺</a><button class="pri" onclick="location.href='./app-owner.html?id=${e.id}'">⭐</button><button onclick="toggle('like_est_${e.id}')">❤</button><button onclick="toggle('fav_est_${e.id}')">🤍</button><a href="./explore.html">✕</a>`;
+    acts.style.display='flex';
+  }catch(e){content.innerHTML=`Erro: ${e.message}`}
+}
+function toggle(k){const cur=localStorage.getItem(k)==='1';localStorage.setItem(k,cur?'0':'1');toast(cur?'Removido':'Salvo!')}
+if(!id){content.innerHTML='<p style="padding:40px;text-align:center;color:#94a3b8">Sem ID</p>'}else{if(tipo==='prof') loadProf(id); else loadEst(id)}
+</script>
+</body></html>

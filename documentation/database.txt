@@ -1,0 +1,253 @@
+Autenticação & clientes
+3 entidade(s)
+Contas de login (demo Google, cadastro, seed). Vincula papel e IDs de perfil.
+
+FK: professional_id → professionals(id) · establishment_id → establishments(id) · client_id → client_profiles(id)
+Índices: idx_users_email · idx_users_client_id
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+name	TEXT	NOT NULL	—	—	Nome exibido
+email	TEXT	NOT NULL	—	—	Único — login
+provider	TEXT	NULL	google	—	google | cadastro | seed
+role	TEXT	NOT NULL	cliente	—	cliente | profissional | estabelecimento | admin
+professional_id	UUID	FKNULL	—	professionals(id)	FK opcional
+establishment_id	UUID	FKNULL	—	establishments(id)	FK opcional
+client_id	UUID	FKNULL	—	client_profiles(id)	Perfil cliente 1:1
+is_admin	BOOLEAN	NOT NULL	false	—	Flag admin
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+updated_at	TIMESTAMPTZ	NOT NULL	now()	—	Trigger set_updated_at
+DEPRECATED — multi-perfil futuro. Use users.client_id / professional_id / establishment_id.
+
+FK: user_id → users(id)
+UNIQUE: (user_id, type, profile_id)
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+user_id	UUID	FKNOT NULL	—	users(id)	FK CASCADE
+type	TEXT	NOT NULL	—	—	professional | establishment | client
+profile_id	UUID	NOT NULL	—	—	ID na tabela do tipo
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+Perfil 1:1 do cliente (endereço, estilo, contato). Vinculado via users.client_id.
+
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+name	TEXT	NOT NULL	—	—	Nome completo
+email	TEXT	NULL	—	—	—
+cpf	TEXT	NULL	—	—	—
+phone	TEXT	NULL	—	—	—
+whatsapp	TEXT	NULL	—	—	—
+birth_date	DATE	NULL	—	—	—
+gender	TEXT	NULL	—	—	—
+avatar_url	TEXT	NULL	—	—	Base64 ou URL
+zip_code	TEXT	NULL	—	—	CEP
+street	TEXT	NULL	—	—	—
+number	TEXT	NULL	—	—	—
+complement	TEXT	NULL	—	—	—
+neighborhood	TEXT	NULL	—	—	—
+city	TEXT	NULL	—	—	—
+state	TEXT	NULL	—	—	UF
+country	TEXT	NULL	Brasil	—	—
+prof_style_tags	TEXT[]	NULL	{}	—	Preferências profissional
+est_style_tags	TEXT[]	NULL	{}	—	Preferências lugar
+tags	UUID[]	NULL	{}	—	Legado relacional
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+updated_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+💼
+Núcleo do negócio
+2 entidade(s)
+Barbearias, salões e espaços — endereço, tags de ambiente, métricas.
+
+Índices: idx_establishments_name · idx_establishments_city · idx_establishments_avg_rating · GIN vibe_tags…
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+name	TEXT	NOT NULL	—	—	Nome fantasia
+type	TEXT	NULL	—	—	Barbearia, Salão…
+description	TEXT	NULL	—	—	—
+specialty	TEXT	NULL	—	—	—
+instagram	TEXT	NULL	—	—	—
+avatar_url	TEXT	NULL	—	—	—
+gallery_urls	TEXT[]	NULL	{}	—	Fotos
+phone	TEXT	NULL	—	—	—
+whatsapp	TEXT	NULL	—	—	—
+email	TEXT	NULL	—	—	—
+address	TEXT	NULL	—	—	Endereço legado
+zip_code	TEXT	NULL	—	—	—
+street	TEXT	NULL	—	—	—
+number	TEXT	NULL	—	—	—
+neighborhood	TEXT	NULL	—	—	—
+city	TEXT	NULL	—	—	—
+state	TEXT	NULL	—	—	—
+country	TEXT	NULL	Brasil	—	—
+tags	TEXT[]	NULL	{}	—	Legado
+style_tags	TEXT[]	NULL	{}	—	—
+target_audience	TEXT	NULL	—	—	—
+infra_tags	TEXT[]	NULL	{}	—	Wi-Fi, Café…
+music_tags	TEXT[]	NULL	{}	—	—
+positioning_tags	TEXT[]	NULL	{}	—	—
+audience_tags	TEXT[]	NULL	{}	—	—
+vibe_tags	TEXT[]	NULL	{}	—	—
+avg_rating	NUMERIC(3,2)	NULL	0	—	Média
+total_reviews	INTEGER	NOT NULL	0	—	—
+years_active	INTEGER	NULL	—	—	—
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+updated_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+Profissionais de beleza — tags, talento (IGV), vínculo atual.
+
+FK: current_establishment_id → establishments(id)
+Índices: idx_professionals_name · idx_professionals_specialty · idx_professionals_avg_rating · GIN tag arrays
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+name	TEXT	NOT NULL	—	—	—
+specialty	TEXT	NULL	—	—	—
+bio	TEXT	NULL	—	—	—
+phone	TEXT	NULL	—	—	—
+email	TEXT	NULL	—	—	—
+avatar_url	TEXT	NULL	—	—	—
+gallery_urls	TEXT[]	NULL	{}	—	—
+tags	TEXT[]	NULL	{}	—	—
+style_tags	TEXT[]	NULL	{}	—	—
+music_tags	TEXT[]	NULL	{}	—	—
+visual_tags	TEXT[]	NULL	{}	—	—
+personality_tags	TEXT[]	NULL	{}	—	—
+lifestyle_tags	TEXT[]	NULL	{}	—	—
+work_tags	TEXT[]	NULL	{}	—	—
+price_range	TEXT	NULL	—	—	—
+availability	TEXT[]	NULL	{}	—	Dias da semana
+salary_expectation	TEXT	NULL	—	—	Pretensão salarial/comissão
+average_job_duration_months	INTEGER	NULL	—	—	Permanência média nos últimos empregos (meses)
+work_style_tags	TEXT[]	NULL	{}	—	Estilo de trabalho para contratantes
+available_now	BOOLEAN	NOT NULL	false	—	—
+seeking_work	BOOLEAN	NOT NULL	true	—	—
+client_portfolio_count	INTEGER	NOT NULL	0	—	Carteira IGV
+igv_score	NUMERIC(5,2)	NULL	—	—	Índice de valor
+previous_workplaces	TEXT	NULL	—	—	Histórico texto
+current_establishment_id	UUID	FKNULL	—	establishments(id)	FK SET NULL
+avg_rating	NUMERIC(3,2)	NULL	0	—	—
+total_reviews	INTEGER	NOT NULL	0	—	—
+is_active	BOOLEAN	NOT NULL	true	—	—
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+updated_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+👤
+Perfis & LGPD
+2 entidade(s)
+Perfil público 1:1 do profissional (especialidade, anos, Instagram).
+
+FK: professional_id → professionals(id)
+UNIQUE: professional_id
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+professional_id	UUID	FKNOT NULL	—	professionals(id)	UNIQUE FK CASCADE
+bio	TEXT	NULL	—	—	—
+specialty	TEXT	NULL	—	—	—
+years_experience	INTEGER	NULL	—	—	—
+instagram	TEXT	NULL	—	—	—
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+updated_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+Dados sensíveis / LGPD do profissional (CPF, endereço).
+
+FK: professional_id → professionals(id)
+UNIQUE: professional_id
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+professional_id	UUID	FKNOT NULL	—	professionals(id)	UNIQUE FK CASCADE
+full_name	TEXT	NULL	—	—	—
+cpf	TEXT	NULL	—	—	—
+birth_date	DATE	NULL	—	—	—
+email	TEXT	NULL	—	—	—
+phone	TEXT	NULL	—	—	—
+zip_code	TEXT	NULL	—	—	CEP
+street	TEXT	NULL	—	—	—
+number	TEXT	NULL	—	—	—
+neighborhood	TEXT	NULL	—	—	—
+city	TEXT	NULL	—	—	—
+state	TEXT	NULL	—	—	—
+country	TEXT	NULL	Brasil	—	—
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+updated_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+🏷️
+Tags & preferências
+3 entidade(s)
+Catálogo normalizado de tags (categoria + nome).
+
+UNIQUE: (name, category)
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+name	TEXT	NOT NULL	—	—	—
+category	TEXT	NULL	—	—	Música, Vibe…
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+N:N estabelecimento ↔ tag (legado relacional).
+
+FK: establishment_id → establishments(id) · tag_id → tags(id)
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+establishment_id	UUID	FKNOT NULL	—	establishments(id)	PK composta
+tag_id	UUID	FKNOT NULL	—	tags(id)	PK composta
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+N:N profissional ↔ tag (legado relacional).
+
+FK: professional_id → professionals(id) · tag_id → tags(id)
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+professional_id	UUID	FKNOT NULL	—	professionals(id)	PK composta
+tag_id	UUID	FKNOT NULL	—	tags(id)	PK composta
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+🔗
+Vínculos & histórico
+1 entidade(s)
+Histórico e vínculo atual profissional ↔ estabelecimento.
+
+FK: professional_id → professionals(id) · establishment_id → establishments(id)
+Índices: idx_prof_est_professional · idx_prof_est_establishment · idx_prof_est_current
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+professional_id	UUID	FKNOT NULL	—	professionals(id)	FK CASCADE
+establishment_id	UUID	FKNOT NULL	—	establishments(id)	FK CASCADE
+is_current	BOOLEAN	NOT NULL	false	—	Vínculo ativo
+started_at	TIMESTAMPTZ	NULL	now()	—	—
+ended_at	TIMESTAMPTZ	NULL	—	—	Se passado
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+⭐
+Avaliações & QR
+2 entidade(s)
+Avaliações multi-tipo (cliente, estabelecimento, likes) com peso e verificação.
+
+FK: user_id → users(id) · professional_id → professionals(id) · establishment_id → establishments(id)
+Índices: idx_reviews_professional · idx_reviews_establishment · idx_reviews_type · idx_reviews_user_id
+CHECK: professional_id IS NOT NULL OR establishment_id IS NOT NULL
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+user_id	UUID	FKNULL	—	users(id)	Autor
+professional_id	UUID	FKNULL	—	professionals(id)	Alvo prof
+establishment_id	UUID	FKNULL	—	establishments(id)	Alvo est
+rating	INTEGER	NOT NULL	—	—	1–5 CHECK
+comment	TEXT	NULL	—	—	—
+verified	BOOLEAN	NOT NULL	false	—	—
+is_verified	BOOLEAN	NOT NULL	false	—	Duplicata legado
+source	TEXT	NULL	—	—	cliente | estabelecimento | profissional
+review_type	TEXT	NOT NULL	client_to_professional	—	ENUM CHECK
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+qr_token	TEXT	NULL	—	—	Rastreio QR
+rating_weight	NUMERIC(4,2)	NULL	—	—	—
+prof_link_snapshot	JSONB	NULL	—	—	Snapshot vínculo
+Tokens QR para avaliação verificada do profissional.
+
+FK: professional_id → professionals(id)
+UNIQUE: token
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	PKNOT NULL	gen_random_uuid()	—	PK
+professional_id	UUID	FKNOT NULL	—	professionals(id)	FK CASCADE
+token	TEXT	NOT NULL	—	—	UNIQUE
+url	TEXT	NOT NULL	—	—	Link avaliação
+expires_at	TIMESTAMPTZ	NULL	—	—	—
+created_at	TIMESTAMPTZ	NOT NULL	now()	—	—
+👁️
+Views
+1 entidade(s)
+View de compatibilidade (nome singular) — espelha professional_establishments.
+
+SQL: SELECT … FROM professional_establishments
+Coluna	Tipo	Constraints	Default	Referência	Descrição
+id	UUID	NULL	—	—	De professional_establishments
+professional_id	UUID	NULL	—	—	—
+establishment_id	UUID	NULL	—	—	—
+is_current	BOOLEAN	NULL	—	—	—
+started_at	TIMESTAMPTZ	NULL	—	—	—
+ended_at	TIMESTAMPTZ	NULL	—	—	—
+created_at	TIMESTAMPTZ	NULL	—	—	—

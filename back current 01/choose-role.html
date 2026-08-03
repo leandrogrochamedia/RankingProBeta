@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rank-X — Onde você quer entrar?</title>
+<link rel="stylesheet" href="./base.css" />
+<link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="./proofly-glass.css" />
+<link rel="stylesheet" href="./rankx-core.css" />
+<style>
+body.profile-select-page { 
+  min-height:100vh; display:flex; align-items:center; justify-content:center; 
+  padding:20px; background:#0a0a12;
+}
+.profile-select-shell { width:100%; max-width:440px; }
+.profile-select-card-shell {
+  background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%);
+  backdrop-filter: blur(32px) saturate(160%); -webkit-backdrop-filter: blur(32px) saturate(160%);
+  border:1px solid rgba(255,255,255,0.08); border-radius:28px; padding:32px 24px 24px;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.profile-select-eyebrow { display:flex; justify-content:center; gap:6px; font-size:12px; color:#8b8ba8; font-weight:600; margin-bottom:12px; }
+.profile-select-eyebrow::before{ content:'🏆'; }
+.profile-select-shell h1 { text-align:center; font-size:24px; font-weight:800; color:#f8fafc; letter-spacing:-.02em; margin:0; }
+.profile-select-sub { text-align:center; font-size:13px; color:#8b8ba8; margin:6px 0 24px; }
+
+/* Card effect IGUAL da sua print */
+.profile-select-grid { display:flex; flex-direction:column; gap:12px; }
+.profile-select-card-btn {
+  width:100%; display:flex; align-items:center; gap:14px;
+  background: rgba(255,255,255,0.05);
+  border:1px solid rgba(52, 211, 153, 0.18);
+  border-radius:20px; padding:16px 18px;
+  cursor:pointer; text-align:left;
+  transition: all .22s cubic-bezier(.16,1,.3,1);
+  position:relative; overflow:hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.2);
+}
+.profile-select-card-btn::before{
+  content:''; position:absolute; inset:0; border-radius:20px;
+  background: linear-gradient(135deg, rgba(52,211,153,0.08) 0%, transparent 60%);
+  pointer-events:none;
+}
+.profile-select-card-btn:hover{
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(52,211,153,0.35);
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 12px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(52,211,153,0.15);
+}
+.profile-select-card-btn:active{ transform: scale(.98); }
+
+.profile-select-card-btn.is-client{
+  border-color: rgba(99,102,241,0.18);
+}
+.profile-select-card-btn.is-client::before{
+  background: linear-gradient(135deg, rgba(99,102,241,0.10) 0%, transparent 60%);
+}
+
+.profile-select-card-btn.is-browse{
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.08);
+  border-style: dashed;
+}
+.profile-select-card-btn.is-browse::before{ display:none; }
+
+.profile-select-icon{
+  width:42px; height:42px; border-radius:12px;
+  background: rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.06);
+  display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;
+}
+.profile-select-text{ flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.profile-select-text strong{ font-size:14px; font-weight:700; color:#f1f5f9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.profile-select-text small{ font-size:12px; color:#8b8ba8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.profile-select-badge{
+  display:inline-flex; margin-top:6px; padding:4px 10px; border-radius:999px;
+  font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+  width:fit-content; border:1px solid;
+}
+.profile-select-badge-professional{
+  background: rgba(16,185,129,0.12); color:#6ee7b7; border-color: rgba(16,185,129,0.25);
+  box-shadow: 0 0 0 1px rgba(16,185,129,0.08) inset;
+}
+.profile-select-badge-client{
+  background: rgba(99,102,241,0.12); color:#a5b4fc; border-color: rgba(99,102,241,0.25);
+}
+.profile-select-badge-owner{
+  background: rgba(99,102,241,0.12); color:#a5b4fc; border-color: rgba(99,102,241,0.25);
+}
+.profile-select-chevron{ color:#4b5563; font-size:18px; margin-left:8px; }
+
+/* Loading hourglass */
+.profile-select-loading{ text-align:center; padding:40px 0 20px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.hourglass{ font-size:32px; animation: hg 1.6s infinite ease-in-out; }
+@keyframes hg{ 0%,100%{ transform: rotate(0deg); opacity:.7 } 50%{ transform: rotate(180deg); opacity:1 } }
+
+/* Loading overlay inicial */
+#rxLoading{ position:fixed; inset:0; background:#08080f; z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; }
+#rxLoading.hidden{ display:none; }
+</style>
+</head>
+<body class="profile-select-page">
+
+<div id="rxLoading"><div style="font-size:40px;">⏳</div><div style="font-size:13px; color:#8b8ba8;">Carregando...</div></div>
+
+<main class="profile-select-shell">
+  <div class="profile-select-card-shell">
+    <div class="profile-select-eyebrow">Ranking Pro</div>
+    <h1 id="title">Quem é você?</h1>
+    <p class="profile-select-sub" id="subtitle">Carregando suas opções...</p>
+    <div id="grid" class="profile-select-grid">
+      <div class="profile-select-loading"><div class="hourglass">⌛</div></div>
+    </div>
+  </div>
+</main>
+
+<script src="./rankx-config.js"></script><script src="./rankx-api.js"></script><script src="./rankx-session.js"></script>
+<script>
+const LABELS={
+  professional:{icon:'💼', label:'Profissional'},
+  establishment:{icon:'🏢', label:'Proprietário'},
+  client:{icon:'👤', label:'Cliente'},
+  browse:{icon:'🔍', label:'Só explorar'}
+};
+function hideLoading(){ document.getElementById('rxLoading').classList.add('hidden'); }
+
+async function fetchAffiliations(session){
+  const result={ professional:null, establishment:null, establishments:[], client:null };
+  if(!session?.userId) return result;
+  try{
+    if(session.professionalId){
+      const p=await rxFetch(`/rest/v1/professionals?id=eq.${session.professionalId}&select=id,name,specialty,avatar_url`);
+      if(p?.[0]) result.professional=p[0];
+    }
+    if(!result.professional && session.email){
+      const p2=await rxFetch(`/rest/v1/professionals?email=eq.${encodeURIComponent(session.email)}&select=id,name,specialty,avatar_url&limit=1`);
+      if(p2?.[0]) result.professional=p2[0];
+    }
+    try{
+      const owned=await rxFetch(`/rest/v1/establishments?owner_user_id=eq.${session.userId}&select=id,name,city,type&order=name`);
+      if(owned?.length){ result.establishments=owned; result.establishment=owned[0]; }
+    }catch{}
+    if(session.establishmentId && !result.establishment){
+      const e=await rxFetch(`/rest/v1/establishments?id=eq.${session.establishmentId}&select=id,name,city`);
+      if(e?.[0]){ result.establishments=[e[0]]; result.establishment=e[0]; }
+    }
+    if(session.clientId){
+      const c=await rxFetch(`/rest/v1/client_profiles?id=eq.${session.clientId}&select=id,name,city,avatar_url`);
+      if(c?.[0]) result.client=c[0];
+    }
+  }catch(e){ console.warn(e); }
+  return result;
+}
+
+function buildOptions(aff){
+  const linked=[];
+  // Profissional (igual sua print: Leandro Rocha Lg Roc + PROFISSIONAL pill teal)
+  if(aff.professional){
+    linked.push({
+      type:'professional',
+      icon: aff.professional.avatar_url ? `<img src="${aff.professional.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">` : '💼',
+      title: aff.professional.name,
+      subtitle: `Perfil profissional vinculado · ${aff.professional.specialty||'Cabeleireiro'}`,
+      badge:'PROFISSIONAL', badgeRole:'professional',
+      entityId: aff.professional.id, entityName: aff.professional.name, linked:true
+    });
+  }
+  // Cliente (igual sua print: Leandro Rocha Editado + CLIENTE pill blue)
+  if(aff.client){
+    linked.push({
+      type:'client',
+      icon:'👤',
+      title: aff.client.name,
+      subtitle:`Buscar e avaliar · ${aff.client.city||'Curitiba'}`,
+      badge:'CLIENTE', badgeRole:'client',
+      entityId: aff.client.id, entityName: aff.client.name, linked:true
+    });
+  }
+  if(aff.establishments?.length){
+    aff.establishments.forEach(est=>{
+      linked.push({
+        type:'establishment',
+        icon:'🏢',
+        title: est.name,
+        subtitle:`${est.city||''} • Proprietário`,
+        badge:'PROPRIETÁRIO', badgeRole:'owner',
+        entityId: est.id, entityName: est.name, linked:true
+      });
+    });
+  }
+
+  // Se não tem nada, auto explorar
+  if(linked.length===0){
+    return [{ type:'client', icon:'👤', title:'Explorar', subtitle:'Você ainda não tem vínculo. Entre para explorar', badge:'EXPLORAR', badgeRole:'client', autoExplore:true }];
+  }
+
+  // Sempre adiciona Só explorar (terceiro card da sua print)
+  linked.push({
+    type:'browse', icon:'🔍', title:'Só explorar', subtitle:'Buscar sem escolher área agora', linked:false, browseOnly:true
+  });
+
+  return linked;
+}
+
+function renderOptions(options){
+  const grid=document.getElementById('grid'); grid.innerHTML='';
+  options.forEach(opt=>{
+    const isClient = opt.badgeRole==='client';
+    const isBrowse = opt.type==='browse';
+    const btn=document.createElement('button');
+    btn.className='profile-select-card-btn'+(isClient?' is-client':'')+(isBrowse?' is-browse':'');
+    btn.innerHTML=`
+      <span class="profile-select-icon">${opt.icon}</span>
+      <span class="profile-select-text">
+        <strong>${opt.title}</strong>
+        <small>${opt.subtitle}</small>
+        ${opt.badge?`<span class="profile-select-badge profile-select-badge-${opt.badgeRole}">${opt.badge}</span>`:''}
+      </span>
+      <span class="profile-select-chevron">›</span>
+    `;
+    btn.onclick=()=>{
+      btn.style.transform='scale(.97)'; setTimeout(()=>{
+        if(opt.autoExplore){ location.href='./explore.html'; return; }
+        if(opt.browseOnly){ const s=rxGetSession()||{}; delete s.activeProfile; rxSetSession(s); location.href='./explore.html'; return; }
+        const s=rxGetSession()||{}; s.activeProfile=opt.type; if(opt.type==='professional') s.professionalId=opt.entityId; if(opt.type==='establishment') s.establishmentId=opt.entityId; if(opt.type==='client') s.clientId=opt.entityId; rxSetSession(s);
+        if(opt.type==='professional') location.href='./app-worker.html';
+        else if(opt.type==='establishment') location.href='./app-owner.html';
+        else location.href='./explore.html';
+      },120);
+    };
+    grid.appendChild(btn);
+  });
+}
+
+(async function(){
+  const session=rxGetSession();
+  const title=document.getElementById('title');
+  const sub=document.getElementById('subtitle');
+  if(!session?.userId){ location.href='./login.html'; return; }
+
+  const aff=await fetchAffiliations(session);
+  const opts=buildOptions(aff);
+
+  // Header igual sua print
+  if(opts.length>1 && aff.professional && aff.client){
+    title.textContent='Onde você quer entrar?';
+    sub.textContent='Encontramos mais de uma área vinculada à sua conta';
+  } else {
+    title.textContent='Quem é você?';
+    sub.textContent='Carregando suas opções...';
+  }
+
+  renderOptions(opts);
+  hideLoading();
+
+  // Auto redirect se só explorar
+  if(opts.length===1 && opts[0].autoExplore){
+    setTimeout(()=> location.href='./explore.html', 1000);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking Pro - Perfil Estabelecimento</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./profile-dashboard.css" />
+  <link rel="stylesheet" href="./components/tinder-profile.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+  <style>
+    /* mesmo estilo do dashboard-profissional, adaptado */
+    @media (min-width: 769px) { body { padding-left: 80px; padding-right: 20px; } }
+    .dashboard-container { max-width: 820px; margin: 24px auto; }
+    .dashboard-container .card { padding: 32px 40px; border-radius: 24px; background: #ffffff; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04); }
+    .est-header { display: flex; align-items: center; gap: 24px; padding: 4px 0 20px 0; flex-wrap: wrap; border-bottom: 1px solid #f1f5f9; margin-bottom: 20px; }
+    .est-header .avatar-wrapper { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+    .est-header .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #6366f1; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .est-header .avatar-upload-btn { position: absolute; bottom: -4px; right: -4px; background: #6366f1; color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(99,102,241,0.4); transition: 0.2s; }
+    .est-header .avatar-upload-btn:hover { transform: scale(1.1); }
+    .est-header .info .name { font-size: 24px; font-weight: 700; color: #0f172a; letter-spacing: -0.3px; }
+    .est-header .info .city { color: #64748b; font-size: 16px; font-weight: 500; }
+    .mock-badge { background: #fef3c7; color: #92400e; font-size: 12px; font-weight: 600; padding: 4px 16px; border-radius: 999px; display: inline-block; margin-top: 4px; }
+    .action-bar { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+    .btn-edit { background: transparent; border: 2px solid #6366f1; color: #6366f1; padding: 10px 24px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .btn-edit:hover { background: #6366f1; color: #fff; transform: scale(1.02); box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
+    .btn-save { background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 10px 28px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .btn-save:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(16,185,129,0.35); }
+    .btn-cancel { background: transparent; border: 2px solid #94a3b8; color: #64748b; padding: 10px 24px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel:hover { background: #f1f5f9; border-color: #64748b; }
+    .section-block { margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9; }
+    .section-block:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+    .section-title { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .section-title .icon { font-size: 18px; }
+    .section-title .hint { font-weight: 400; font-size: 13px; color: #94a3b8; margin-left: auto; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #64748b; letter-spacing: 0.2px; margin-bottom: 2px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 14px; font-family: inherit; font-size: 15px; background: #fafbfc; color: #0f172a; transition: all 0.2s; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 4px rgba(99,102,241,0.08); }
+    .form-group input.error, .form-group textarea.error { border-color: #ef4444; background-color: #fef2f2; }
+    .form-group .error-message { color: #ef4444; font-size: 13px; margin-top: 4px; display: none; }
+    .form-group .error-message.show { display: block; }
+    .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .form-row .form-group { flex: 1; min-width: 160px; }
+    .view-mode { display: block; }
+    .edit-mode-field { display: none; }
+    .edit-mode .view-mode { display: none; }
+    .edit-mode .edit-mode-field { display: block !important; }
+    .edit-mode .card { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.06), 0 8px 40px rgba(0,0,0,0.06); }
+    .edit-mode .section-block { border-top-color: #e0e7ff; }
+    .tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .tags-edit { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .chip-edit { padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; background: #f1f5f9; color: #1e293b; border: 1.5px solid #e2e8f0; transition: all 0.2s; user-select: none; }
+    .chip-edit:hover { transform: scale(1.04); background: #e2e8f0; }
+    .chip-edit.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border-color: #6366f1; box-shadow: 0 4px 12px rgba(99,102,241,0.25); }
+    .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
+    .tag-counter { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 8px; }
+    .summary-grid .stat-box { background: #fafbfc; border-radius: 14px; padding: 18px 16px; text-align: center; border: 1px solid #f1f5f9; }
+    .summary-grid .stat-box .number { font-size: 24px; font-weight: 700; color: #0f172a; }
+    .summary-grid .stat-box .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+    .review-item-mini { background: #fafbfc; border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; border-left: 4px solid #6366f1; }
+    .review-item-mini .meta { display: flex; justify-content: space-between; font-size: 13px; color: #64748b; }
+    .review-item-mini .comment { margin-top: 4px; color: #1e293b; font-size: 14px; }
+    .prof-item-mini { display: flex; align-items: center; gap: 12px; background: #f8fafc; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; border-left: 4px solid #6366f1; }
+    .edit-actions-bottom { margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9; display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+    .edit-actions-bottom .btn { min-width: 140px; }
+    .edit-mode .edit-actions-bottom { display: flex !important; }
+    .edit-actions-bottom { display: none; }
+    @media (max-width: 600px) {
+      .dashboard-container .card { padding: 20px 18px; }
+      .est-header { flex-direction: column; text-align: center; gap: 12px; }
+      .form-row { flex-direction: column; }
+      .action-bar { flex-direction: column; }
+      .action-bar .btn { width: 100%; text-align: center; justify-content: center; }
+      .section-title .hint { display: none; }
+      .edit-actions-bottom { flex-direction: column; }
+      .edit-actions-bottom .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body class="profile-dashboard-page">
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <div class="container dashboard-container">
+
+    <div class="card">
+
+      <!-- HEADER -->
+      <div class="profile-header est-header">
+        <div class="avatar-wrapper">
+          <img id="estAvatar" class="avatar" src="" alt="Logo" style="display:none;" />
+          <div id="estAvatarPlaceholder" class="avatar">?</div>
+          <button class="avatar-upload-btn" id="uploadAvatarBtn" title="Alterar logo">📷</button>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" />
+        </div>
+        <div class="info">
+          <div class="name" id="estName">Carregando...</div>
+          <div class="username" id="estUsername"></div>
+          <div class="subtitle" id="estCity">-</div>
+          <div class="meta-line" id="estMeta"></div>
+          <div class="profile-rating-block empty" id="estRatingBlock">
+            <div class="rating-stars" id="estRatingStars">☆☆☆☆☆</div>
+            <div class="rating-detail">
+              <span class="rating-value" id="estRatingValue">—</span>
+              <span class="rating-count" id="estRatingCount">Sem avaliações ainda</span>
+            </div>
+          </div>
+          <div class="proofly-score-block empty" id="estProoflyBlock">
+            <div class="proofly-score-ring" id="estProoflyRing" aria-label="Ranking Pro Score"></div>
+            <div class="proofly-score-detail">
+              <div class="title" id="estProoflyLabel">Ranking Pro Score</div>
+              <div class="breakdown" id="estProoflyBreakdown">Aguardando avaliações...</div>
+              <div class="proofly-dash-badges" id="estProoflyBadges"></div>
+              <div class="proofly-social-dash" id="estProoflySocial"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span class="mock-badge">🧪 Modo Dev</span>
+        <span style="font-size:13px; color:#94a3b8;">✏️ Clique em "Editar" para alterar seus dados</span>
+      </div>
+
+      <div class="action-bar" id="actionBar">
+        <a href="./selecionar-perfil.html?forceProfileSelect=true" class="btn-cancel" style="text-decoration:none;display:inline-flex;align-items:center;">🔀 Trocar perfil</a>
+        <button class="btn-edit" id="editToggleBtn">✏️ Editar perfil</button>
+        <button class="btn-save" id="saveBtn" style="display:none;">💾 Salvar</button>
+        <button class="btn-cancel" id="cancelBtn" style="display:none;">❌ Cancelar</button>
+        <button class="btn-cancel" onclick="sairModo()" id="sairBtn" style="border-color:#e2e8f0; color:#94a3b8;">🚪 Sair</button>
+      </div>
+
+      <!-- ===== GALERIA ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📸</span> Galeria <span class="hint">Até 4 fotos</span></div>
+        <div class="view-mode">
+          <div id="estGalleryDash" style="display:flex;flex-wrap:wrap;gap:10px;"><p style="color:#94a3b8;">Carregando...</p></div>
+        </div>
+        <div class="edit-mode-field">
+          <div class="gallery-upload-grid" id="estGalleryEdit"></div>
+          <input type="file" id="estGalleryInput" accept="image/*" multiple style="display:none;" />
+          <button type="button" class="btn-gallery-add" id="estGalleryAddBtn">📷 Adicionar fotos</button>
+          <span class="gallery-edit-hint">A primeira foto será a principal do perfil.</span>
+        </div>
+      </div>
+
+      <!-- ===== IDENTIDADE ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🏷️</span> Identidade <span class="hint">Nome e tipo</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Nome</label><p id="viewName" style="font-size:18px; font-weight:600; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Nome *</label><input type="text" id="editName" required /></div>
+        </div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tipo</label><p id="viewType" style="font-size:16px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Tipo</label><input type="text" id="editType" placeholder="Ex: Barbearia, Salão" /></div>
+        </div>
+      </div>
+
+      <!-- ===== DESCRIÇÃO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📝</span> Sobre <span class="hint">Descrição</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Descrição</label><p id="viewDescription" style="font-size:15px; color:#1e293b; line-height:1.7; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Descrição</label><textarea id="editDescription" rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <!-- ===== LOCALIZAÇÃO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📍</span> Localização <span class="hint">Endereço</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Endereço</label><p id="viewAddress" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Rua</label><input type="text" id="editStreet" /></div>
+        </div>
+        <div class="form-row edit-mode-field">
+          <div class="form-group"><label>Número</label><input type="text" id="editNumber" /></div>
+          <div class="form-group"><label>Bairro</label><input type="text" id="editNeighborhood" /></div>
+        </div>
+        <div class="form-row edit-mode-field">
+          <div class="form-group"><label>Cidade</label><input type="text" id="editCity" /></div>
+          <div class="form-group"><label>Estado</label><input type="text" id="editState" maxlength="2" /></div>
+        </div>
+        <div class="form-group edit-mode-field"><label>País</label><input type="text" id="editCountry" /></div>
+      </div>
+
+      <!-- ===== CONTATO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📞</span> Contato <span class="hint">Telefone e Instagram</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Telefone</label><p id="viewPhone" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Telefone</label><input type="tel" id="editPhone" placeholder="(00) 00000-0000" oninput="formatarTelefone(this)" />
+            <span class="error-message">Telefone inválido</span></div>
+        </div>
+        <div class="form-group">
+          <div class="view-mode"><label>Instagram</label><p id="viewInstagram" style="font-size:15px; color:#0f172a; margin:2px 0 0 0;">-</p></div>
+          <div class="edit-mode-field"><label>Instagram</label><input type="text" id="editInstagram" placeholder="@usuario" /></div>
+        </div>
+      </div>
+
+      <!-- ===== NOVAS CATEGORIAS ===== -->
+
+      <!-- INFRAESTRUTURA -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🏗️</span> Infraestrutura <span class="hint">Estrutura</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewInfraTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editInfraTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="infraTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÚSICA AMBIENTE -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🎵</span> Música Ambiente <span class="hint">Estilo musical</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewMusicTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editMusicTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="musicTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POSICIONAMENTO -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">💎</span> Posicionamento <span class="hint">Posicionamento</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewPositioningTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editPositioningTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="positioningTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PÚBLICO -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">👥</span> Público <span class="hint">Público-alvo</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewAudienceTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editAudienceTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="audienceTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIBE -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">🌟</span> Vibe <span class="hint">Atmosfera</span></div>
+        <div class="form-group">
+          <div class="view-mode"><label>Tags</label><div id="viewVibeTags" class="tags-container"></div></div>
+          <div class="edit-mode-field">
+            <label>Tags (clique para selecionar, máx 3)</label>
+            <div id="editVibeTagsContainer" class="tags-edit"></div>
+            <div class="tag-counter" id="vibeTagsCounter">0 selecionadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== BOTÕES INFERIORES ===== -->
+      <div class="edit-actions-bottom">
+        <button class="btn-save" id="saveBtnBottom" style="display:none;">💾 Salvar</button>
+        <button class="btn-cancel" id="cancelBtnBottom" style="display:none;">❌ Cancelar</button>
+      </div>
+
+      <!-- ===== CENTRO RH ===== -->
+      <div class="section-block" id="rhHubSection">
+        <div class="rh-hub-banner">
+          <div>
+            <h3>👥 Centro RH — sua equipe e contratações</h3>
+            <p>Acompanhe avaliações dos funcionários, descubra talentos e gerencie propostas.</p>
+          </div>
+          <a href="./contratar.html" class="btn btn-small" style="text-decoration:none;">🔍 Mercado de talentos</a>
+        </div>
+
+        <div class="section-title" style="margin-top:8px;"><span class="icon">👥</span> Equipe atual <span class="hint">performance + suas avaliações</span></div>
+        <div id="rhTeamGrid" class="rh-team-grid"><p style="color:#94a3b8;">Carregando equipe...</p></div>
+
+        <div class="section-title" style="margin-top:24px;"><span class="icon">🔥</span> Recomendados para contratar <span class="hint">autônomos · match + ROI</span></div>
+        <div id="rhRecoGrid" class="rh-reco-grid"><p style="color:#94a3b8;">Carregando recomendações...</p></div>
+
+        <div class="section-title" style="margin-top:24px;"><span class="icon">📥</span> Candidaturas recebidas <span class="hint">profissionais interessados</span></div>
+        <div id="rhApplicationsList"><p style="color:#94a3b8;">Nenhuma candidatura ainda.</p></div>
+
+        <div class="section-title" style="margin-top:24px;"><span class="icon">📨</span> Propostas enviadas <span class="hint">negociação ativa</span></div>
+        <div id="rhProposalsList"><p style="color:#94a3b8;">Nenhuma proposta ainda.</p></div>
+      </div>
+
+      <!-- ===== RESUMO ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">📊</span> Resumo <span class="hint">Estatísticas</span></div>
+        <div class="summary-grid" id="summaryGrid">
+          <div class="stat-box"><div class="number" id="profCount">0</div><div class="label">Profissionais</div></div>
+          <div class="stat-box"><div class="number" id="reviewCount">0</div><div class="label">Avaliações</div></div>
+          <div class="stat-box"><div class="number" id="avgRating">0.0</div><div class="label">Média</div></div>
+        </div>
+      </div>
+
+      <!-- ===== AVALIAÇÕES DE CLIENTES ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">⭐</span> Avaliações de Clientes <span class="hint">client_to_establishment</span></div>
+        <div id="reviewsList"><p style="color:#94a3b8;">Carregando...</p></div>
+      </div>
+
+      <!-- ===== AVALIAÇÕES DE PROFISSIONAIS ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">👤</span> Avaliações de Profissionais <span class="hint">professional_to_establishment</span></div>
+        <div id="profEstReviewsList"><p style="color:#94a3b8;">Carregando...</p></div>
+      </div>
+
+      <!-- ===== ALERTAS (pausado — foco percepção cliente) ===== -->
+      <div class="section-block" style="display:none;" aria-hidden="true">
+        <div class="section-title"><span class="icon">🔔</span> Oportunidades agora <span class="hint">IGV 60+ · disponível · aberto</span></div>
+        <div id="talentAlertsWidget" class="talent-alerts-widget">
+          <p style="color:#94a3b8;font-size:14px;">Carregando alertas...</p>
+        </div>
+        <a href="./contratar.html" class="btn btn-outline btn-small" style="display:inline-block;text-decoration:none;font-size:13px;margin-top:8px;">Ver todos com Match + ROI →</a>
+      </div>
+
+      <!-- Mercado de talentos (pausado — refinamento UX) -->
+
+      <!-- ===== WIDGET PARA SEU SITE ===== -->
+      <div class="section-block" id="widgetSection">
+        <div class="section-title"><span class="icon">📣</span> Widget para seu site <span class="hint">prova social</span></div>
+        <p style="color:#64748b;font-size:14px;line-height:1.55;margin-bottom:14px;">
+          Cole o código abaixo no site ou landing page do estabelecimento para exibir nota e avaliações verificadas.
+        </p>
+        <div class="form-row" style="margin-bottom:12px;">
+          <div class="form-group" style="flex:1;min-width:160px;">
+            <label>Modo do widget</label>
+            <select id="widgetModeSelect" class="edit-mode-field" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e2e8f0;">
+              <option value="compact">Compacto (badge)</option>
+              <option value="medium" selected>Médio (3 avaliações)</option>
+              <option value="full">Completo (5 avaliações)</option>
+            </select>
+          </div>
+        </div>
+        <div id="widgetPreviewBox" style="background:#f1f5f9;border-radius:14px;padding:16px;margin-bottom:14px;min-height:100px;">
+          <div class="pw-loading">Carregando preview do widget...</div>
+        </div>
+        <pre id="widgetEmbedCode" style="background:#0f172a;color:#e2e8f0;padding:12px 14px;border-radius:10px;font-size:11px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:10px;">—</pre>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <button type="button" class="btn btn-small" id="widgetCopyBtn">📋 Copiar código HTML</button>
+          <button type="button" class="btn btn-outline btn-small" id="widgetCopyIframeBtn">📋 Copiar iframe</button>
+          <a href="./widget.html" class="btn btn-outline btn-small" id="widgetOpenPage" style="text-decoration:none;" target="_blank" rel="noopener">🔗 Abrir página do widget</a>
+        </div>
+      </div>
+
+      <!-- ===== PROFISSIONAIS VINCULADOS ===== -->
+      <div class="section-block">
+        <div class="section-title"><span class="icon">👥</span> Profissionais Vinculados</div>
+        <div id="profsList"><p style="color:#94a3b8;">Carregando...</p></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./session.js"></script>
+  <script src="./profile-selector.js"></script>
+  <script src="./user-service.js"></script>
+  <script src="./reviews-service.js"></script>
+  <script src="./talent-market.js"></script>
+  <script src="./hiring-service.js"></script>
+  <script src="./router.js"></script>
+  <script src="./menu.js"></script>
+  <script src="./menu-lateral.js"></script>
+  <script src="./confirm-modal.js"></script>
+  <script src="./components/profile-card.js"></script>
+  <script src="./widget-utils.js"></script>
+  <script src="./widget-embed.js"></script>
+
+  <script>
+    // ============================================================
+    // DASHBOARD ESTABELECIMENTO – COMPLETO
+    // ============================================================
+
+    if (!enforceProfileGuard('establishment')) {
+      throw new Error('redirect');
+    }
+    const session = getSession();
+    if (!session.establishmentId) {
+      window.location.href = './selecionar-estabelecimento.html';
+    }
+
+    let estId = session.establishmentId;
+    let isEditMode = false;
+    let currentEst = null;
+    let newAvatarBase64 = null;
+    let editGalleryPhotos = [];
+
+    // ===== OPÇÕES PARA CADA CATEGORIA =====
+    const infraOptions = ['Wi-Fi', 'Café', 'Bar', 'Ar Condicionado', 'Estacionamento', 'Pet Friendly', 'Acessibilidade', 'TV'];
+    const musicOptions = ['Hip Hop', 'Rock', 'Sertanejo', 'Pop', 'Clássico', 'MPB', 'Eletrônico', 'Reggae', 'Jazz', 'Blues'];
+    const positioningOptions = ['Premium', 'Popular', 'Tradicional', 'Moderno', 'Luxo', 'Despojado'];
+    const audienceOptions = ['Família', 'Adulto', 'LGBTQIA+', 'Empresarial', 'Infantil', 'Terceira idade', 'Todos'];
+    const vibeOptions = ['Descontraído', 'Sério', 'Animado', 'Calmo', 'Intimista', 'Grande', 'Acolhedor'];
+
+    // ===== VIEW REFS =====
+    const view = {
+      name: document.getElementById('viewName'),
+      type: document.getElementById('viewType'),
+      description: document.getElementById('viewDescription'),
+      address: document.getElementById('viewAddress'),
+      phone: document.getElementById('viewPhone'),
+      instagram: document.getElementById('viewInstagram'),
+      infraTags: document.getElementById('viewInfraTags'),
+      musicTags: document.getElementById('viewMusicTags'),
+      positioningTags: document.getElementById('viewPositioningTags'),
+      audienceTags: document.getElementById('viewAudienceTags'),
+      vibeTags: document.getElementById('viewVibeTags'),
+    };
+
+    // ===== EDIT REFS =====
+    const edit = {
+      name: document.getElementById('editName'),
+      type: document.getElementById('editType'),
+      description: document.getElementById('editDescription'),
+      street: document.getElementById('editStreet'),
+      number: document.getElementById('editNumber'),
+      neighborhood: document.getElementById('editNeighborhood'),
+      city: document.getElementById('editCity'),
+      state: document.getElementById('editState'),
+      country: document.getElementById('editCountry'),
+      phone: document.getElementById('editPhone'),
+      instagram: document.getElementById('editInstagram'),
+      infraContainer: document.getElementById('editInfraTagsContainer'),
+      musicContainer: document.getElementById('editMusicTagsContainer'),
+      positioningContainer: document.getElementById('editPositioningTagsContainer'),
+      audienceContainer: document.getElementById('editAudienceTagsContainer'),
+      vibeContainer: document.getElementById('editVibeTagsContainer'),
+      infraCounter: document.getElementById('infraTagsCounter'),
+      musicCounter: document.getElementById('musicTagsCounter'),
+      positioningCounter: document.getElementById('positioningTagsCounter'),
+      audienceCounter: document.getElementById('audienceTagsCounter'),
+      vibeCounter: document.getElementById('vibeTagsCounter'),
+    };
+
+    // ===== AVATAR =====
+    const avatarImg = document.getElementById('estAvatar');
+    const avatarPlaceholder = document.getElementById('estAvatarPlaceholder');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    const uploadBtn = document.getElementById('uploadAvatarBtn');
+
+    uploadBtn.addEventListener('click', () => avatarFileInput.click());
+    avatarFileInput.addEventListener('change', async function() {
+      const file = this.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await resizeAndCompressImage(file, 300, 300, 0.6);
+        newAvatarBase64 = dataUrl;
+        avatarImg.src = dataUrl;
+        avatarImg.style.display = 'block';
+        avatarPlaceholder.style.display = 'none';
+        await showAlert('✅ Sucesso!', 'Logo processada.');
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao processar imagem.');
+      }
+      this.value = '';
+    });
+
+    // ===== GALERIA (EDIÇÃO) =====
+    const estGalleryEdit = document.getElementById('estGalleryEdit');
+    const estGalleryInput = document.getElementById('estGalleryInput');
+    const estGalleryAddBtn = document.getElementById('estGalleryAddBtn');
+
+    function syncEstAvatarFromGallery() {
+      const main = editGalleryPhotos[0];
+      if (!main) return;
+      avatarImg.src = main;
+      avatarImg.style.display = 'block';
+      avatarPlaceholder.style.display = 'none';
+    }
+
+    function renderGalleryEdit() {
+      if (!estGalleryEdit) return;
+      estGalleryEdit.innerHTML = editGalleryPhotos.map((url, i) => `
+        <div class="gallery-slot${i === 0 ? ' primary' : ''}">
+          <img src="${url}" alt="" />
+          <button type="button" class="remove-photo" onclick="removeEstGalleryPhoto(${i})" aria-label="Remover">✕</button>
+        </div>
+      `).join('');
+      if (editGalleryPhotos.length < 4) {
+        estGalleryEdit.innerHTML += `<div class="gallery-slot add-slot" onclick="document.getElementById('estGalleryInput').click()">+</div>`;
+      }
+      syncEstAvatarFromGallery();
+    }
+
+    window.removeEstGalleryPhoto = function(index) {
+      editGalleryPhotos.splice(index, 1);
+      renderGalleryEdit();
+    };
+
+    estGalleryAddBtn?.addEventListener('click', () => estGalleryInput?.click());
+    estGalleryInput?.addEventListener('change', async function() {
+      const files = Array.from(this.files || []);
+      for (const file of files) {
+        if (editGalleryPhotos.length >= 4) {
+          await showAlert('⚠️ Atenção', 'Máximo de 4 fotos.');
+          break;
+        }
+        try {
+          const dataUrl = await resizeAndCompressImage(file, 600, 600, 0.7);
+          editGalleryPhotos.push(dataUrl);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      this.value = '';
+      renderGalleryEdit();
+    });
+
+    // ===== CARREGAR DADOS =====
+    async function carregarDados() {
+      try {
+        const estData = await fetchAPI(
+          `/rest/v1/establishments?id=eq.${estId}&select=*,infra_tags,music_tags,positioning_tags,audience_tags,vibe_tags,target_audience,gallery_urls`
+        );
+        if (!estData.length) {
+          await showAlert('❌ Erro', 'Estabelecimento não encontrado.');
+          return;
+        }
+        currentEst = estData[0];
+        newAvatarBase64 = null;
+        editGalleryPhotos = typeof getProfilePhotos === 'function'
+          ? getProfilePhotos(currentEst).slice(0, 4)
+          : [];
+
+        preencherVisual();
+        preencherEdicao();
+        await carregarEstatisticas();
+
+        if (isEditMode) toggleEditMode(false);
+        refreshEstWidgetPanel();
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao carregar dados: ' + e.message);
+        console.error(e);
+      }
+    }
+
+    // ===== PREENCHER VISUAL =====
+    function preencherVisual() {
+      const e = currentEst;
+      applyProfileAvatar(avatarImg, avatarPlaceholder, e.name, e.avatar_url);
+      document.getElementById('estName').textContent = e.name || 'Sem nome';
+      const username = formatUsername(e.instagram);
+      const usernameEl = document.getElementById('estUsername');
+      usernameEl.textContent = username;
+      usernameEl.style.display = username ? 'block' : 'none';
+      document.getElementById('estCity').textContent = e.type || e.city || 'Estabelecimento';
+      const address = [e.street, e.number, e.neighborhood, e.city, e.state].filter(Boolean).join(', ');
+      const metaParts = [];
+      if (address) metaParts.push(`📍 ${address}`);
+      if (e.phone) metaParts.push(`📞 ${e.phone}`);
+      document.getElementById('estMeta').textContent = metaParts.join(' · ') || '';
+      updateProfileRatingBlock(
+        document.getElementById('estRatingBlock'),
+        document.getElementById('estRatingStars'),
+        document.getElementById('estRatingValue'),
+        document.getElementById('estRatingCount'),
+        e.avg_rating,
+        e.total_reviews
+      );
+
+      view.name.textContent = e.name || '-';
+      view.type.textContent = e.type || '-';
+      view.description.textContent = e.description || '-';
+      view.address.textContent = [e.street, e.number, e.neighborhood, e.city, e.state, e.country].filter(Boolean).join(', ') || '-';
+      view.phone.textContent = e.phone || '-';
+      view.instagram.textContent = e.instagram || '-';
+
+      function renderViewTags(container, tags) {
+        if (tags && tags.length) {
+          container.innerHTML = tags.map(t => renderTagWithEmoji(t)).join('');
+        } else {
+          container.innerHTML = '<span style="color:#94a3b8; font-size:13px;">Nenhuma tag</span>';
+        }
+      }
+      renderViewTags(view.infraTags, e.infra_tags || []);
+      renderViewTags(view.musicTags, e.music_tags || []);
+      renderViewTags(view.positioningTags, e.positioning_tags || []);
+      renderViewTags(view.audienceTags, e.audience_tags || []);
+      renderViewTags(view.vibeTags, e.vibe_tags || []);
+
+      const galleryEl = document.getElementById('estGalleryDash');
+      if (galleryEl && typeof ProfileCard !== 'undefined') {
+        const photos = getProfilePhotos(e);
+        galleryEl.innerHTML = ProfileCard.renderGalleryPreview(photos, e.id);
+      }
+    }
+
+    // ===== PREENCHER EDIÇÃO =====
+    function preencherEdicao() {
+      const e = currentEst;
+      edit.name.value = e.name || '';
+      edit.type.value = e.type || '';
+      edit.description.value = e.description || '';
+      edit.street.value = e.street || '';
+      edit.number.value = e.number || '';
+      edit.neighborhood.value = e.neighborhood || '';
+      edit.city.value = e.city || '';
+      edit.state.value = e.state || '';
+      edit.country.value = e.country || '';
+      edit.phone.value = e.phone || '';
+      edit.instagram.value = e.instagram || '';
+
+      renderEditChips(edit.infraContainer, infraOptions, e.infra_tags || [], 3, edit.infraCounter);
+      renderEditChips(edit.musicContainer, musicOptions, e.music_tags || [], 3, edit.musicCounter);
+      renderEditChips(edit.positioningContainer, positioningOptions, e.positioning_tags || [], 3, edit.positioningCounter);
+      renderEditChips(edit.audienceContainer, audienceOptions, e.audience_tags || [], 3, edit.audienceCounter);
+      renderEditChips(edit.vibeContainer, vibeOptions, e.vibe_tags || [], 3, edit.vibeCounter);
+      editGalleryPhotos = typeof getProfilePhotos === 'function'
+        ? getProfilePhotos(e).slice(0, 4)
+        : [];
+      renderGalleryEdit();
+    }
+
+    async function carregarRecomendacoesRH() {
+      const el = document.getElementById('rhRecoGrid');
+      if (!el || typeof HiringFlow === 'undefined') return;
+      try {
+        const select = [
+          'id', 'name', 'specialty', 'avatar_url', 'avg_rating', 'total_reviews',
+          'music_tags', 'visual_tags', 'personality_tags', 'work_tags', 'style_tags', 'tags',
+          'availability', 'available_now', 'seeking_work', 'salary_expectation',
+          'client_portfolio_count', 'igv_score', 'current_establishment_id',
+          'profile:professional_profiles(years_experience,specialty)'
+        ].join(',');
+        const profs = await fetchAPI(
+          `/rest/v1/professionals?is_active=eq.true&current_establishment_id=is.null&select=${select}&limit=40`
+        );
+        const ranked = (profs || [])
+          .map(p => typeof enrichProfForContratante === 'function' ? enrichProfForContratante(p, currentEst) : p)
+          .sort((a, b) => (b._contratanteMatch?.percent ?? 0) - (a._contratanteMatch?.percent ?? 0))
+          .slice(0, 6);
+        if (!ranked.length) {
+          el.innerHTML = '<p style="color:#64748b;font-size:14px;">Nenhuma recomendação agora. <a href="./contratar.html">Explorar mercado</a></p>';
+          return;
+        }
+        el.innerHTML = ranked.map(p => HiringFlow.renderRecoHireCard(p, currentEst)).join('');
+      } catch (e) {
+        console.warn('RH recomendações:', e);
+        el.innerHTML = '<p style="color:#94a3b8;">Não foi possível carregar recomendações.</p>';
+      }
+    }
+
+    function renderPropostasRH() {
+      const appsEl = document.getElementById('rhApplicationsList');
+      const sentEl = document.getElementById('rhProposalsList');
+      if (typeof HiringFlow === 'undefined') return;
+      const all = HiringFlow.getProposalsForEstablishment(estId)
+        .filter(p => !['hired', 'declined', 'withdrawn'].includes(p.status));
+      const applications = all.filter(p => p.initiatedBy === 'professional' || p.type === 'application');
+      const sent = all.filter(p => p.initiatedBy !== 'professional' && p.type !== 'application');
+
+      if (appsEl) {
+        appsEl.innerHTML = applications.length
+          ? applications.map(p => HiringFlow.renderProposalRow(p, 'establishment')).join('')
+          : '<p style="color:#94a3b8;font-size:14px;">Nenhuma candidatura ativa. Profissionais podem pedir emprego pelo dashboard deles.</p>';
+      }
+      if (sentEl) {
+        sentEl.innerHTML = sent.length
+          ? sent.map(p => HiringFlow.renderProposalRow(p, 'establishment')).join('')
+          : '<p style="color:#94a3b8;font-size:14px;">Nenhuma proposta ativa. Encontre talentos em <a href="./contratar.html">Contratar</a>.</p>';
+      }
+    }
+
+    document.addEventListener('proofly:hiring-updated', () => {
+      renderPropostasRH();
+      carregarRecomendacoesRH();
+      carregarEstatisticas();
+    });
+
+    // ===== ALERTAS DE TALENTOS (Fase 2) =====
+    async function carregarAlertasTalentos() {
+      const el = document.getElementById('talentAlertsWidget');
+      if (!el || typeof getTalentAlerts !== 'function') return;
+      try {
+        const select = [
+          'id', 'name', 'specialty', 'avatar_url', 'avg_rating', 'total_reviews',
+          'music_tags', 'visual_tags', 'personality_tags', 'work_tags', 'style_tags', 'tags',
+          'availability', 'available_now', 'seeking_work', 'salary_expectation',
+          'client_portfolio_count', 'igv_score', 'current_establishment_id',
+          'profile:professional_profiles(years_experience)'
+        ].join(',');
+        const profs = await fetchAPI(
+          `/rest/v1/professionals?is_active=eq.true&current_establishment_id=is.null&select=${select}&limit=80`
+        );
+        const alerts = getTalentAlerts(profs || [], { minIGV: 60, limit: 5 })
+          .map(p => {
+            let enriched = enrichProfForContratante(p, currentEst);
+            return enriched;
+          });
+        if (!alerts.length) {
+          el.innerHTML = '<p style="color:#64748b;font-size:14px;">Nenhuma oportunidade no momento. Autônomos com IGV 60+, disponíveis e abertos a contratação aparecem aqui.</p>';
+          return;
+        }
+        const items = alerts.map(p => {
+          const m = p._talentMetrics;
+          const match = p._contratanteMatch;
+          const url = `./perfil-page.html?tipo=profissional&id=${p.id}`;
+          return `<li class="talent-alert-item" onclick="window.location.href='${url}'" style="cursor:pointer;">
+            <strong>${escapeHtml(p.name)}</strong>
+            <span>IGV ${Math.round(m?.igv ?? 0)}</span>
+            ${match ? `<span>Match ${match.percent}%</span>` : ''}
+            <span class="talent-pill talent-pill-live sm">🟢 Agora</span>
+          </li>`;
+        }).join('');
+        el.innerHTML = `
+          <div class="talent-alerts-block" style="margin:0;">
+            <div class="talent-alerts-title">🔔 Top oportunidades para ${escapeHtml(currentEst?.name || 'seu estabelecimento')}</div>
+            <ul class="talent-alerts-list">${items}</ul>
+          </div>
+        `;
+      } catch (e) {
+        console.warn('Erro ao carregar alertas:', e);
+        el.innerHTML = '<p style="color:#94a3b8;font-size:14px;">Não foi possível carregar alertas agora.</p>';
+      }
+    }
+
+    // ===== CARREGAR ESTATÍSTICAS =====
+    async function carregarEstatisticas() {
+      try {
+        const profs = await fetchAPI(`/rest/v1/professionals?select=id&current_establishment_id=eq.${estId}`);
+        document.getElementById('profCount').textContent = profs.length;
+
+        const allReviews = await fetchReviews(`establishment_id=eq.${estId}`);
+        const clientReviews = filterReviewsByType(allReviews, REVIEW_TYPES.CLIENT_TO_EST);
+        const stats = computeRatingStats(clientReviews);
+        const avg = stats.total ? stats.avg : (currentEst.avg_rating || 0);
+        const total = stats.total || currentEst.total_reviews || 0;
+        document.getElementById('reviewCount').textContent = total;
+        document.getElementById('avgRating').textContent = avg ? avg.toFixed(1) : '0.0';
+        updateProfileRatingBlock(
+          document.getElementById('estRatingBlock'),
+          document.getElementById('estRatingStars'),
+          document.getElementById('estRatingValue'),
+          document.getElementById('estRatingCount'),
+          avg,
+          total
+        );
+
+        const prooflyData = calcularProoflyScoreFromReviews(allReviews, estId, 'est');
+        updateProoflyScoreBlock(
+          document.getElementById('estProoflyBlock'),
+          null,
+          document.getElementById('estProoflyLabel'),
+          document.getElementById('estProoflyBreakdown'),
+          prooflyData
+        );
+        const badges = getProoflyBadges(currentEst, prooflyData.score, { clientTotal: total });
+        document.getElementById('estProoflyBadges').innerHTML = badges.map(b =>
+          `<span class="proofly-dash-badge">${b.icon} ${escapeHtml(b.label)}</span>`
+        ).join('');
+        const social = prooflyData.social || getMockSocialSignals(estId, 'est');
+        document.getElementById('estProoflySocial').innerHTML = `
+          <span>❤️ ${social.likes || 0} curtidas</span>
+          <span>👁️ ${social.views || 0} views</span>
+          <span>⭐ ${social.favorites || 0} salvos</span>
+        `;
+
+        const estCtx = { entityType: 'est', establishmentId: estId };
+        const reviewsList = await fetchReviews(
+          `establishment_id=eq.${estId}&review_type=eq.client_to_establishment`,
+          { limit: 10, viewContext: estCtx }
+        );
+
+        const profReviewsList = await fetchReviews(
+          `establishment_id=eq.${estId}&review_type=eq.professional_to_establishment`,
+          { limit: 5, viewContext: estCtx }
+        );
+        const profRevEl = document.getElementById('profEstReviewsList');
+        if (profRevEl) {
+          profRevEl.innerHTML = typeof renderReviewsListHtml === 'function'
+            ? renderReviewsListHtml(profReviewsList, 'Nenhuma avaliação de profissionais ainda.', { entityType: 'est' })
+            : '<p style="color:#94a3b8;">Nenhuma avaliação de profissionais ainda.</p>';
+        }
+        const listEl = document.getElementById('reviewsList');
+        listEl.innerHTML = typeof renderReviewsListHtml === 'function'
+          ? renderReviewsListHtml(reviewsList, 'Nenhuma avaliação ainda.', { entityType: 'est' })
+          : '<p style="color:#94a3b8;">Nenhuma avaliação ainda.</p>';
+
+        // Profissionais vinculados + Centro RH
+        const profsList = await fetchAPI(
+          `/rest/v1/professionals?select=id,name,specialty,avatar_url,avg_rating,total_reviews,client_portfolio_count,igv_score,profile:professional_profiles(years_experience,specialty)&current_establishment_id=eq.${estId}&limit=20`
+        );
+        const estabReviewsByProf = {};
+        try {
+          const myReviews = await fetchReviews(
+            `establishment_id=eq.${estId}&review_type=eq.establishment_to_professional`,
+            { limit: 50 }
+          );
+          (myReviews || []).forEach(r => {
+            if (r.professional_id && !estabReviewsByProf[r.professional_id]) {
+              estabReviewsByProf[r.professional_id] = r;
+            }
+          });
+        } catch { /* noop */ }
+
+        const teamEl = document.getElementById('rhTeamGrid');
+        const profsEl = document.getElementById('profsList');
+        if (!profsList.length) {
+          if (teamEl) teamEl.innerHTML = '<p style="color:#94a3b8;">Nenhum profissional na equipe. Use o mercado de talentos para contratar.</p>';
+          profsEl.innerHTML = '<p style="color:#94a3b8;">Nenhum profissional vinculado.</p>';
+        } else {
+          let html = '';
+          let teamHtml = '';
+          profsList.forEach(raw => {
+            const p = typeof enrichProfWithTalentMetrics === 'function' ? enrichProfWithTalentMetrics(raw) : raw;
+            p._lastEstabReview = estabReviewsByProf[p.id] || null;
+            if (typeof HiringFlow !== 'undefined' && HiringFlow.renderTeamCard) {
+              teamHtml += HiringFlow.renderTeamCard(p);
+            }
+            const m = p._talentMetrics;
+            const stars = p.avg_rating ? renderStars(Math.round(p.avg_rating)) : '☆☆☆☆☆';
+            const igvHtml = typeof renderIGVBadge === 'function' && m ? renderIGVBadge(m.igv, 'sm') : '';
+            html += `
+              <div class="prof-item-mini" style="flex-wrap:wrap;">
+                <div style="width:36px;height:36px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6);flex-shrink:0;font-size:14px;">${p.avatar_url ? `<img src="${p.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : p.name.charAt(0).toUpperCase()}</div>
+                <div style="flex:1;min-width:140px;"><div style="font-weight:600;color:#0f172a;">${escapeHtml(p.name)}</div><div style="font-size:13px;color:#64748b;">${escapeHtml(p.specialty || 'Profissional')}</div>${m ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">${escapeHtml(m.carteiraLabel)}</div>` : ''}</div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                  <div style="color:#f59e0b;font-size:13px;">${stars} ${p.avg_rating ? p.avg_rating.toFixed(1) : '0.0'}</div>
+                  ${igvHtml}
+                </div>
+                <button type="button" class="btn btn-outline btn-small" style="font-size:11px;padding:4px 10px;" onclick="avaliarProfissionalVinculado('${p.id}','${escapeHtml(p.name).replace(/'/g, "\\'")}')">⭐ Avaliar</button>
+              </div>
+            `;
+          });
+          if (teamEl) teamEl.innerHTML = teamHtml || html;
+          profsEl.innerHTML = html;
+        }
+
+        await carregarRecomendacoesRH();
+        renderPropostasRH();
+        await carregarAlertasTalentos();
+      } catch (e) { console.warn('Erro ao carregar estatísticas:', e); }
+    }
+
+    window.avaliarProfissionalVinculado = async function(profId, profName) {
+      const ratingStr = prompt(`Nota de 1 a 5 para ${profName}:`, '5');
+      if (!ratingStr) return;
+      const rating = parseInt(ratingStr, 10);
+      if (rating < 1 || rating > 5) {
+        await showAlert('⚠️', 'Informe uma nota entre 1 e 5.');
+        return;
+      }
+      const comment = prompt('Comentário (opcional):', '') || '';
+      try {
+        await submitReview({
+          rating,
+          comment,
+          professionalId: profId,
+          reviewType: REVIEW_TYPES.ESTAB_TO_PROF
+        });
+        await showAlert('✅', 'Avaliação registrada!');
+        carregarEstatisticas();
+      } catch (e) {
+        await showAlert('❌', e.message);
+      }
+    };
+
+    // ===== TOGGLE EDIÇÃO =====
+    function toggleEditMode(enable) {
+      isEditMode = (enable !== undefined) ? enable : !isEditMode;
+      document.body.classList.toggle('edit-mode', isEditMode);
+      document.getElementById('editToggleBtn').style.display = isEditMode ? 'none' : 'inline-block';
+      document.getElementById('saveBtn').style.display = isEditMode ? 'inline-block' : 'none';
+      document.getElementById('cancelBtn').style.display = isEditMode ? 'inline-block' : 'none';
+      document.getElementById('sairBtn').style.display = isEditMode ? 'none' : 'inline-block';
+      document.getElementById('saveBtnBottom').style.display = isEditMode ? 'inline-block' : 'none';
+      document.getElementById('cancelBtnBottom').style.display = isEditMode ? 'inline-block' : 'none';
+      if (isEditMode) renderGalleryEdit();
+    }
+
+    // ===== SALVAR =====
+    async function salvarEdicao() {
+      const formatted = typeof formatTextFields === 'function'
+        ? formatTextFields({
+            name: edit.name.value.trim(),
+            type: edit.type.value.trim(),
+            description: edit.description.value.trim(),
+            street: edit.street.value.trim(),
+            neighborhood: edit.neighborhood.value.trim(),
+            city: edit.city.value.trim(),
+            state: edit.state.value.trim()
+          }, {
+            name: 'establishmentName',
+            type: 'specialty',
+            description: 'bio',
+            street: 'address',
+            neighborhood: 'neighborhood',
+            city: 'city',
+            state: 'state'
+          })
+        : {
+            name: edit.name.value.trim(),
+            type: edit.type.value.trim(),
+            description: edit.description.value.trim(),
+            street: edit.street.value.trim(),
+            neighborhood: edit.neighborhood.value.trim(),
+            city: edit.city.value.trim(),
+            state: edit.state.value.trim()
+          };
+      const name = formatted.name;
+      if (!name) {
+        await showAlert('⚠️ Atenção', 'Nome é obrigatório.');
+        return;
+      }
+      if (edit.phone.value.trim() && !formatarTelefone(edit.phone)) {
+        await showAlert('⚠️ Atenção', 'Telefone inválido.');
+        edit.phone.focus();
+        return;
+      }
+
+      const infraTags = Array.from(edit.infraContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const musicTags = Array.from(edit.musicContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const positioningTags = Array.from(edit.positioningContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const audienceTags = Array.from(edit.audienceContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+      const vibeTags = Array.from(edit.vibeContainer.querySelectorAll('.active')).map(el => el.dataset.tag);
+
+      const estPayload = {
+        name: name,
+        type: formatted.type || null,
+        description: formatted.description || null,
+        street: formatted.street || null,
+        number: edit.number.value.trim() || null,
+        neighborhood: formatted.neighborhood || null,
+        city: formatted.city || null,
+        state: formatted.state || null,
+        country: edit.country.value.trim() || null,
+        phone: edit.phone.value.trim() || null,
+        instagram: edit.instagram.value.trim() || null,
+        avatar_url: editGalleryPhotos[0] || newAvatarBase64 || currentEst?.avatar_url || null,
+        gallery_urls: editGalleryPhotos,
+        infra_tags: infraTags,
+        music_tags: musicTags,
+        positioning_tags: positioningTags,
+        audience_tags: audienceTags,
+        vibe_tags: vibeTags,
+      };
+
+      try {
+        await fetchAPI(`/rest/v1/establishments?id=eq.${estId}`, 'PATCH', estPayload);
+        await showAlert('✅ Sucesso!', 'Perfil atualizado com sucesso!');
+        await carregarDados();
+        toggleEditMode(false);
+      } catch (e) {
+        await showAlert('❌ Erro', 'Erro ao salvar: ' + e.message);
+      }
+    }
+
+    // ===== CANCELAR =====
+    async function cancelarEdicao() {
+      const confirmado = await showConfirm({
+        title: 'Cancelar edição?',
+        message: 'As alterações não salvas serão perdidas.',
+        confirmText: 'Sim, cancelar',
+        cancelText: 'Continuar editando',
+        danger: false
+      });
+      if (confirmado) {
+        carregarDados();
+        toggleEditMode(false);
+      }
+    }
+
+    // ===== SAIR =====
+    async function sairModo() {
+      const confirmado = await showConfirm({
+        title: 'Sair do perfil?',
+        message: 'Você será desconectado.',
+        confirmText: 'Sair',
+        cancelText: 'Ficar',
+        danger: false
+      });
+      if (confirmado) {
+        if (typeof resetSessionAndGoHome === 'function') {
+          resetSessionAndGoHome();
+        } else {
+          clearSession();
+          window.location.replace('index.html');
+        }
+      }
+    }
+    window.sairModo = sairModo;
+
+    // ===== EVENTOS =====
+    document.getElementById('editToggleBtn').addEventListener('click', () => toggleEditMode(true));
+    document.getElementById('saveBtn').addEventListener('click', salvarEdicao);
+    document.getElementById('cancelBtn').addEventListener('click', cancelarEdicao);
+    document.getElementById('saveBtnBottom').addEventListener('click', salvarEdicao);
+    document.getElementById('cancelBtnBottom').addEventListener('click', cancelarEdicao);
+
+    // ===== WIDGET EMBED =====
+    function refreshEstWidgetPanel() {
+      if (!estId || typeof ProoflyWidgetUtils === 'undefined') return;
+      ProoflyWidgetUtils.configureWidgetRuntime();
+      const mode = document.getElementById('widgetModeSelect')?.value || 'medium';
+      const box = document.getElementById('widgetPreviewBox');
+      const codeEl = document.getElementById('widgetEmbedCode');
+      const openLink = document.getElementById('widgetOpenPage');
+      if (!box) return;
+      box.innerHTML = `<div data-proofly-id="${estId}" data-mode="${mode}"></div>`;
+      if (window.ProoflyWidget) window.ProoflyWidget.processWidgets();
+      const snippet = ProoflyWidgetUtils.buildEmbedSnippet(estId, mode);
+      if (codeEl) codeEl.textContent = snippet;
+      if (openLink) openLink.href = `./widget.html?id=${encodeURIComponent(estId)}&mode=${encodeURIComponent(mode)}`;
+    }
+
+    document.getElementById('widgetModeSelect')?.addEventListener('change', refreshEstWidgetPanel);
+    document.getElementById('widgetCopyBtn')?.addEventListener('click', async () => {
+      const ok = await ProoflyWidgetUtils?.copyText(ProoflyWidgetUtils.buildEmbedSnippet(estId, document.getElementById('widgetModeSelect')?.value));
+      await showAlert(ok ? '✅ Copiado!' : '❌ Erro', ok ? 'Código HTML copiado.' : 'Não foi possível copiar.');
+    });
+    document.getElementById('widgetCopyIframeBtn')?.addEventListener('click', async () => {
+      const ok = await ProoflyWidgetUtils?.copyText(ProoflyWidgetUtils.buildIframeSnippet(estId, document.getElementById('widgetModeSelect')?.value));
+      await showAlert(ok ? '✅ Copiado!' : '❌ Erro', ok ? 'Código iframe copiado.' : 'Não foi possível copiar.');
+    });
+
+    // ===== INICIALIZAR =====
+    if (typeof bindRegistrationFormatting === 'function') {
+      bindRegistrationFormatting({
+        establishmentName: edit.name,
+        specialty: edit.type,
+        bio: edit.description,
+        street: edit.street,
+        neighborhood: edit.neighborhood,
+        city: edit.city,
+        state: edit.state
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarDados();
+      toggleEditMode(false);
+    });
+  </script>
+</body>
+</html>

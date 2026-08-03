@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔐 Ranking Pro - Login</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .login-container {
+      max-width: 420px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+    .login-container .card {
+      padding: 32px 28px;
+    }
+    .login-container h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 4px;
+      color: #0f172a;
+    }
+    .login-container .sub {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .btn-google {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 50px;
+      background: #fff;
+      color: #0f172a;
+      border: 2px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: 600;
+    }
+    .btn-google:hover {
+      background: #f8fafc;
+      border-color: #6366f1;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .btn-google img {
+      width: 24px;
+      height: 24px;
+    }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #6366f1;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .info-box {
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #475569;
+      text-align: center;
+      border: 1px dashed #94a3b8;
+    }
+    .info-box strong {
+      color: #0f172a;
+    }
+    .divider {
+      text-align: center;
+      margin: 16px 0;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    @media (max-width: 480px) {
+      .login-container .card {
+        padding: 24px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <div class="container login-container">
+    <div class="card">
+      <h1>🔐 Acessar</h1>
+      <p class="sub">Entre para acessar sua conta</p>
+
+      <button class="btn-google" onclick="loginCliente()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+        Entrar com Google (Leandro Rocha)
+      </button>
+
+      <div class="divider">— ou —</div>
+
+      <form onsubmit="event.preventDefault(); loginCliente();">
+        <div style="margin-bottom:12px;">
+          <input type="email" placeholder="email@exemplo.com" value="leandro@proofly.com" style="width:100%;padding:12px;border-radius:10px;border:2px solid #e2e8f0;font-size:15px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+          <input type="password" placeholder="••••••••" value="123456" style="width:100%;padding:12px;border-radius:10px;border:2px solid #e2e8f0;font-size:15px;" />
+        </div>
+        <button type="submit" class="btn" style="width:100%;padding:14px;font-size:18px;border-radius:50px;">🚀 Entrar</button>
+      </form>
+
+      <a href="index.html" class="back-link">← Voltar para o início</a>
+
+      <div class="info-box">
+        💡 <strong>Qualquer credencial funciona.</strong><br />
+        O sistema é demo — não valida email nem senha.
+      </div>
+    </div>
+  </div>
+
+  <script src="./loader.js"></script>
+
+  <script>
+    document.addEventListener('scriptsLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const intent = urlParams.get('intent');
+
+      function redirectReturnTo() {
+        const raw = urlParams.get('returnTo');
+        if (!raw) return false;
+        try {
+          const decoded = decodeURIComponent(raw);
+          if (/^https?:\/\//i.test(decoded) || decoded.includes('//')) return false;
+          const href = decoded.startsWith('./') || decoded.startsWith('/')
+            ? decoded
+            : './' + decoded;
+          window.location.href = href;
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      // Se for onboarding, forçar remoção de professionalId da sessão
+      if (intent === 'onboarding-profissional' || intent === 'onboarding-estabelecimento') {
+        const session = getSession();
+        if (session) {
+          session.professionalId = null;
+          session.establishmentId = null;
+          setSession(session);
+          console.log('🧹 [Login] Sessão limpa para onboarding:', session);
+        }
+      }
+
+      // Verifica se já tem sessão
+      const currentSession = getSession();
+      if (currentSession && currentSession.userId) {
+        console.log('🔍 [Login] Sessão existente:', currentSession);
+
+        if (!intent && typeof hasExplicitActiveProfile === 'function' && !hasExplicitActiveProfile(currentSession)) {
+          window.location.href = './selecionar-perfil.html';
+          return;
+        }
+
+        // PRIORIDADE MÁXIMA: INTENT
+        if (intent === 'onboarding-profissional') {
+          window.location.href = './onboarding-profissional.html?force=true';
+          return;
+        }
+        if (intent === 'onboarding-estabelecimento') {
+          window.location.href = './onboarding-estabelecimento.html?force=true';
+          return;
+        }
+        if (typeof routeAfterLogin === 'function') {
+          window.location.href = routeAfterLogin(intent);
+          return;
+        }
+        window.location.href = './selecionar-perfil.html';
+        return;
+      }
+
+      // ===== FUNÇÃO DE LOGIN =====
+      window.loginCliente = async function() {
+        console.log('🔐 [Login] Tentando login...');
+
+        const email = 'leandro@proofly.com';
+        const name = 'Leandro Gon Rocha';
+
+        let user = await fetchUserByEmail(email);
+        if (!user) {
+          user = await createUser({ name, email, provider: 'google', role: 'cliente' });
+        }
+        if (typeof ensureDemoUserLinks === 'function') {
+          user = await ensureDemoUserLinks(user);
+        }
+        console.log('👤 [Login] Usuário:', user);
+
+        const sessionData = typeof buildSessionFromUser === 'function'
+          ? buildSessionFromUser(user)
+          : {
+              userId: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              clientId: user.client_id || null,
+              professionalId: user.professional_id || null,
+              establishmentId: user.establishment_id || null,
+              isAdmin: user.is_admin || false
+            };
+
+        // Se for onboarding, forçar remoção dos vínculos
+        const intentAfter = new URLSearchParams(window.location.search).get('intent');
+        if (intentAfter === 'onboarding-profissional') {
+          sessionData.professionalId = null;
+        }
+        if (intentAfter === 'onboarding-estabelecimento') {
+          sessionData.establishmentId = null;
+        }
+
+        delete sessionData.activeProfile;
+
+        setSession(sessionData);
+        console.log('✅ [Login] Sessão salva:', sessionData);
+
+        // Redireciona
+        if (intentAfter === 'onboarding-profissional') {
+          window.location.href = './onboarding-profissional.html?force=true';
+          return;
+        }
+        if (intentAfter === 'onboarding-estabelecimento') {
+          window.location.href = './onboarding-estabelecimento.html?force=true';
+          return;
+        }
+        if (typeof routeAfterLogin === 'function') {
+          window.location.href = routeAfterLogin(intentAfter);
+          return;
+        }
+        window.location.href = './selecionar-perfil.html';
+      };
+    });
+  </script>
+
+</body>
+</html>

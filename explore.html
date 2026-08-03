@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rank-X — Explorar</title>
+<link rel="stylesheet" href="./rankx-core.css">
+<style>
+  /* === FIX PILLS SENDO COMIDAS === */
+  .rx-topbar{ position:relative; overflow:visible; transition: all .3s; }
+  .rx-topbar.is-compact{ padding:14px 16px; }
+  .rx-topbar-inner{ flex:1; min-width:0; max-width:100%; padding-right:56px; }
+  .rx-page-title{ font-size: clamp(18px, 3.2vw, 28px); line-height:1.1; white-space:normal; word-break:break-word; display:block; max-width:100%; transition: font-size .3s; }
+  .rx-topbar.is-compact .rx-page-title{ font-size: clamp(14px, 4vw, 18px); }
+  @media (max-width:600px){ .rx-page-title{ font-size: clamp(15px, 5vw, 20px); } .rx-topbar.is-compact .rx-page-title{ font-size: clamp(13px, 4.2vw, 16px); } }
+  .style-bar{ display:flex; gap:6px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none; margin-top:8px; width:100%; max-width:100%; min-width:0; padding-bottom:4px; -webkit-overflow-scrolling:touch; }
+  .style-bar::-webkit-scrollbar{ display:none; width:0; height:0; }
+  .style-bar .style-chip{ flex-shrink:0; white-space:nowrap; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); color:#cbd5e1; font-size:10px; padding:4px 9px; border-radius:999px; }
+  .avatar-top{ position:absolute; top:20px; right:20px; width:40px; height:40px; border-radius:50%; border:2px solid rgba(139,92,246,0.6); overflow:hidden; background:#1e1e2e; display:flex; align-items:center; justify-content:center; z-index:2; }
+
+  /* Loading bokeh */
+  #loadingOverlay{ position:fixed; inset:0; background: rgba(8,8,15,0.85); backdrop-filter: blur(18px) saturate(140%); z-index:5000; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity .4s, visibility .4s; }
+  #loadingOverlay.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+  .loading-logo{ font-size:48px; animation: pulse 1.2s infinite; }
+  @keyframes pulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.1);} }
+  .loading-bar{ width:120px; height:4px; background: rgba(255,255,255,0.1); border-radius:999px; margin-top:16px; overflow:hidden; }
+  .loading-fill{ height:100%; width:0%; background: linear-gradient(90deg,#6366f1,#8b5cf6); border-radius:999px; transition: width .3s; }
+  .loading-text{ font-size:12px; color:#94a3b8; margin-top:8px; letter-spacing:.06em; }
+  .bokeh-page{ filter: blur(12px) brightness(0.7); pointer-events:none; transition: filter .4s; }
+  .bokeh-page.loaded{ filter: blur(0) brightness(1); pointer-events:auto; }
+
+  .rx-float-nav .rx-nav-side-back{
+    width:0; height:38px; opacity:0; pointer-events:none;
+    overflow:hidden; border-radius:999px;
+    background: rgba(99,102,241,0.18);
+    border:1px solid rgba(99,102,241,0.25);
+    color:#a5b4fc;
+    display:flex; align-items:center; justify-content:center;
+    transition: all .36s cubic-bezier(.16,1,.3,1);
+    flex-shrink:0; margin:0;
+  }
+  .rx-float-nav .rx-nav-side-back.show{
+    width:42px; opacity:1; pointer-events:auto; margin:0 2px;
+  }
+  .rx-float-nav .rx-nav-side-back:hover{
+    background: rgba(99,102,241,0.32); color:white; transform: scale(1.05);
+  }
+  .rx-float-nav .rx-nav-side-back svg{ width:18px; height:18px; }
+
+  .rx-welcome{ position:fixed; top:50%; left:50%; transform: translate(-50%,-50%) scale(.9); background: rgba(26,26,46,0.96); backdrop-filter: blur(28px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:20px 28px; display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0; pointer-events:none; transition: all .4s; z-index:3000; box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+  .rx-welcome.show{ opacity:1; transform: translate(-50%,-50%) scale(1); }
+  .rx-welcome.fadeout{ opacity:0; transform: translate(-50%,-50%) scale(.96) translateY(-10px); }
+  .rx-toast{ position:fixed; bottom:90px; left:50%; transform: translateX(-50%) translateY(20px); background:#1a1a2e; border:1px solid rgba(255,255,255,0.12); color:#e2e8f0; padding:12px 20px; border-radius:999px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition: all .32s; z-index:3000; }
+  .rx-toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+  .qr-hero{ width:100%; background: linear-gradient(135deg, #7c86ff 0%, #8b5cf6 50%, #a78bfa 100%); border:none; border-radius:18px; padding:18px; color:white; text-align:center; cursor:pointer; position:relative; overflow:hidden; box-shadow: 0 12px 32px rgba(124,134,255,0.35); margin-top:16px; }
+  .qr-hero-shine{ position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%); transform: rotate(25deg); animation: shine 3s infinite; }
+  @keyframes shine{ 0%{ transform: translateX(-100%) rotate(25deg); } 100%{ transform: translateX(100%) rotate(25deg); } }
+  .reco-wrap{ margin-top:24px; }
+  .reco-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .reco-title{ font-size:15px; font-weight:800; color:#f8fafc; }
+  .reco-sub{ font-size:11px; color:#94a3b8; }
+  .reco-track{ display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none; scroll-snap-type:x mandatory; }
+  .reco-track::-webkit-scrollbar{ display:none; }
+  .reco-card{ min-width:148px; max-width:155px; background:#1e1e2e; border:1px solid rgba(255,255,255,0.06); border-radius:16px; overflow:hidden; cursor:pointer; flex-shrink:0; scroll-snap-align:start; transition: transform .18s; }
+  .reco-card:hover{ transform: translateY(-2px); }
+  .reco-card .img-top{ position:relative; height:88px; background-size:cover; background-position:center; }
+  .reco-card .badge-match{ position:absolute; top:8px; right:8px; background:#f97316; color:white; font-size:9px; font-weight:800; padding:3px 7px; border-radius:999px; }
+  .reco-card .body{ padding:8px 10px 10px; }
+  .reco-card .body .name{ font-size:11px; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .reco-card .body .role{ font-size:9px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .reco-card .body .rating{ font-size:9px; color:#f59e0b; margin-top:3px; }
+  .reco-card .body .loc{ font-size:8px; color:#fb923c; margin-top:1px; }
+  .reco-card .body .ranking{ font-size:8px; color:#8b5cf6; font-weight:700; margin-top:2px; }
+  .filter-toggle{ width:100%; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:12px 16px; color:#e2e8f0; font-size:13px; font-weight:600; display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-top:12px; }
+  .filter-panel{ display:none; margin-top:8px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:14px; }
+  .filter-panel.is-open{ display:block; }
+  .filter-group{ margin-bottom:14px; }
+  .filter-group-title{ font-size:10px; letter-spacing:.08em; color:#64748b; margin-bottom:8px; }
+  .f-chip{ display:inline-flex; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); color:#94a3b8; font-size:11px; padding:6px 12px; border-radius:999px; cursor:pointer; margin:3px; transition: all .18s; user-select:none; }
+  .f-chip.active{ background:#6366f1; color:white; border-color:#6366f1; box-shadow: 0 4px 12px rgba(99,102,241,0.35); }
+  .view-toggle{ display:flex; gap:6px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:999px; padding:4px; }
+  .view-btn{ padding:6px 14px; border-radius:999px; font-size:11px; font-weight:700; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition: all .18s; }
+  .view-btn.active{ background: linear-gradient(135deg,#6366f1,#8b5cf6); color:white; box-shadow: 0 4px 12px rgba(99,102,241,0.35); }
+  .main-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:16px; margin-top:16px; }
+  .main-grid.list{ grid-template-columns: 1fr; }
+  .main-grid.blocos{ grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); }
+  .big-card{ background:#15151f; border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,0.06); cursor:pointer; transition: transform .18s; }
+  .big-card:hover{ transform: translateY(-2px); }
+  .big-card .img-wrap{ position:relative; height:220px; background-size:cover; background-position:center; }
+  .big-card .img-wrap::after{ content:''; position:absolute; inset:0; background: linear-gradient(to top, rgba(0,0,0,0.85) 15%, transparent 60%); }
+  .big-card .badge-solido{ position:absolute; top:12px; left:12px; background: rgba(0,0,0,0.45); backdrop-filter: blur(8px); border:1px solid rgba(255,255,255,0.15); color:white; font-size:11px; padding:4px 10px; border-radius:999px; z-index:2; }
+  .big-card .fav{ position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background: rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); color:white; display:flex; align-items:center; justify-content:center; z-index:2; }
+  .big-card .info{ position:absolute; bottom:12px; left:14px; right:14px; z-index:2; }
+  .big-card .info .name{ font-size:18px; font-weight:800; color:white; }
+  .big-card .info .sub{ font-size:12px; color: rgba(255,255,255,0.7); }
+  .big-card .meta{ padding:10px 14px 14px; }
+  .list-card{ background:white; border-radius:16px; padding:12px; display:flex; gap:12px; align-items:center; cursor:pointer; color:#0f172a; border:1px solid #e2e8f0; }
+  .list-card img{ width:48px; height:48px; border-radius:50%; object-fit:cover; }
+  .bloco-card{ background:#1e1e2e; border:1px solid rgba(255,255,255,0.06); border-radius:16px; overflow:hidden; cursor:pointer; }
+  .bloco-card .img{ height:90px; background-size:cover; background-position:center; }
+  .bloco-card .body{ padding:8px; }
+  .bloco-card .name{ font-size:11px; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+</style>
+</head>
+<body>
+<div id="loadingOverlay"><div class="loading-logo">🏆</div><div class="loading-bar"><div class="loading-fill" id="loadingFill"></div></div><div class="loading-text" id="loadingText">Carregando...</div></div>
+<div id="rx-toast" class="rx-toast"></div>
+<div id="welcomeCard" class="rx-welcome"><div style="font-size:28px;">👋</div><div style="font-weight:800; font-size:16px;" id="welcomeName">Bem-vindo!</div><div style="font-size:12px; color:#94a3b8;">Reputação verificada por QR Code</div></div>
+<div id="qrModal" class="rx-modal-backdrop" style="display:none;" onclick="closeQR()"><div class="rx-modal rx-modal--glass" onclick="event.stopPropagation()"><h3>📷 Escanear QR Code</h3><p style="margin:8px 0 16px; font-size:12px; color:#94a3b8;">Aponte para o QR do profissional ou estabelecimento</p><div style="background:white; width:200px; height:200px; border-radius:16px; margin:0 auto; display:flex; align-items:center; justify-content:center; color:#000; font-weight:700;">Câmera simulada</div><div class="rx-row" style="justify-content:flex-end; margin-top:16px;"><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="closeQR()">Fechar</button><button class="rx-btn rx-btn--primary rx-btn--sm" onclick="handleQRScanResult()">Simular leitura</button></div></div></div>
+<div id="pageContent" class="bokeh-page">
+<div class="rx-container">
+  <div class="rx-topbar" id="rxTopbar">
+    <div class="rx-topbar-inner">
+      <div style="font-size:10px; letter-spacing:.12em; color:#8b8ba8; font-weight:700;">🏆 RANKING PRO</div>
+      <h1 class="rx-page-title" id="mainTitle">Encontre quem <span style="color:#a5b4fc;">combina com você</span></h1>
+      <p class="rx-page-sub" style="font-size:11px; margin-top:4px;">Resultados personalizados • Cross-matching ativo</p>
+      <div class="style-bar" id="styleBar">
+        <span style="font-size:9px; color:#8b8ba8; font-weight:700; letter-spacing:.06em; flex-shrink:0; display:flex; align-items:center;">🎯 BASEADO NO SEU ESTILO</span>
+        <span class="style-chip">🎧 Hip Hop</span>
+        <span class="style-chip">📶 Wi-Fi</span>
+        <span class="style-chip">😌 Descontraído</span>
+        <span class="style-chip">🤗 Acolhedor</span>
+      </div>
+    </div>
+    <a id="avatarTop" href="./meu-perfil.html" class="avatar-top">
+      <img id="avatarImg" style="display:none; width:100%; height:100%; object-fit:cover;" />
+      <div id="avatarFallback" style="width:100%; height:100%; background: linear-gradient(135deg,#8b5cf6,#ec4899); display:flex; align-items:center; justify-content:center; font-weight:800; color:white;">E</div>
+    </a>
+  </div>
+
+  <button class="qr-hero" onclick="openQR()"><span class="qr-hero-shine"></span><span style="font-size:24px;">📷</span><div style="font-size:14px; font-weight:800; margin-top:4px;">Escanear QR Code</div><div style="font-size:11px; opacity:0.9; margin-top:2px;">Avalie o profissional ou estabelecimento onde você está</div></button>
+
+  <button class="filter-toggle" onclick="toggleSearch()"><span>🔍 Procurar profissionais e lugares</span><span id="searchChevron">›</span></button>
+  <div class="filter-panel" id="searchPanel">
+    <div style="display:flex; gap:6px; margin-bottom:12px;">
+      <button class="rx-btn rx-btn--primary rx-btn--sm" id="tabProf" onclick="switchTab('prof')">👤 Profissionais</button>
+      <button class="rx-btn rx-btn--ghost rx-btn--sm" id="tabEst" onclick="switchTab('est')">🏢 Estabelecimentos</button>
+    </div>
+    <div class="rx-row" id="searchProfRow"><input id="searchProfInput" class="rx-input rx-input--glass" placeholder="Nome ou especialidade..." style="flex:1" /><button class="rx-btn rx-btn--primary rx-btn--sm" onclick="doSearch()">Buscar</button></div>
+    <div class="rx-row" id="searchEstRow" style="display:none;"><input id="searchEstInput" class="rx-input rx-input--glass" placeholder="Nome do estabelecimento ou cidade..." style="flex:1" /><button class="rx-btn rx-btn--primary rx-btn--sm" onclick="doSearchEst()">Buscar</button></div>
+    <div class="rx-row" style="margin-top:10px;"><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="listAll()">📋 Listar todos</button><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="filterIGV()">★ IGV 80+</button><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="clearFilters()">🧹 Limpar</button></div>
+  </div>
+
+  <div class="reco-wrap"><div class="reco-head"><div><div class="reco-title">🔥 Top profissionais</div><div class="reco-sub">Melhor reputação e match com o seu estilo</div></div><div class="rx-row"><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="scrollTrack('trackProf',-1)">‹</button><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="scrollTrack('trackProf',1)">›</button></div></div><div class="reco-track" id="trackProf"></div></div>
+  <div class="reco-wrap"><div class="reco-head"><div><div class="reco-title">⭐ Top estabelecimentos</div><div class="reco-sub">Lugares com cross-matching ativo</div></div><div class="rx-row"><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="scrollTrack('trackEst',-1)">‹</button><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="scrollTrack('trackEst',1)">›</button></div></div><div class="reco-track" id="trackEst"></div></div>
+
+  <button class="filter-toggle" onclick="toggleFilters()" style="border-color:#6366f1;"><span>🧩 Filtros avançados</span><span id="filterChevron">›</span></button>
+  <div class="filter-panel" id="filterPanel">
+    <div class="filter-group"><div class="filter-group-title">🎵 MÚSICA</div><div id="filterMusica"><span class="f-chip active" data-filter="Hip Hop">🎧 Hip Hop</span><span class="f-chip" data-filter="Rock">🎸 Rock</span><span class="f-chip" data-filter="Sertanejo">🎶 Sertanejo</span><span class="f-chip" data-filter="Pop">🎤 Pop</span><span class="f-chip" data-filter="MPB">🎵 MPB</span><span class="f-chip" data-filter="Eletrônico">🪩 Eletrônico</span></div></div>
+    <div class="filter-group"><div class="filter-group-title">👕 VISUAL</div><div id="filterVisual"><span class="f-chip" data-filter="Streetwear">👕 Streetwear</span><span class="f-chip" data-filter="Clássico">💈 Clássico</span><span class="f-chip" data-filter="Moderno">✨ Moderno</span></div></div>
+    <div class="filter-group"><div class="filter-group-title">🎭 PERSONALIDADE</div><div id="filterPersonalidade"><span class="f-chip active" data-filter="Extrovertido">🎭 Extrovertido</span><span class="f-chip" data-filter="Comunicativo">🗣️ Comunicativo</span></div></div>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;"><span style="font-size:10px; color:#64748b; letter-spacing:.08em; font-weight:700;">VISUALIZAÇÃO</span><div class="view-toggle"><button class="view-btn active" id="btnCards" onclick="setView('cards')">🃏 Cards</button><button class="view-btn" id="btnLista" onclick="setView('lista')">📋 Lista</button><button class="view-btn" id="btnBlocos" onclick="setView('blocos')">🧩 Blocos</button></div></div>
+
+  <div id="cardsAnchor" style="height:1px; margin-top:8px;"></div>
+  <div class="main-grid" id="mainGrid"></div>
+</div>
+</div>
+
+<nav class="rx-float-nav" id="rxFloatNav">
+  <button class="rx-nav-side-back" id="navBackLeft" onclick="jumpToTop()" aria-label="Voltar ao topo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5A2.5 2.5 0 0 1 17 11.5v7"/></svg>
+    <span class="rx-nav-label">Voltar</span>
+  </button>
+  <a href="./explore.html" class="is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-5H9v5H4a1 1 0 0 1-1-1V9.5z"/></svg><span class="rx-nav-label">Explorar</span></a>
+  <a href="javascript:void(0)" onclick="showToast('🏆 Ranking')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h12v4a6 6 0 0 1-6 6 6 6 0 0 1-6-6V3z"/><path d="M6 7H4a2 2 0 0 0 2 4"/><path d="M18 7h2a2 2 0 0 1-2 4"/><path d="M12 13v3"/><path d="M8 21h8"/></svg><span class="rx-nav-label">Ranking</span></a>
+  <button class="rx-nav-center" onclick="openQR()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h2v2M19 14h2v2M14 19h2v2M19 19h2v2"/></svg><span class="rx-nav-label">QR</span></button>
+  <a href="javascript:void(0)" onclick="showToast('💬 Matches')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-6-4.5-8.5-7.5A5 5 0 0 1 12 7a5 5 0 0 1 8.5 6.5C18 16.5 12 21 12 21z"/></svg><span class="rx-nav-badge">3</span><span class="rx-nav-label">Matches</span></a>
+  <a href="./choose-role.html"><div id="navAvatarFallback" style="width:32px; height:32px; border-radius:50%; background: linear-gradient(135deg,#8b5cf6,#ec4899); display:flex; align-items:center; justify-content:center; font-weight:800; color:white; font-size:12px;">E</div><span class="rx-nav-label">Perfil</span></a>
+  <button class="rx-nav-side-back" id="navBackRight" onclick="jumpToTop()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5A2.5 2.5 0 0 1 17 11.5v7"/></svg>
+    <span class="rx-nav-label">Voltar</span>
+  </button>
+</nav>
+
+<div id="drawerOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; backdrop-filter: blur(4px);" onclick="closeDrawer()"></div>
+<div id="drawer" style="position:fixed; bottom:0; left:0; right:0; max-width:600px; margin:0 auto; background:#0f0f1e; border-radius:28px 28px 0 0; z-index:1100; transform: translateY(100%); transition: transform .32s cubic-bezier(.16,1,.3,1); max-height:90vh; overflow:auto; border:1px solid rgba(255,255,255,0.08);"><div style="width:36px; height:4px; background:rgba(255,255,255,.15); border-radius:999px; margin:12px auto;"></div><button style="position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.08); border:none; color:white; cursor:pointer; z-index:10;" onclick="closeDrawer()">✕</button><div id="drawerBody" style="padding:0 16px 24px;"></div></div>
+
+<script src="./rankx-config.js"></script>
+<script src="./rankx-api.js"></script>
+<script src="./rankx-session.js"></script><script src="./onboarding-cta.js"></script>
+<script>
+let allProf=[], allEst=[], filteredProf=[], filteredEst=[];
+let searchOpen=false, filtersOpen=false, activeTab='prof', currentView='cards', visibleCount=10, isEstMode=false;
+let activeFilters=new Set(['Hip Hop','Extrovertido']);
+let hasSearched=false;
+
+function updateLoading(p,t){ const f=document.getElementById('loadingFill'); const txt=document.getElementById('loadingText'); if(f) f.style.width=p+'%'; if(txt&&t) txt.textContent=t; }
+function hideLoading(){ const ov=document.getElementById('loadingOverlay'); const pc=document.getElementById('pageContent'); if(ov){ ov.classList.add('hide'); } if(pc){ pc.classList.add('loaded'); pc.classList.remove('bokeh-page'); } }
+
+function scrollTrack(id,dir){ document.getElementById(id).scrollBy({left:dir*280, behavior:'smooth'}); }
+function toggleSearch(){ searchOpen=!searchOpen; document.getElementById('searchPanel').classList.toggle('is-open', searchOpen); document.getElementById('searchChevron').textContent=searchOpen?'⌄':'›'; }
+function toggleFilters(){ filtersOpen=!filtersOpen; document.getElementById('filterPanel').classList.toggle('is-open', filtersOpen); document.getElementById('filterChevron').textContent=filtersOpen?'⌄':'›'; }
+function switchTab(tab){
+  activeTab=tab; isEstMode=(tab==='est');
+  document.getElementById('tabProf').classList.toggle('rx-btn--primary', tab==='prof');
+  document.getElementById('tabProf').classList.toggle('rx-btn--ghost', tab!=='prof');
+  document.getElementById('tabEst').classList.toggle('rx-btn--primary', tab==='est');
+  document.getElementById('tabEst').classList.toggle('rx-btn--ghost', tab!=='est');
+  document.getElementById('searchEstRow').style.display=tab==='est'?'flex':'none';
+  document.getElementById('searchProfRow').style.display=tab==='prof'?'flex':'none';
+  visibleCount=10;
+  if(tab==='prof') renderProfGrid(filteredProf.length?filteredProf:allProf); else renderEstGrid(filteredEst.length?filteredEst:allEst);
+}
+function setView(v){ currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); const btn=document.getElementById('btn'+v.charAt(0).toUpperCase()+v.slice(1)); if(btn) btn.classList.add('active'); visibleCount=10; if(isEstMode) renderEstGrid(filteredEst.length?filteredEst:allEst); else renderProfGrid(filteredProf.length?filteredProf:allProf); }
+function openQR(){ const m=document.getElementById('qrModal'); m.style.display='flex'; m.classList.add('is-open'); }
+function closeQR(){ const m=document.getElementById('qrModal'); m.classList.remove('is-open'); setTimeout(()=>m.style.display='none',200); }
+function showToast(msg){ const el=document.getElementById('rx-toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000); }
+function showWelcome(name){ const c=document.getElementById('welcomeCard'); const n=document.getElementById('welcomeName'); n.textContent=name?'Bem-vindo, '+name.split(' ')[0]+'!':'Bem-vindo!'; c.classList.add('show'); setTimeout(()=>c.classList.add('fadeout'),2500); setTimeout(()=>c.classList.remove('show','fadeout'),3400); }
+function calcMatch(p, tags){ if(!tags||!tags.length) return 15; const hay=((p.tags||'')+','+(p.specialty||'')+','+(p.style_tags||'')).toLowerCase(); let s=0; tags.forEach(t=>{ if(hay.includes(t.toLowerCase())) s+=7; }); return Math.min(15+s,42); }
+
+function recoCard(p){ const img=p.avatar_url||'https://picsum.photos/seed/'+p.id+'/300/200'; return '<div class="reco-card" onclick="openProf(\''+p.id+'\')"><div class="img-top" style="background-image:url(\''+img+'\')"><span class="badge-match">'+(p._match||15)+'%</span></div><div class="body"><div class="name">'+escapeHtml(p.name)+'</div><div class="role">'+escapeHtml(p.specialty||'Profissional')+'</div><div class="rating">★ '+(p.avg_rating||5).toFixed(1)+' '+(p.total_reviews||1)+' aval.</div><div class="loc">📍 Profissional</div><div class="ranking">Ranking Pro '+(p.igv_score||53)+'</div></div></div>'; }
+function recoEstCard(e){ const img=e.avatar_url||'https://picsum.photos/seed/est-'+e.id+'/300/200'; return '<div class="reco-card" onclick="openEst(\''+e.id+'\')"><div class="img-top" style="background-image:url(\''+img+'\')"><span class="badge-match">'+(e._match||15)+'%</span></div><div class="body"><div class="name">🏢 '+escapeHtml(e.name)+'</div><div class="role">'+escapeHtml(e.type||'')+'</div><div class="rating">★ '+(e.avg_rating||5).toFixed(1)+' '+(e.total_reviews||1)+' aval.</div><div class="loc">📍 '+escapeHtml(e.city||'Curitiba')+'</div></div></div>'; }
+function bigProfCard(p){ const img=p.avatar_url||'https://picsum.photos/seed/big-'+p.id+'/600/400'; const r=p.avg_rating||4.3; return '<div class="big-card" onclick="openProf(\''+p.id+'\')"><div class="img-wrap" style="background-image:url(\''+img+'\')"><div class="badge-solido">🟡 Sólido • '+(p._match||15)+'% match</div><div class="fav" onclick="event.stopPropagation(); showToast(\'❤️ Favoritado\')">♡</div><div class="info"><div class="name">'+escapeHtml(p.name)+'</div><div class="sub">'+escapeHtml(p.specialty||'Profissional')+'</div></div></div><div class="meta"><div style="display:flex; gap:8px; font-size:12px; color:#e2e8f0;"><span>★ '+r.toFixed(1)+'</span><span style="font-size:11px;">Sólido</span></div></div></div>'; }
+function bigEstCard(e){ const img=e.avatar_url||'https://picsum.photos/seed/est-'+e.id+'/400/300'; return '<div class="big-card" onclick="openEst(\''+e.id+'\')"><div class="img-wrap" style="background-image:url(\''+img+'\')"><div class="badge-solido" style="background: rgba(99,102,241,0.7);">🏢 '+escapeHtml(e.type||'Lugar')+'</div><div class="info"><div class="name">🏢 '+escapeHtml(e.name)+'</div><div class="sub">'+escapeHtml(e.city||'')+' • '+escapeHtml(e.type||'')+'</div></div></div><div class="meta"><div style="color:#f59e0b; font-size:12px;">★ '+(e.avg_rating||0)+' • '+(e.total_reviews||0)+' avaliações • '+(e._match||15)+'% match</div></div></div>'; }
+function listProfCard(p){ return '<div class="list-card" onclick="openProf(\''+p.id+'\')"><img src="'+(p.avatar_url||'https://i.pravatar.cc/100?u='+p.id)+'" /><div style="flex:1;"><div style="font-weight:700; color:#0f172a; font-size:14px;">'+escapeHtml(p.name)+' <span style="font-size:10px; background:#6366f1; color:white; padding:2px 6px; border-radius:999px;">'+(p._match||15)+'%</span></div><div style="font-size:11px; color:#64748b;">'+escapeHtml(p.specialty||'')+' • ★ '+(p.avg_rating||0)+'</div></div><div>›</div></div>'; }
+function listEstCard(e){ return '<div class="list-card" onclick="openEst(\''+e.id+'\')"><div style="width:48px; height:48px; border-radius:12px; background: url(\''+(e.avatar_url||'https://picsum.photos/seed/est-'+e.id+'/200/200')+'\') center/cover;"></div><div style="flex:1;"><div style="font-weight:700; color:#0f172a;">🏢 '+escapeHtml(e.name)+'</div><div style="font-size:11px; color:#64748b;">'+escapeHtml(e.city||'')+' • '+escapeHtml(e.type||'')+'</div></div><div>›</div></div>'; }
+function blocoProfCard(p){ const img=p.avatar_url||'https://picsum.photos/seed/mini-'+p.id+'/200/200'; return '<div class="bloco-card" onclick="openProf(\''+p.id+'\')"><div class="img" style="background-image:url(\''+img+'\')"></div><div class="body"><div class="name">'+escapeHtml(p.name)+'</div><div style="font-size:8px; color:#f59e0b;">★ '+(p.avg_rating||0)+' • '+(p._match||15)+'%</div></div></div>'; }
+function blocoEstCard(e){ const img=e.avatar_url||'https://picsum.photos/seed/estmini-'+e.id+'/200/200'; return '<div class="bloco-card" onclick="openEst(\''+e.id+'\')"><div class="img" style="background-image:url(\''+img+'\')"></div><div class="body"><div class="name">🏢 '+escapeHtml(e.name)+'</div><div style="font-size:8px; color:#8b5cf6;">'+(e._match||15)+'%</div></div></div>'; }
+
+function renderProfGrid(list, reset=true){
+  if(reset) visibleCount=10;
+  isEstMode=false;
+  const el=document.getElementById('mainGrid');
+  el.className='main-grid '+(currentView==='lista'?'list':currentView==='blocos'?'blocos':'');
+  if(!list?.length){ el.innerHTML='<div style="grid-column:1/-1; text-align:center; padding:24px; color:#64748b;">Nenhum profissional encontrado</div>'; return; }
+  const slice=list.slice(0,visibleCount);
+  let html=currentView==='cards'? slice.map(p=>bigProfCard(p)).join('') : currentView==='lista'? slice.map(p=>listProfCard(p)).join('') : slice.map(p=>blocoProfCard(p)).join('');
+  const rest=list.length-visibleCount;
+  html+= rest>0 ? '<div id="loadMoreSentinel" style="grid-column:1/-1; text-align:center; padding:16px;"><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="loadMoreProf()">Carregar mais '+Math.min(10,rest)+' ⏳</button></div>' : '<div style="grid-column:1/-1; text-align:center; padding:12px; color:#475569; font-size:11px;">— fim • '+list.length+' profissionais —</div>';
+  el.innerHTML=html;
+  const s=document.getElementById('loadMoreSentinel'); if(s){ const obs=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ obs.disconnect(); loadMoreProf(); }},{rootMargin:'300px'}); obs.observe(s); }
+}
+function renderEstGrid(list, reset=true){
+  if(reset) visibleCount=10;
+  isEstMode=true;
+  const el=document.getElementById('mainGrid');
+  el.className='main-grid '+(currentView==='lista'?'list':currentView==='blocos'?'blocos':'');
+  if(!list?.length){ el.innerHTML='<div style="grid-column:1/-1; text-align:center; padding:24px; color:#64748b;">Nenhum estabelecimento encontrado</div>'; return; }
+  const slice=list.slice(0,visibleCount);
+  let html=currentView==='cards'? slice.map(e=>bigEstCard(e)).join('') : currentView==='lista'? slice.map(e=>listEstCard(e)).join('') : slice.map(e=>blocoEstCard(e)).join('');
+  const rest=list.length-visibleCount;
+  html+= rest>0 ? '<div id="loadMoreSentinelEst" style="grid-column:1/-1; text-align:center; padding:16px;"><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="loadMoreEst()">Carregar mais '+Math.min(10,rest)+' ⏳</button></div>' : '<div style="grid-column:1/-1; text-align:center; padding:12px; color:#475569; font-size:11px;">— fim • '+list.length+' estabelecimentos —</div>';
+  el.innerHTML=html;
+  const s=document.getElementById('loadMoreSentinelEst'); if(s){ const obs=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ obs.disconnect(); loadMoreEst(); }},{rootMargin:'300px'}); obs.observe(s); }
+}
+function loadMoreProf(){ visibleCount+=10; renderProfGrid(filteredProf.length?filteredProf:allProf,false); }
+function loadMoreEst(){ visibleCount+=10; renderEstGrid(filteredEst.length?filteredEst:allEst,false); }
+
+function renderReco(prof, est){
+  const tags=Array.from(activeFilters);
+  const withMatch=prof.map(p=>({...p,_match:calcMatch(p,tags)})); withMatch.sort((a,b)=>(b._match||0)-(a._match||0));
+  document.getElementById('trackProf').innerHTML=withMatch.slice(0,12).map(p=>recoCard(p)).join('');
+  const estM=est.map(e=>({...e,_match:calcMatch(e,tags)})); estM.sort((a,b)=>(b._match||0)-(a._match||0));
+  document.getElementById('trackEst').innerHTML=estM.slice(0,10).map(e=>recoEstCard(e)).join('');
+}
+function renderFilters(){
+  document.querySelectorAll('.f-chip').forEach(ch=>{
+    ch.addEventListener('click',()=>{
+      const v=ch.dataset.filter; if(!v) return;
+      ch.classList.toggle('active');
+      if(ch.classList.contains('active')) activeFilters.add(v); else activeFilters.delete(v);
+      applyFilters();
+    });
+  });
+}
+function applyFilters(){
+  if(activeFilters.size===0){ filteredProf=allProf; filteredEst=allEst; renderReco(allProf,allEst); renderProfGrid(allProf); return; }
+  const tags=Array.from(activeFilters);
+  filteredProf=allProf.filter(p=>{ const hay=((p.tags||'')+','+(p.specialty||'')+','+(p.style_tags||'')).toLowerCase(); return tags.some(t=>hay.includes(t.toLowerCase())); }).map(p=>({...p,_match:calcMatch(p,tags)}));
+  filteredEst=allEst.filter(e=>{ const hay=(e.name+','+e.city+','+e.type).toLowerCase(); return tags.some(t=>hay.includes(t.toLowerCase())); }).map(e=>({...e,_match:calcMatch(e,tags)}));
+  renderReco(filteredProf.length?filteredProf:allProf, filteredEst.length?filteredEst:allEst);
+  if(isEstMode) renderEstGrid(filteredEst); else renderProfGrid(filteredProf);
+}
+function clearFilters(){ activeFilters.clear(); document.querySelectorAll('.f-chip').forEach(c=>c.classList.remove('active')); filteredProf=allProf; filteredEst=allEst; renderReco(allProf,allEst); renderProfGrid(allProf); showToast('🧹 Filtros limpos'); }
+
+async function loadAll(){
+  try{
+    updateLoading(20,'Conectando ao Rank-X...');
+    const prof = await rxFetch('/rest/v1/professionals?select=id,name,specialty,avatar_url,avg_rating,total_reviews,igv_score,tags,style_tags,is_active&is_active=eq.true&order=igv_score.desc&limit=80');
+    updateLoading(60,'Carregando profissionais verificados...');
+    const est = await rxFetch('/rest/v1/establishments?select=id,name,city,type,avg_rating,total_reviews,avatar_url&order=avg_rating.desc&limit=60');
+    updateLoading(85,'Organizando matches...');
+    allProf=prof||[]; allEst=est||[]; filteredProf=allProf; filteredEst=allEst;
+    renderFilters();
+    renderReco(allProf,allEst);
+    renderProfGrid(allProf);
+    updateLoading(100,'Pronto!');
+    setTimeout(()=>{ hideLoading(); const s=rxGetSession(); if(s){ const fb=document.getElementById('avatarFallback'); if(fb) fb.textContent=(s.name||'E').charAt(0).toUpperCase(); showWelcome(s.name); } },600);
+  }catch(e){
+    updateLoading(100,'Erro');
+    document.getElementById('trackProf').innerHTML='<span style="color:#ef4444; font-size:12px;">Erro: '+escapeHtml(e.message)+'</span>';
+    hideLoading();
+  }
+}
+
+function doSearch(){
+  const term=(document.getElementById('searchProfInput').value||'').toLowerCase().trim();
+  let res;
+  if(!term){ res=filteredProf.length?filteredProf:allProf; }
+  else {
+    const base=filteredProf.length?filteredProf:allProf;
+    res=base.filter(p=>{ const n=(p.name||'').toLowerCase(); const sp=(p.specialty||'').toLowerCase(); const tags=((p.tags||'')+','+(p.style_tags||'')).toLowerCase(); return n.includes(term)||sp.includes(term)||tags.includes(term); });
+  }
+  isEstMode=false;
+  renderProfGrid(res);
+  showToast('🔍 '+res.length+' profissionais');
+  markSearched();
+  setTimeout(jumpToCards,180);
+}
+function doSearchEst(){
+  const term=(document.getElementById('searchEstInput').value||'').toLowerCase().trim();
+  let res;
+  if(!term){ res=allEst; }
+  else { res=allEst.filter(e=>{ const n=(e.name||'').toLowerCase(); const city=(e.city||'').toLowerCase(); const type=(e.type||'').toLowerCase(); return n.includes(term)||city.includes(term)||type.includes(term); }); }
+  renderEstGrid(res);
+  showToast('🏢 '+res.length+' estabelecimentos');
+  markSearched();
+  setTimeout(jumpToCards,180);
+}
+function listAll(){ clearFilters(); isEstMode=false; renderProfGrid(allProf); setTimeout(jumpToCards,100); }
+function filterIGV(){ const base=filteredProf.length?filteredProf:allProf; const res=base.filter(p=>(p.igv_score||0)>=80); renderProfGrid(res); showToast('★ '+res.length+' com IGV 80+'); setTimeout(jumpToCards,100); }
+
+function jumpToCards(){ const el=document.getElementById('cardsAnchor'); if(el){ const y=el.getBoundingClientRect().top+window.scrollY-8; window.scrollTo({top:y, behavior:'smooth'}); } }
+function jumpToTop(){ hasSearched=false; window.scrollTo({top:0, behavior:'smooth'}); setTimeout(updateBackState, 500); }
+function updateBackState(){
+  const anchor=document.getElementById('cardsAnchor');
+  const leftBtn=document.getElementById('navBackLeft');
+  const rightBtn=document.getElementById('navBackRight');
+  const topbar=document.getElementById('rxTopbar');
+  if(!anchor || !leftBtn || !rightBtn) return;
+  const anchorTop=anchor.getBoundingClientRect().top;
+  const pastCards = anchorTop < 120;
+  const shouldShow = pastCards || hasSearched;
+  if(shouldShow){ leftBtn.classList.add('show'); rightBtn.classList.add('show'); } else { leftBtn.classList.remove('show'); rightBtn.classList.remove('show'); }
+  if(topbar){ if(window.scrollY > 80){ topbar.classList.add('is-compact'); } else { topbar.classList.remove('is-compact'); } }
+}
+function markSearched(){ hasSearched=true; setTimeout(updateBackState, 150); }
+window.addEventListener('scroll', ()=>{ updateBackState(); }, {passive:true});
+
+function handleQRScanResult(){
+  const found=allProf[Math.floor(Math.random()*Math.min(allProf.length,5))]||allProf[0];
+  if(!found){ showToast('QR não encontrado'); return; }
+  closeQR();
+  const highlighted=[found, ...allProf.filter(p=>p.id!==found.id)].slice(0,20);
+  filteredProf=highlighted; isEstMode=false; renderProfGrid(highlighted);
+  setTimeout(()=>{ jumpToCards(); showToast('📷 QR: '+found.name); setTimeout(()=>openProf(found.id),600); },250);
+}
+function openProf(id){ window.location.href='./dedicated-profile.html?type=professional&id='+encodeURIComponent(id); return; const p=allProf.find(x=>x.id===id)||filteredProf.find(x=>x.id===id); if(!p) return; document.getElementById('drawerBody').innerHTML='<div style="height:200px; background: url(\''+(p.avatar_url||'https://picsum.photos/seed/'+p.id+'/600/400')+'\') center/cover; border-radius:16px; position:relative;"><div style="position:absolute; inset:0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); border-radius:16px;"></div><div style="position:absolute; bottom:12px; left:12px;"><div style="font-size:20px; font-weight:800; color:white;">'+escapeHtml(p.name)+'</div><div style="font-size:12px; color:rgba(255,255,255,0.7);">'+escapeHtml(p.specialty||'')+'</div></div></div><div style="margin-top:12px; display:flex; gap:8px; font-size:12px; color:white;"><span style="color:#f59e0b;">★ '+(p.avg_rating||0)+'</span><span>• IGV '+(p.igv_score||'—')+'</span></div><div style="margin-top:16px; display:flex; gap:8px;"><a href="./app-worker.html?id='+p.id+'" style="flex:1; background: linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px; border-radius:999px; text-align:center; text-decoration:none; font-weight:700;">Ver perfil</a><button style="flex:1; background: rgba(255,255,255,0.06); color:white; border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:999px;" onclick="handleQRScanResult()">QR</button></div>'; document.getElementById('drawerOverlay').style.display='block'; document.getElementById('drawer').style.transform='translateY(0)'; }
+function openEst(id){ window.location.href='./dedicated-profile.html?type=establishment&id='+encodeURIComponent(id); return; const e=allEst.find(x=>x.id===id)||filteredEst.find(x=>x.id===id); if(!e) return; document.getElementById('drawerBody').innerHTML='<div style="font-size:20px; font-weight:800; color:white;">🏢 '+escapeHtml(e.name)+'</div><div style="font-size:13px; color:#94a3b8;">'+escapeHtml(e.type||'')+' • '+escapeHtml(e.city||'')+'</div><div style="margin-top:12px; color:#f59e0b;">★ '+(e.avg_rating||0)+' • '+(e.total_reviews||0)+' avaliações</div><div style="margin-top:16px;"><a href="./app-owner.html?id='+e.id+'" style="display:block; background: linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px; border-radius:999px; text-align:center; text-decoration:none; font-weight:700;">Ver lugar</a></div>'; document.getElementById('drawerOverlay').style.display='block'; document.getElementById('drawer').style.transform='translateY(0)'; }
+function closeDrawer(){ document.getElementById('drawer').style.transform='translateY(100%)'; setTimeout(()=>{ document.getElementById('drawerOverlay').style.display='none'; },300); }
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadAll();
+  const inpProf=document.getElementById('searchProfInput');
+  if(inpProf){ inpProf.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } }); }
+  const inpEst=document.getElementById('searchEstInput');
+  if(inpEst){ inpEst.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); doSearchEst(); } }); }
+});
+</script>
+</body>
+</html>

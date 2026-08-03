@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Rank-X — App Worker</title><link rel="stylesheet" href="./rankx-core.css">
+<style>
+.link-card{padding:12px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="rx-container">
+  <div class="rx-topbar"><div><span style="font-size:12px;color:#10b981;font-weight:700">● WORKER</span><h1 class="rx-page-title" style="font-size:22px" id="profName">Seu Dashboard</h1></div><div class="rx-row"><a href="./dedicated-profile.html?type=professional&id=" id="viewProfile" class="rx-btn rx-btn--ghost rx-btn--sm">👁 Ver perfil</a><a href="./choose-role.html" class="rx-btn rx-btn--ghost rx-btn--sm">Sair</a></div></div>
+  
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
+    <div class="rx-card rx-card--glass"><div style="font-size:28px;font-weight:800" id="avgRating">—</div><div style="font-size:12px;color:#94a3b8">Avg Rating • <span id="totalReviews">0</span> reviews</div></div>
+    <div class="rx-card"><div style="font-size:28px;font-weight:800" id="igvScore">—</div><div style="font-size:12px;color:#64748b">IGV Score • Reputação portátil</div></div>
+  </div>
+
+  <div class="rx-card" style="margin-top:16px;">
+    <h3>🔗 Meu vínculo</h3><p style="font-size:12px;color:#64748b;margin:6px 0 12px" id="vinculoDesc">Carregando...</p>
+    <div id="vinculoList"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <input id="searchEst" class="rx-input" placeholder="Buscar estabelecimento para solicitar vínculo..." style="flex:1" oninput="searchEst(this.value)">
+      <button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="loadVinc()">Atualizar</button>
+    </div>
+    <div id="estSearchList" style="margin-top:8px"></div>
+  </div>
+
+  <div class="rx-card rx-card--dark" style="margin-top:16px;">
+    <h3>📱 Seu QR Code</h3><p style="font-size:13px;color:#94a3b8;margin:6px 0 12px">Mostre para o cliente após o atendimento. Cada QR é único e não reutilizável.</p>
+    <div style="background:white;width:160px;height:160px;border-radius:12px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:black;font-weight:800;" id="qrBox">QR</div>
+    <div class="rx-row" style="justify-content:center;margin-top:12px"><button class="rx-btn rx-btn--primary rx-btn--sm" onclick="genQR()">Gerar novo QR</button><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="copyLink()">Copiar link da página</button></div>
+  </div>
+
+  <div class="rx-card" style="margin-top:16px;"><h3>⭐ Últimas avaliações verificadas</h3><div id="reviewsList" style="margin-top:12px;color:#64748b;font-size:13px">Carregando...</div></div>
+</div>
+<script src="./rankx-config.js"></script><script src="./rankx-api.js"></script><script src="./rankx-session.js"></script>
+<script>
+let profId=null, allEst=[], vinculos=[];
+async function load(){
+  const qs=new URLSearchParams(location.search); profId=qs.get('id') || (typeof rxGetSession==='function'?(rxGetSession()?.professionalId):null);
+  if(!profId){ document.getElementById('vinculoDesc').textContent='Sem ID. Use ?id=xxx'; return; }
+  document.getElementById('viewProfile').href='./dedicated-profile.html?type=professional&id='+encodeURIComponent(profId);
+  try{
+    const p=await rxFetch(`/rest/v1/professionals?id=eq.${profId}&select=*`);
+    if(p?.[0]){
+      const prof=p[0];
+      document.getElementById('profName').textContent=prof.name;
+      document.getElementById('avgRating').textContent=(prof.avg_rating||0).toFixed(1);
+      document.getElementById('totalReviews').textContent=prof.total_reviews||0;
+      document.getElementById('igvScore').textContent=prof.igv_score||18;
+      document.getElementById('qrBox').textContent='QR '+prof.name.slice(0,6).toUpperCase();
+    }
+  }catch{}
+  await loadVinc();
+  await loadEst();
+  await loadReviews();
+}
+async function loadVinc(){
+  try{
+    const links=await rxFetch(`/rest/v1/professional_establishments?professional_id=eq.${profId}&select=*,establishments(id,name,city)`);
+    vinculos=links||[];
+    const desc=document.getElementById('vinculoDesc');
+    if(!vinculos.length){ desc.textContent='Você está autônomo — reputação 100% portátil. Pode solicitar vínculo a um estabelecimento abaixo.'; document.getElementById('vinculoList').innerHTML=''; return; }
+    desc.textContent='Você tem '+vinculos.length+' vínculo(s). Autônomo pode ter vários vínculos.';
+    document.getElementById('vinculoList').innerHTML=vinculos.map(l=>{
+      const est=l.establishments||{};
+      return `<div class="link-card"><div><b>${est.name||'Estabelecimento'}</b><br><small style="color:#94a3b8">${est.city||''} • Status: ${l.status||'active'}</small></div><button class="rx-btn rx-btn--ghost rx-btn--sm" onclick="desvincular('${l.establishment_id}')">✕ Desvincular</button></div>`;
+    }).join('');
+  }catch(e){ document.getElementById('vinculoDesc').textContent='Erro: '+e.message; }
+}
+async function loadEst(){ try{ allEst=await rxFetch('/rest/v1/establishments?select=id,name,city&order=name.limit=100'); }catch{ allEst=[]; } }
+function searchEst(q){
+  const wrap=document.getElementById('estSearchList');
+  if(!q){ wrap.innerHTML=''; return; }
+  const f=allEst.filter(e=>e.name.toLowerCase().includes(q.toLowerCase()));
+  wrap.innerHTML=f.slice(0,10).map(e=>{
+    const linked=vinculos.find(v=>v.establishment_id===e.id);
+    return `<div class="link-card"><div><b>${e.name}</b><br><small>${e.city||''}</small></div>${linked?'<span style="color:#10b981;font-size:11px">✓ Vinculado</span>':`<button class="rx-btn rx-btn--primary rx-btn--sm" onclick="solicitarVinculo('${e.id}')">Solicitar vínculo</button>`}</div>`;
+  }).join('');
+}
+async function solicitarVinculo(estId){
+  try{ await rxFetch('/rest/v1/professional_establishments','POST',{professional_id:profId, establishment_id:estId, status:'pending', role:'member', requested_by:'professional'}); alert('✅ Solicitação enviada! Owner precisa aprovar.'); await loadVinc(); }catch(e){ alert('Erro: '+e.message); }
+}
+async function desvincular(estId){
+  if(!confirm('Desvincular?')) return;
+  try{ await rxFetch(`/rest/v1/professional_establishments?professional_id=eq.${profId}&establishment_id=eq.${estId}`,'DELETE'); await loadVinc(); }catch(e){ alert('Erro: '+e.message); }
+}
+async function loadReviews(){
+  try{
+    const revs=await rxFetch(`/rest/v1/reviews?professional_id=eq.${profId}&order=created_at.desc&limit=5`);
+    if(!revs?.length){ document.getElementById('reviewsList').innerHTML='<p style="color:#64748b">Nenhuma avaliação ainda — gere QR e peça para cliente avaliar</p>'; return; }
+    document.getElementById('reviewsList').innerHTML=revs.map(r=>`<div style="padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06)"><span style="color:#f59e0b">${'★'.repeat(r.rating||5)}</span> — ${r.comment||'Sem comentário'}<br><small style="color:#10b981">Verificada via QR • ${new Date(r.created_at).toLocaleDateString()}</small></div>`).join('');
+  }catch(e){ document.getElementById('reviewsList').textContent='Erro: '+e.message; }
+}
+function genQR(){ alert('QR gerado (mock) — em produção gera token único não reutilizável'); }
+function copyLink(){ navigator.clipboard.writeText(location.origin+'/dedicated-profile.html?type=professional&id='+profId); alert('Link copiado!'); }
+document.addEventListener('DOMContentLoaded', load);
+</script>
+</body>
+</html>

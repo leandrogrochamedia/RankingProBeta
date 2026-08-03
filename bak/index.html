@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏆 Ranking Pro - Reputação verificada para profissionais</title>
+  <link rel="stylesheet" href="./base.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./proofly-glass.css" />
+  <style>
+    html { scroll-behavior: smooth; }
+    .hero {
+      background: radial-gradient(circle at 70% 20%, rgba(99,102,241,0.25), transparent 50%),
+                  radial-gradient(circle at 20% 80%, rgba(139,92,246,0.12), transparent 60%),
+                  linear-gradient(135deg, #0a0a1a, #050510);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      border-bottom: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 70%;
+      height: 150%;
+      background: radial-gradient(circle, rgba(99,102,241,0.06), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero h1 {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #f8fafc 0%, #c4b5fd 60%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .hero .subtitle {
+      font-size: 24px;
+      font-weight: 300;
+      color: #e2e8f0;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .hero .description {
+      font-size: 18px;
+      color: #94a3b8;
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .hero-hint {
+      margin-top: 18px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    .hero-hint a {
+      color: #c4b5fd;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .hero-hint a:hover { text-decoration: underline; }
+    .btn {
+      transition: all 0.25s cubic-bezier(0.25,0.46,0.45,0.94);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border-radius: 50px;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(99,102,241,0.45);
+    }
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: #a78bfa;
+      box-shadow: 0 12px 30px rgba(255,255,255,0.08);
+      transform: translateY(-3px);
+    }
+    .btn-large { padding: 16px 44px; font-size: 18px; }
+    .feature-card, .highlight-item {
+      border-radius: 18px;
+      transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .feature-card:hover, .highlight-item:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 45px rgba(0,0,0,0.4);
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(99,102,241,0.25);
+    }
+    .feature-card h3 { color: #f1f5f9; }
+    .feature-card p { color: #94a3b8; }
+    .highlight-item {
+      border-left: 4px solid #6366f1;
+      padding: 24px 30px;
+      background: rgba(255,255,255,0.03);
+    }
+    .highlight-item:hover { border-left-color: #a78bfa; }
+    .highlight-item strong { color: #f8fafc; }
+    .highlight-item p { color: #94a3b8; }
+    .cta-box {
+      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+      color: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(99,102,241,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 56px 48px;
+      transition: all 0.3s ease;
+    }
+    .cta-box:hover {
+      box-shadow: 0 25px 60px rgba(99,102,241,0.5);
+      transform: scale(1.01);
+    }
+    .cta-box h2 { color: #fff !important; font-size: 32px; }
+    .cta-box p { color: rgba(255,255,255,0.85); }
+    .cta-box .btn-outline { border-color: rgba(255,255,255,0.4); color: #fff; }
+    .cta-box .btn-outline:hover { background: rgba(255,255,255,0.15); border-color: #fff; }
+    .cta-box .btn { background: #fff; color: #6366f1; }
+    .cta-box .btn:hover { background: #f1f5f9; color: #4f46e5; box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+    .fade-in-d1 { animation-delay: 0.1s; }
+    .fade-in-d2 { animation-delay: 0.2s; }
+    .fade-in-d3 { animation-delay: 0.3s; }
+    .fade-in-d4 { animation-delay: 0.4s; }
+    .fade-in-d5 { animation-delay: 0.5s; }
+    .fade-in-d6 { animation-delay: 0.6s; }
+    .fade-in-d7 { animation-delay: 0.7s; }
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 34px; letter-spacing: -0.5px; }
+      .hero .subtitle { font-size: 18px; }
+      .hero .description { font-size: 15px; }
+      .cta-box { padding: 32px 20px; }
+      .cta-box h2 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="userMessage" class="user-message" style="display:none;"></div>
+
+  <section class="hero">
+    <div class="container hero-content fade-in fade-in-d1">
+      <h1>🏆 Ranking Pro</h1>
+      <p class="subtitle">A plataforma de reputação verificada para profissionais de serviços</p>
+      <p class="description">
+        Escolha profissionais com confiança. Avaliações autênticas, histórico de vínculos e<br />
+        match por afinidade — tudo em um só lugar.
+      </p>
+      <div class="hero-buttons">
+        <a href="./login.html" class="btn btn-large fade-in fade-in-d2">🔐 Entrar</a>
+        <a href="./cliente.html" class="btn btn-outline btn-large fade-in fade-in-d3">👤 Explorar sem cadastro</a>
+      </div>
+      <p class="hero-hint fade-in fade-in-d4">
+        Profissional ou estabelecimento? Entre com Google — o sistema mostra suas áreas vinculadas.
+      </p>
+      <div class="hero-buttons" style="margin-top:14px;">
+        <a href="./login.html?intent=professional" class="btn btn-outline fade-in fade-in-d5" style="font-size:15px;padding:12px 28px;">💼 Sou profissional</a>
+        <a href="./login.html?intent=establishment" class="btn btn-outline fade-in fade-in-d6" style="font-size:15px;padding:12px 28px;">🏢 Sou estabelecimento</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section-features">
+    <h2 class="fade-in fade-in-d2">🚀 Como funciona</h2>
+    <div class="features-grid">
+      <div class="feature-card fade-in fade-in-d3">
+        <div class="feature-icon">🔍</div>
+        <h3>1. Busque</h3>
+        <p>Encontre profissionais por nome, especialidade ou estilo (vibes).</p>
+      </div>
+      <div class="feature-card fade-in fade-in-d4">
+        <div class="feature-icon">📋</div>
+        <h3>2. Analise</h3>
+        <p>Veja IGV, carteira real de clientes, carreira e avaliações autênticas — dados calculados, não auto-declarados.</p>
+      </div>
+      <div class="feature-card fade-in fade-in-d5">
+        <div class="feature-icon">⭐</div>
+        <h3>3. Avalie</h3>
+        <p>Deixe sua nota e comentário — ou use QR Code para avaliação verificada.</p>
+      </div>
+      <div class="feature-card fade-in fade-in-d6">
+        <div class="feature-icon">🤝</div>
+        <h3>4. Contrate</h3>
+        <p>Estabelecimentos filtram por disponibilidade, estilo e carteira alta — investindo em quem já gera caixa.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section-highlights">
+    <h2 class="fade-in fade-in-d2">💎 Por que Ranking Pro?</h2>
+    <div class="highlights-grid">
+      <div class="highlight-item fade-in fade-in-d3">
+        <span class="highlight-icon">✅</span>
+        <div><strong>Avaliações verificadas</strong><p>QR Code físico garante que a avaliação veio de um cliente real.</p></div>
+      </div>
+      <div class="highlight-item fade-in fade-in-d4">
+        <span class="highlight-icon">📜</span>
+        <div><strong>Histórico de vínculos</strong><p>Saiba onde o profissional já atuou e veja a reputação em cada local.</p></div>
+      </div>
+      <div class="highlight-item fade-in fade-in-d5">
+        <span class="highlight-icon">🎵</span>
+        <div><strong>Match por afinidade</strong><p>Encontre profissionais com o estilo, música e vibe que combinam com você.</p></div>
+      </div>
+      <div class="highlight-item fade-in fade-in-d6">
+        <span class="highlight-icon">💰</span>
+        <div><strong>IGV — Índice de Geração de Valor</strong><p>Carteira de clientes calculada automaticamente. O contratante vê quem traz retorno, não prejuízo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section-cta">
+    <div class="cta-box fade-in fade-in-d3">
+      <h2>Pronto para transformar sua reputação?</h2>
+      <p style="margin-bottom:30px;">Cadastre-se e comece a construir sua credibilidade hoje mesmo.</p>
+      <div class="cta-buttons">
+        <a href="./login.html" class="btn btn-large">🔐 Entrar com Google</a>
+        <a href="./cliente.html" class="btn btn-outline btn-large">👤 Explorar primeiro</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>© 2026 Ranking Pro — Reputação verificada para profissionais.</p>
+    <p style="font-size:12px; color:#666;">Versão 2.0 — em construção</p>
+  </footer>
+
+  <script src="./loader.js"></script>
+
+</body>
+</html>

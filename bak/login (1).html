@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rank-X — Login</title>
+<link rel="stylesheet" href="./rankx-core.css">
+</head>
+<body>
+<div class="rx-container" style="max-width:420px; padding-top:60px;">
+  <div class="rx-card">
+    <div style="text-align:center; margin-bottom:20px;">
+      <h2 style="font-size:26px;">🔐 Entrar no Rank-X</h2>
+      <p style="font-size:13px; color:#64748b;">Demo — qualquer credencial funciona</p>
+    </div>
+    <div class="rx-stack">
+      <button class="rx-btn rx-btn--light" style="width:100%; border:1.5px solid #e2e8f0;" onclick="location.href='./choose-role.html'">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Entrar com Google
+      </button>
+      <div style="text-align:center; font-size:12px; color:#94a3b8;">— ou —</div>
+      <input class="rx-input" placeholder="email@exemplo.com" value="leandro@rankx.com">
+      <input class="rx-input" placeholder="••••••••" type="password" value="123456">
+      <a href="./choose-role.html" class="rx-btn rx-btn--primary" style="width:100%">🚀 Entrar</a>
+      <a href="./index.html" style="text-align:center; font-size:13px; color:#6366f1; text-decoration:none; font-weight:600;">← Voltar</a>
+      <div class="rx-alert rx-alert--info">Você será levado para <b>choose-role.html</b> para escolher Worker / Owner / Client</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
